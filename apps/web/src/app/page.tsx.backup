@@ -1,0 +1,241 @@
+'use client';
+
+import Link from 'next/link';
+import { Sparkles, MessageCircle, Star, Zap, Shield, Calendar, TrendingUp, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { HeroSearch } from '@/components/features';
+
+export default function HomePage() {
+
+  const categories = [
+    { name: 'Beauty & Spa', icon: '💆', count: 245, slug: 'beauty' },
+    { name: 'Restaurants', icon: '🍽️', count: 389, slug: 'restaurants' },
+    { name: 'Auto Services', icon: '🚗', count: 156, slug: 'auto' },
+    { name: 'Home Services', icon: '🏠', count: 298, slug: 'home' },
+    { name: 'Health & Fitness', icon: '💪', count: 167, slug: 'health' },
+    { name: 'Professional', icon: '💼', count: 203, slug: 'professional' },
+  ];
+
+  return (
+    <div className="relative min-h-screen">
+      {/* Video Background for Hero */}
+      <div className="absolute inset-0 overflow-hidden -z-10 h-[600px] md:h-[700px] lg:h-[800px]">
+        {/* Local high-quality video */}
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/main-search-video-poster.jpg"
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/main-search-video.mp4" type="video/mp4" />
+          {/* Fallback to online video if local doesn't load */}
+          <source src="https://cdn.pixabay.com/video/2022/11/08/138414-769608076_large.mp4" type="video/mp4" />
+        </video>
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-900/75 via-slate-900/65 to-slate-900/85 dark:from-slate-950/85 dark:via-slate-950/80 dark:to-slate-950/90" />
+        {/* Additional subtle gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/15 via-transparent to-purple-900/15" />
+      </div>
+
+      {/* Subtle gradient for rest of page */}
+      <div className="absolute inset-0 top-[600px] md:top-[700px] lg:top-[800px] bg-gradient-to-b from-white via-slate-50 to-white dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 -z-20" />
+
+      {/* Hero Section with Video Background */}
+      <section className="relative py-20 sm:py-24 md:py-32 lg:py-40 overflow-hidden">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Badge */}
+            <Badge variant="outline" className="mb-4 sm:mb-6 md:mb-8 text-[10px] sm:text-xs md:text-sm px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 border-white/30 bg-white/10 backdrop-blur-sm text-white">
+              <Sparkles className="h-2.5 sm:h-3 md:h-3.5 w-2.5 sm:w-3 md:w-3.5 mr-1 sm:mr-1.5 md:mr-2" />
+              AI-Powered Business Discovery
+            </Badge>
+
+            {/* Heading */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold mb-4 sm:mb-6 md:mb-8 leading-[1.15] tracking-tight text-white px-2 sm:px-4">
+              Discover Local
+              <br />
+              <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Businesses Better
+              </span>
+            </h1>
+
+            <p className="text-sm sm:text-base md:text-lg lg:text-xl text-slate-200 mb-6 sm:mb-8 md:mb-12 max-w-2xl mx-auto leading-relaxed px-4">
+              Connect with trusted local services. Chat instantly, book seamlessly, and discover businesses powered by intelligent search.
+            </p>
+
+            {/* Hero Search Bar */}
+            <div className="mb-12 sm:mb-16 px-4">
+              <HeroSearch />
+            </div>
+
+            {/* Stats */}
+            <div className="flex flex-wrap justify-center gap-4 sm:gap-6 md:gap-8 text-xs sm:text-sm text-slate-200 px-4">
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-full">
+                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>2,500+ Businesses</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-full">
+                <Star className="h-3 sm:h-4 w-3 sm:w-4 text-amber-400 fill-amber-400" />
+                <span>50,000+ Reviews</span>
+              </div>
+              <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-2 rounded-full">
+                <Zap className="h-3 sm:h-4 w-3 sm:w-4 text-indigo-400" />
+                <span>Instant Booking</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Categories */}
+      <section className="py-12 sm:py-16 md:py-20 bg-white dark:bg-slate-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 tracking-tight px-4">Browse by Category</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-4">
+              Find the perfect business for your needs
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 md:gap-5 max-w-7xl mx-auto">
+            {categories.map((category) => (
+              <Link
+                key={category.name}
+                href={`/search?category=${category.slug}`}
+                className="group"
+              >
+                <Card className="h-full border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                  <CardContent className="p-4 sm:p-5 md:p-6 text-center">
+                    <div className="h-12 w-12 sm:h-14 sm:w-14 mx-auto mb-3 sm:mb-4 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl sm:text-3xl group-hover:scale-110 transition-transform duration-300">
+                      {category.icon}
+                    </div>
+                    <h3 className="font-semibold mb-1 text-xs sm:text-sm leading-tight">{category.name}</h3>
+                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">{category.count} businesses</p>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-slate-50 dark:bg-slate-900/50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10 sm:mb-12 md:mb-16">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 tracking-tight px-4">Why Choose Tarsit</h2>
+            <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-4">
+              Everything you need to discover and connect with local businesses
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-6xl mx-auto">
+            <Card className="border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-lg">
+              <CardContent className="p-5 sm:p-6 md:p-8">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-indigo-50 dark:bg-indigo-950 flex items-center justify-center mb-4 sm:mb-6">
+                  <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">AI-Powered Search</h3>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Smart recommendations based on your preferences and location
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-lg">
+              <CardContent className="p-5 sm:p-6 md:p-8">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-purple-50 dark:bg-purple-950 flex items-center justify-center mb-4 sm:mb-6">
+                  <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Instant Chat</h3>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Connect with businesses in real-time and get immediate responses
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-lg">
+              <CardContent className="p-5 sm:p-6 md:p-8">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-blue-50 dark:bg-blue-950 flex items-center justify-center mb-4 sm:mb-6">
+                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Easy Booking</h3>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Schedule appointments with one click and manage them effortlessly
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-lg">
+              <CardContent className="p-5 sm:p-6 md:p-8">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-amber-50 dark:bg-amber-950 flex items-center justify-center mb-4 sm:mb-6">
+                  <Star className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600 dark:text-amber-400" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Verified Reviews</h3>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Read authentic reviews from real customers to make informed decisions
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-lg">
+              <CardContent className="p-5 sm:p-6 md:p-8">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-emerald-50 dark:bg-emerald-950 flex items-center justify-center mb-4 sm:mb-6">
+                  <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Secure & Trusted</h3>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Your data is protected with enterprise-grade security
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-lg">
+              <CardContent className="p-5 sm:p-6 md:p-8">
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-violet-50 dark:bg-violet-950 flex items-center justify-center mb-4 sm:mb-6">
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-violet-600 dark:text-violet-400" />
+                </div>
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 sm:mb-3">Business Growth</h3>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Powerful tools help businesses reach more customers and grow
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-white dark:bg-slate-900">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 tracking-tight px-4">
+              Grow Your Business with Tarsit
+            </h2>
+            <p className="text-sm sm:text-base md:text-lg text-slate-600 dark:text-slate-400 mb-8 sm:mb-10 max-w-2xl mx-auto leading-relaxed px-4">
+              Join thousands of businesses reaching more customers. Get started for free and unlock powerful tools to manage appointments, chat with customers, and grow your online presence.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+              <Link 
+                href="/business/register"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm sm:text-base font-medium transition-all duration-300 bg-gradient-primary text-primary-foreground shadow hover:shadow-glow-primary hover:scale-105 active:scale-95 h-11 sm:h-12 px-6 sm:px-8"
+              >
+                List Your Business
+                <ArrowRight className="ml-2 h-3.5 sm:h-4 w-3.5 sm:w-4" />
+              </Link>
+              <Link 
+                href="/business/login"
+                className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm sm:text-base font-medium transition-all duration-300 border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground h-11 sm:h-12 px-6 sm:px-8"
+              >
+                Learn More
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
