@@ -1,0 +1,246 @@
+import { Test, TestingModule } from '@nestjs/testing';
+import { BusinessesService } from './businesses.service';
+import { PrismaService } from '../prisma/prisma.service';
+
+describe('BusinessesService', () => {
+  let service: BusinessesService;
+  let prismaService: PrismaService;
+
+  const mockPrismaService = {
+    business: {
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+      count: jest.fn(),
+    },
+    category: {
+      findUnique: jest.fn(),
+    },
+  };
+
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        BusinessesService,
+        {
+          provide: PrismaService,
+          useValue: mockPrismaService,
+        },
+      ],
+    }).compile();
+
+    service = module.get<BusinessesService>(BusinessesService);
+    prismaService = module.get<PrismaService>(PrismaService);
+
+    jest.clearAllMocks();
+  });
+
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
+  describe('create', () => {
+    it('should create a new business', async () => {
+      const createBusinessDto = {
+        name: 'Test Business',
+        description: 'A test business',
+        categoryId: 1,
+        address: '123 Test St',
+        city: 'Test City',
+        country: 'Test Country',
+        phone: '+1234567890',
+      };
+
+      const mockCategory = { id: 1, name: 'Restaurant' };
+      const mockBusiness = {
+        id: 1,
+        ...createBusinessDto,
+        ownerId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockPrismaService.category.findUnique.mockResolvedValue(mockCategory);
+      mockPrismaService.business.create.mockResolvedValue(mockBusiness);
+
+      const result = await service.create(createBusinessDto, 1);
+
+      expect(result).toEqual(mockBusiness);
+      expect(mockPrismaService.business.create).toHaveBeenCalledWith({
+        data: {
+          ...createBusinessDto,
+          ownerId: 1,
+        },
+        include: expect.any(Object),
+      });
+    });
+
+    it('should throw error if category does not exist', async () => {
+      const createBusinessDto = {
+        name: 'Test Business',
+        description: 'A test business',
+        categoryId: 999,
+        address: '123 Test St',
+        city: 'Test City',
+        country: 'Test Country',
+        phone: '+1234567890',
+      };
+
+      mockPrismaService.category.findUnique.mockResolvedValue(null);
+
+      await expect(service.create(createBusinessDto, 1)).rejects.toThrow();
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return array of businesses', async () => {
+      const mockBusinesses = [
+        {
+          id: 1,
+          name: 'Business 1',
+          description: 'Description 1',
+          categoryId: 1,
+        },
+        {
+          id: 2,
+          name: 'Business 2',
+          description: 'Description 2',
+          categoryId: 1,
+        },
+      ];
+
+      mockPrismaService.business.findMany.mockResolvedValue(mockBusinesses);
+
+      const result = await service.findAll({});
+
+      expect(result).toEqual(mockBusinesses);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(2);
+    });
+
+    it('should filter businesses by category', async () => {
+      const mockBusinesses = [
+        {
+          id: 1,
+          name: 'Business 1',
+          categoryId: 1,
+        },
+      ];
+
+      mockPrismaService.business.findMany.mockResolvedValue(mockBusinesses);
+
+      const result = await service.findAll({ categoryId: 1 });
+
+      expect(mockPrismaService.business.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            categoryId: 1,
+          }),
+        }),
+      );
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a business by id', async () => {
+      const mockBusiness = {
+        id: 1,
+        name: 'Test Business',
+        description: 'Test Description',
+      };
+
+      mockPrismaService.business.findUnique.mockResolvedValue(mockBusiness);
+
+      const result = await service.findOne(1);
+
+      expect(result).toEqual(mockBusiness);
+      expect(mockPrismaService.business.findUnique).toHaveBeenCalledWith({
+        where: { id: 1 },
+        include: expect.any(Object),
+      });
+    });
+
+    it('should throw error if business not found', async () => {
+      mockPrismaService.business.findUnique.mockResolvedValue(null);
+
+      await expect(service.findOne(999)).rejects.toThrow();
+    });
+  });
+
+  describe('update', () => {
+    it('should update a business', async () => {
+      const updateDto = {
+        name: 'Updated Business',
+        description: 'Updated Description',
+      };
+
+      const mockBusiness = {
+        id: 1,
+        ownerId: 1,
+        name: 'Old Name',
+      };
+
+      const mockUpdatedBusiness = {
+        ...mockBusiness,
+        ...updateDto,
+      };
+
+      mockPrismaService.business.findUnique.mockResolvedValue(mockBusiness);
+      mockPrismaService.business.update.mockResolvedValue(
+        mockUpdatedBusiness,
+      );
+
+      const result = await service.update(1, updateDto, 1);
+
+      expect(result).toEqual(mockUpdatedBusiness);
+      expect(mockPrismaService.business.update).toHaveBeenCalled();
+    });
+
+    it('should throw error if user is not the owner', async () => {
+      const mockBusiness = {
+        id: 1,
+        ownerId: 1,
+        name: 'Test Business',
+      };
+
+      mockPrismaService.business.findUnique.mockResolvedValue(mockBusiness);
+
+      await expect(
+        service.update(1, { name: 'Updated' }, 2),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('remove', () => {
+    it('should delete a business', async () => {
+      const mockBusiness = {
+        id: 1,
+        ownerId: 1,
+        name: 'Test Business',
+      };
+
+      mockPrismaService.business.findUnique.mockResolvedValue(mockBusiness);
+      mockPrismaService.business.delete.mockResolvedValue(mockBusiness);
+
+      await service.remove(1, 1);
+
+      expect(mockPrismaService.business.delete).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
+    });
+
+    it('should throw error if user is not the owner', async () => {
+      const mockBusiness = {
+        id: 1,
+        ownerId: 1,
+        name: 'Test Business',
+      };
+
+      mockPrismaService.business.findUnique.mockResolvedValue(mockBusiness);
+
+      await expect(service.remove(1, 2)).rejects.toThrow();
+    });
+  });
+});

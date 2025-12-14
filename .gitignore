@@ -5,30 +5,30 @@ node_modules/
 
 # Testing
 coverage/
-.nyc_output/
+*.log
 
-# Production
-build/
-dist/
+# Next.js
 .next/
 out/
+build/
+dist/
+
+# Production
+*.tsbuildinfo
 
 # Misc
 .DS_Store
 *.pem
-.env
-.env*.local
-.env.production
 
 # Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+.pnpm-debug.log*
 
 # Local env files
-.env.local
+.env
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -36,29 +36,22 @@ lerna-debug.log*
 # Vercel
 .vercel
 
-# Typescript
-*.tsbuildinfo
-next-env.d.ts
+# Turbo
+.turbo
 
-# IDEs
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 .idea/
-.vscode/
 *.swp
 *.swo
 *~
 
 # OS
-.DS_Store
 Thumbs.db
 
 # Prisma
-apps/api/prisma/migrations/*_*/
-!apps/api/prisma/migrations/migration_lock.toml
-
-# Logs
-logs/
-*.log
-
-# Temporary files
-tmp/
-temp/
+prisma/migrations/migration_lock.toml

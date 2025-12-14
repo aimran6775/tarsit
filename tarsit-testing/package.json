@@ -1,0 +1,22 @@
+{
+  "name": "@tarsit/testing",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:backend": "npx tsx backend/test-backend.ts",
+    "test:frontend": "npx tsx frontend/test-frontend.ts",
+    "test:all": "pnpm test:backend && pnpm test:frontend"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "axios": "^1.13.2",
+    "dotenv": "^16.4.5",
+    "form-data": "^4.0.5",
+    "playwright": "^1.57.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

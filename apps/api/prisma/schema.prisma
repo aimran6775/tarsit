@@ -1,0 +1,731 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER MODEL
+// ============================================================================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  username     String?  @unique
+  phone        String?  @unique
+  passwordHash String? // Optional for OAuth users
+  firstName    String
+  lastName     String
+  avatar       String?
+  role         UserRole @default(CUSTOMER)
+  verified     Boolean  @default(false)
+  active       Boolean  @default(true)
+
+  // OAuth
+  provider   String? // 'local', 'google', 'facebook', etc.
+  providerId String? // ID from OAuth provider
+
+  // Auth Tokens
+  resetToken              String?
+  resetTokenExpiry        DateTime?
+  verificationToken       String?
+  verificationTokenExpiry DateTime?
+
+  // Relations
+  businesses            Business[]
+  chats                 Chat[]
+  messages              Message[]
+  reviews               Review[]
+  appointments          Appointment[]
+  favorites             Favorite[]
+  verificationRequests  VerificationRequest[]
+  reviewedVerifications VerificationRequest[] @relation("ReviewedVerifications")
+  teamMemberships       TeamMember[]
+  notifications         Notification[]        @relation("UserNotifications")
+  adminAuditLogs        AdminAuditLog[]
+
+  // Metadata
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  @@unique([provider, providerId])
+  @@index([email])
+  @@index([phone])
+  @@index([provider, providerId])
+  @@map("users")
+}
+
+enum UserRole {
+  CUSTOMER
+  BUSINESS_OWNER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ============================================================================
+// BUSINESS MODEL
+// ============================================================================
+
+model Business {
+  id          String  @id @default(uuid())
+  ownerId     String
+  name        String
+  slug        String  @unique
+  description String? @db.Text
+  categoryId  String
+
+  // Location
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  state        String
+  zipCode      String
+  country      String  @default("USA")
+  latitude     Float
+  longitude    Float
+
+  // Contact
+  phone   String
+  email   String?
+  website String?
+
+  // Business Info
+  priceRange  PriceRange @default(MODERATE)
+  rating      Float      @default(0)
+  reviewCount Int        @default(0)
+  viewCount   Int        @default(0)
+
+  // Status
+  verified Boolean @default(false)
+  active   Boolean @default(true)
+  featured Boolean @default(false)
+
+  // Business Hours (JSON)
+  hours Json?
+
+  // Appointment Settings
+  appointmentsEnabled Boolean @default(false)
+  appointmentDuration Int? // default appointment duration in minutes
+  appointmentBuffer   Int? // buffer time between appointments in minutes
+  advanceBookingDays  Int     @default(30) // how many days in advance can book
+
+  // Storefront Customization
+  coverImage String?
+  logoImage  String?
+  themeColor String? @default("#000000")
+  tagline    String?
+
+  // Relations
+  owner               User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  category            Category             @relation(fields: [categoryId], references: [id])
+  services            Service[]
+  photos              Photo[]
+  reviews             Review[]
+  chats               Chat[]
+  appointments        Appointment[]
+  favorites           Favorite[]
+  verificationRequest VerificationRequest?
+  analytics           Analytics[]
+  teamMembers         TeamMember[]
+  businessHours       BusinessHours[]
+
+  // Metadata
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  verifiedAt DateTime?
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([latitude, longitude])
+  @@index([slug])
+  @@index([verified, active])
+  @@index([city, state])
+  @@map("businesses")
+}
+
+enum PriceRange {
+  BUDGET // $
+  MODERATE // $$
+  EXPENSIVE // $$$
+}
+
+// ============================================================================
+// CATEGORY MODEL
+// ============================================================================
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  icon        String?
+  description String?
+  parentId    String?
+  order       Int     @default(0)
+  active      Boolean @default(true)
+
+  // Relations
+  parent     Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children   Category[] @relation("CategoryHierarchy")
+  businesses Business[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([parentId])
+  @@index([active])
+  @@map("categories")
+}
+
+// ============================================================================
+// SERVICE MODEL
+// ============================================================================
+
+model Service {
+  id          String  @id @default(uuid())
+  businessId  String
+  name        String
+  description String? @db.Text
+  price       Float?
+  duration    Int? // in minutes
+  active      Boolean @default(true)
+  order       Int     @default(0)
+  bookable    Boolean @default(true) // can this service be booked?
+
+  business     Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([active])
+  @@map("services")
+}
+
+// ============================================================================
+// PHOTO MODEL
+// ============================================================================
+
+model Photo {
+  id         String  @id @default(uuid())
+  businessId String
+  url        String
+  thumbnail  String?
+  caption    String?
+  order      Int     @default(0)
+  featured   Boolean @default(false)
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId])
+  @@index([featured])
+  @@map("photos")
+}
+
+// ============================================================================
+// REVIEW MODEL
+// ============================================================================
+
+model Review {
+  id          String    @id @default(uuid())
+  businessId  String
+  userId      String
+  rating      Int // 1-5
+  title       String?
+  comment     String?   @db.Text
+  photos      String[] // Array of photo URLs
+  helpful     Int       @default(0)
+  response    String?   @db.Text // Business owner response
+  respondedAt DateTime?
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, userId]) // One review per user per business
+  @@index([businessId])
+  @@index([userId])
+  @@index([rating])
+  @@map("reviews")
+}
+
+// ============================================================================
+// CHAT MODEL
+// ============================================================================
+
+model Chat {
+  id            String    @id @default(uuid())
+  businessId    String
+  userId        String
+  lastMessage   String?   @db.Text
+  lastMessageAt DateTime?
+  unreadCount   Int       @default(0)
+  active        Boolean   @default(true)
+
+  business Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id])
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, userId])
+  @@index([businessId])
+  @@index([userId])
+  @@index([updatedAt])
+  @@map("chats")
+}
+
+// ============================================================================
+// MESSAGE MODEL
+// ============================================================================
+
+model Message {
+  id          String      @id @default(uuid())
+  chatId      String
+  senderId    String
+  senderType  SenderType
+  content     String      @db.Text
+  type        MessageType @default(TEXT)
+  attachments String[] // Array of URLs
+  read        Boolean     @default(false)
+
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id])
+
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+enum SenderType {
+  USER
+  BUSINESS
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+// ============================================================================
+// APPOINTMENT MODEL
+// ============================================================================
+
+model Appointment {
+  id         String  @id @default(uuid())
+  businessId String
+  userId     String
+  serviceId  String?
+
+  date     DateTime
+  endDate  DateTime? // calculated from date + duration
+  duration Int // in minutes
+  status   AppointmentStatus @default(PENDING)
+  notes    String?           @db.Text
+
+  // Customer Info (for guest bookings or backup)
+  customerName  String?
+  customerEmail String?
+  customerPhone String?
+
+  // Cancellation
+  canceledBy   String?
+  cancelReason String?
+
+  // Email Notifications
+  confirmationSent Boolean @default(false)
+  reminderSent     Boolean @default(false)
+
+  business Business @relation(fields: [businessId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  service  Service? @relation(fields: [serviceId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  confirmedAt DateTime?
+  canceledAt  DateTime?
+
+  @@index([businessId])
+  @@index([userId])
+  @@index([date])
+  @@index([status])
+  @@index([businessId, date])
+  @@map("appointments")
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+  NO_SHOW
+}
+
+// ============================================================================
+// FAVORITE MODEL
+// ============================================================================
+
+model Favorite {
+  id         String @id @default(uuid())
+  userId     String
+  businessId String
+
+  user     User     @relation(fields: [userId], references: [id])
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, businessId])
+  @@index([userId])
+  @@index([businessId])
+  @@map("favorites")
+}
+
+// ============================================================================
+// NOTIFICATION MODEL
+// ============================================================================
+
+model Notification {
+  id      String           @id @default(uuid())
+  userId  String
+  type    NotificationType
+  title   String
+  message String           @db.Text
+  data    Json? // Additional data
+  read    Boolean          @default(false)
+  link    String?
+
+  user User @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  NEW_MESSAGE
+  NEW_REVIEW
+  APPOINTMENT_CONFIRMED
+  APPOINTMENT_CANCELED
+  APPOINTMENT_REMINDER
+  BUSINESS_VERIFIED
+  SYSTEM
+}
+
+// ============================================================================
+// VERIFICATION REQUEST MODEL
+// ============================================================================
+
+model VerificationRequest {
+  id           String             @id @default(uuid())
+  businessId   String             @unique
+  userId       String
+  business     Business           @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user         User               @relation(fields: [userId], references: [id])
+  documents    String[] // URLs to uploaded documents
+  status       VerificationStatus @default(PENDING)
+  reviewedById String?
+  reviewedBy   User?              @relation("ReviewedVerifications", fields: [reviewedById], references: [id])
+  notes        String?            @db.Text
+  adminNotes   String?            @db.Text
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  reviewedAt DateTime?
+
+  @@index([status])
+  @@index([userId])
+  @@map("verification_requests")
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ============================================================================
+// ANALYTICS MODEL
+// ============================================================================
+
+model Analytics {
+  id         String   @id @default(uuid())
+  businessId String
+  date       DateTime @db.Date
+  views      Int      @default(0)
+  searches   Int      @default(0)
+  messages   Int      @default(0)
+  bookings   Int      @default(0)
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([businessId, date])
+  @@index([businessId])
+  @@index([date])
+  @@map("analytics")
+}
+
+// ============================================================================
+// TEAM MEMBER MODEL - Business staff with permissions
+// ============================================================================
+
+model TeamMember {
+  id         String   @id @default(uuid())
+  businessId String
+  userId     String
+  role       TeamRole @default(STAFF)
+
+  // Permissions
+  canManageChat         Boolean @default(false)
+  canManageHours        Boolean @default(false)
+  canManageDescription  Boolean @default(false)
+  canManagePhotos       Boolean @default(false)
+  canManageServices     Boolean @default(false)
+  canManageAppointments Boolean @default(false)
+  canViewAnalytics      Boolean @default(false)
+
+  // Status
+  active     Boolean   @default(true)
+  invitedAt  DateTime  @default(now())
+  acceptedAt DateTime?
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, userId])
+  @@index([businessId])
+  @@index([userId])
+  @@map("team_members")
+}
+
+enum TeamRole {
+  MANAGER // Full access except ownership transfer
+  STAFF // Limited access based on permissions
+}
+
+// ============================================================================
+// BUSINESS HOURS MODEL - Structured business hours
+// ============================================================================
+
+model BusinessHours {
+  id         String  @id @default(uuid())
+  businessId String
+  dayOfWeek  Int // 0 = Sunday, 6 = Saturday
+  openTime   String // "09:00" format
+  closeTime  String // "17:00" format
+  isClosed   Boolean @default(false)
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, dayOfWeek])
+  @@index([businessId])
+  @@map("business_hours")
+}
+
+// ============================================================================
+// ADMIN AUDIT LOG MODEL - Track admin actions
+// ============================================================================
+
+model AdminAuditLog {
+  id         String  @id @default(uuid())
+  adminId    String
+  action     String // e.g., "VERIFY_BUSINESS", "BAN_USER", "DELETE_REVIEW"
+  entityType String // e.g., "Business", "User", "Review"
+  entityId   String
+  details    Json? // Additional context
+  ipAddress  String?
+
+  admin User @relation(fields: [adminId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
+}
+
+// ============================================================================
+// EMAIL LOG MODEL - Track sent emails
+// ============================================================================
+
+model EmailLog {
+  id       String      @id @default(uuid())
+  to       String
+  subject  String
+  template String // e.g., "appointment_confirmation", "appointment_reminder"
+  status   EmailStatus @default(PENDING)
+  error    String?
+  sentAt   DateTime?
+
+  // Related entities
+  appointmentId String?
+  userId        String?
+
+  createdAt DateTime @default(now())
+
+  @@index([to])
+  @@index([status])
+  @@index([template])
+  @@index([createdAt])
+  @@map("email_logs")
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+// ============================================================================
+// TARS AI AGENT MODELS
+// ============================================================================
+
+// TARS Conversation - tracks chat sessions with the AI
+model TarsConversation {
+  id         String  @id @default(uuid())
+  userId     String? // null for anonymous users
+  businessId String? // if conversation is business-related
+  sessionId  String // for anonymous tracking
+  context    String  @default("general") // 'general', 'help', 'business', 'booking'
+
+  messages TarsMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([businessId])
+  @@index([sessionId])
+  @@map("tars_conversations")
+}
+
+// TARS Messages - individual messages in conversations
+model TarsMessage {
+  id             String @id @default(uuid())
+  conversationId String
+  role           String // 'user', 'assistant', 'system'
+  content        String @db.Text
+  metadata       Json? // function calls, tool usage, etc.
+
+  conversation TarsConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@map("tars_messages")
+}
+
+// TARS Memory - stores important facts about users/businesses
+model TarsMemory {
+  id         String  @id @default(uuid())
+  userId     String?
+  businessId String?
+  key        String // e.g., "preferred_services", "booking_preferences"
+  value      String  @db.Text
+  category   String  @default("general") // 'preferences', 'history', 'notes'
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, businessId, key])
+  @@index([userId])
+  @@index([businessId])
+  @@map("tars_memory")
+}
+
+// TARS Action Queue - actions requiring admin approval
+model TarsActionQueue {
+  id          String           @id @default(uuid())
+  userId      String? // who initiated the request
+  businessId  String? // affected business (if any)
+  actionType  String // 'create_booking', 'modify_business', 'cancel_appointment', etc.
+  actionData  Json // the data for the action
+  description String           @db.Text // human-readable description
+  status      TarsActionStatus @default(PENDING)
+  priority    Int              @default(0) // higher = more urgent
+
+  // Admin review
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  reviewNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([businessId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("tars_action_queue")
+}
+
+enum TarsActionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+}
+
+// TARS Settings - per-business settings for TARS behavior
+model TarsSettings {
+  id           String  @id @default(uuid())
+  businessId   String  @unique
+  enabled      Boolean @default(true)
+  allowMemory  Boolean @default(true) // can TARS remember things about customers
+  personality  String  @default("friendly") // 'friendly', 'professional', 'witty'
+  customPrompt String? @db.Text // custom instructions for this business
+  autoRespond  Boolean @default(false) // auto-respond to customer queries
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tars_settings")
+}
+
+// TARS Usage Tracking - for OpenAI cost monitoring
+model TarsUsage {
+  id           String @id @default(uuid())
+  monthKey     String @unique // YYYY-MM format
+  inputTokens  Int    @default(0)
+  outputTokens Int    @default(0)
+  totalCost    Float  @default(0) // in USD
+  requestCount Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tars_usage")
+}
