@@ -22,15 +22,23 @@ export class SecurityInterceptor implements NestInterceptor {
     response.setHeader('X-Content-Type-Options', 'nosniff');
     response.setHeader('X-Frame-Options', 'DENY');
     response.setHeader('X-XSS-Protection', '1; mode=block');
-    
+
     // Add request ID for tracking (useful for security audits)
-    const requestId = request.headers['x-request-id'] || 
-                     `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const requestId = request.headers['x-request-id'] ||
+      `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     response.setHeader('X-Request-ID', requestId);
+
+    // Don't sanitize auth endpoints - they need to return tokens
+    const isAuthEndpoint = request.path.includes('/auth/');
 
     return next.handle().pipe(
       map((data) => {
-        // Sanitize sensitive data from responses
+        // Don't sanitize auth responses - they need to return tokens
+        if (isAuthEndpoint) {
+          return data;
+        }
+
+        // Sanitize sensitive data from other responses
         if (data && typeof data === 'object') {
           return this.sanitizeResponse(data);
         }
@@ -46,8 +54,8 @@ export class SecurityInterceptor implements NestInterceptor {
 
     if (data && typeof data === 'object') {
       const sanitized = { ...data };
-      
-      // Remove sensitive fields
+
+      // Remove sensitive fields (not on auth endpoints - handled above)
       const sensitiveFields = ['password', 'passwordHash', 'token', 'refreshToken', 'verificationToken', 'resetToken'];
       sensitiveFields.forEach(field => {
         if (field in sanitized) {

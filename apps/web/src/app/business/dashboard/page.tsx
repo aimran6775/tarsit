@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { apiClient } from '@/lib/api/client';
-import { useSearchParams } from 'next/navigation';
 import {
   DashboardHeader,
   LoadingState,
@@ -20,6 +19,11 @@ import {
   HoursTab,
   SettingsTab,
   OnboardingChecklist,
+  ServicesTab,
+  BusinessMessagesTab,
+  ProfileTab,
+  HelpTab,
+  AnalyticsTab,
 } from './components';
 import type {
   Tab,
@@ -28,15 +32,17 @@ import type {
   Appointment,
   TeamMember,
   BusinessHours,
+  Service,
   Review,
   AppointmentSettings,
   InvitePermissions,
+  VisibilitySettings,
 } from './types';
 
 function Dashboard() {
   const router = useRouter();
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
-  
+
   // State
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [business, setBusiness] = useState<Business | null>(null);
@@ -45,12 +51,13 @@ function Dashboard() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [, setBusinessHours] = useState<BusinessHours[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [, setServices] = useState<Service[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // Appointments state
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  
+
   // Team invite state
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
@@ -62,17 +69,26 @@ function Dashboard() {
     canManageTeam: false,
   });
   const [isInviting, setIsInviting] = useState(false);
-  
+
   // Hours editing state
   const [editedHours, setEditedHours] = useState<BusinessHours[]>([]);
   const [isSavingHours, setIsSavingHours] = useState(false);
-  
+
   // Settings state
   const [appointmentSettings, setAppointmentSettings] = useState<AppointmentSettings>({
     appointmentsEnabled: false,
     appointmentDuration: 60,
     appointmentBuffer: 15,
     advanceBookingDays: 30,
+  });
+  const [visibilitySettings, setVisibilitySettings] = useState<VisibilitySettings>({
+    showPhone: true,
+    showEmail: true,
+    showWebsite: true,
+    showHours: true,
+    showServices: true,
+    showReviews: true,
+    messagesEnabled: true,
   });
   const [isSavingSettings, setIsSavingSettings] = useState(false);
 
@@ -87,12 +103,12 @@ function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
-      
+
       try {
         const businessRes = await apiClient.get('/businesses/my-business');
         const businessData = businessRes.data;
         setBusiness(businessData);
-        
+
         if (businessData?.id) {
           const [appointmentsRes, teamRes, hoursRes, reviewsRes] = await Promise.allSettled([
             apiClient.get(`/appointments/business/${businessData.id}`),
@@ -100,7 +116,7 @@ function Dashboard() {
             apiClient.get(`/businesses/${businessData.id}/hours`),
             apiClient.get(`/reviews/business/${businessData.id}`),
           ]);
-          
+
           if (appointmentsRes.status === 'fulfilled') {
             setAppointments(appointmentsRes.value.data || []);
           }
@@ -115,7 +131,7 @@ function Dashboard() {
           if (reviewsRes.status === 'fulfilled') {
             setReviews(reviewsRes.value.data || []);
           }
-          
+
           const pendingCount = appointments.filter(a => a.status === 'pending').length;
           setStats({
             totalViews: 0,
@@ -124,7 +140,7 @@ function Dashboard() {
             totalReviews: businessData.reviewCount || 0,
             averageRating: businessData.rating || 0,
           });
-          
+
           setAppointmentSettings({
             appointmentsEnabled: businessData.appointmentsEnabled || false,
             appointmentDuration: businessData.appointmentDuration || 60,
@@ -184,7 +200,7 @@ function Dashboard() {
   // Team actions
   const handleInviteMember = async () => {
     if (!inviteEmail || !business) return;
-    
+
     setIsInviting(true);
     try {
       await apiClient.post(`/team/business/${business.id}/invite`, {
@@ -192,10 +208,10 @@ function Dashboard() {
         role: inviteRole,
         ...invitePermissions,
       });
-      
+
       const teamRes = await apiClient.get(`/team/business/${business.id}/members`);
       setTeamMembers(teamRes.data || []);
-      
+
       setShowInviteModal(false);
       setInviteEmail('');
       setInviteRole('staff');
@@ -212,7 +228,7 @@ function Dashboard() {
   const handleRemoveMember = async (memberId: string) => {
     if (!confirm('Are you sure you want to remove this team member?')) return;
     if (!business) return;
-    
+
     try {
       await apiClient.delete(`/team/business/${business.id}/members/${memberId}`);
       setTeamMembers(prev => prev.filter(m => m.id !== memberId));
@@ -225,7 +241,7 @@ function Dashboard() {
   // Hours actions
   const handleSaveHours = async () => {
     if (!business) return;
-    
+
     setIsSavingHours(true);
     try {
       await apiClient.post(`/businesses/${business.id}/hours`, {
@@ -260,7 +276,7 @@ function Dashboard() {
   // Settings actions
   const handleSaveSettings = async () => {
     if (!business) return;
-    
+
     setIsSavingSettings(true);
     try {
       await apiClient.put(`/businesses/${business.id}/appointment-settings`, appointmentSettings);
@@ -293,7 +309,7 @@ function Dashboard() {
       ) : (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <BusinessHeader business={business} />
-          
+
           {/* Onboarding Checklist for new businesses */}
           <OnboardingChecklist
             businessId={business.id}
@@ -304,7 +320,7 @@ function Dashboard() {
             isVerified={business.verified}
             onSetTab={(tab) => setActiveTab(tab as Tab)}
           />
-          
+
           <DashboardTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
           {activeTab === 'overview' && (
@@ -314,6 +330,36 @@ function Dashboard() {
               reviews={reviews}
               teamMembersCount={teamMembers.length}
               setActiveTab={setActiveTab}
+            />
+          )}
+
+          {activeTab === 'profile' && business && (
+            <ProfileTab
+              business={business}
+              onBusinessUpdated={async () => {
+                try {
+                  const res = await apiClient.get('/businesses/my-business');
+                  setBusiness(res.data);
+                } catch {
+                  // Ignore errors
+                }
+              }}
+            />
+          )}
+
+          {activeTab === 'services' && business && (
+            <ServicesTab
+              businessId={business.id}
+              services={business.services || []}
+              onServicesUpdated={async () => {
+                try {
+                  const res = await apiClient.get('/businesses/my-business');
+                  setBusiness(res.data);
+                  setServices(res.data.services || []);
+                } catch {
+                  // Ignore errors
+                }
+              }}
             />
           )}
 
@@ -327,6 +373,13 @@ function Dashboard() {
               onConfirm={handleConfirmAppointment}
               onCancel={handleCancelAppointment}
               onComplete={handleCompleteAppointment}
+            />
+          )}
+
+          {activeTab === 'messages' && business && user && (
+            <BusinessMessagesTab
+              businessId={business.id}
+              currentUserId={user.id}
             />
           )}
 
@@ -384,12 +437,32 @@ function Dashboard() {
             />
           )}
 
+          {activeTab === 'analytics' && business && (
+            <AnalyticsTab
+              businessId={business.id}
+              stats={stats}
+              appointments={appointments}
+              reviews={reviews}
+            />
+          )}
+
           {activeTab === 'settings' && (
             <SettingsTab
               appointmentSettings={appointmentSettings}
               setAppointmentSettings={setAppointmentSettings}
+              visibilitySettings={visibilitySettings}
+              setVisibilitySettings={setVisibilitySettings}
               isSavingSettings={isSavingSettings}
               onSaveSettings={handleSaveSettings}
+              onContactSupport={() => setActiveTab('help')}
+            />
+          )}
+
+          {activeTab === 'help' && business && (
+            <HelpTab
+              businessId={business.id}
+              businessName={business.name}
+              ownerEmail={user?.email || ''}
             />
           )}
         </div>

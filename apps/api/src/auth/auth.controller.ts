@@ -26,7 +26,7 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('signup')
-  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 requests per minute
+  @Throttle({ default: { limit: process.env.NODE_ENV === 'production' ? 3 : 100, ttl: 60000 } })
   @ApiOperation({ summary: 'Register a new user (customer)' })
   @ApiResponse({ status: 201, description: 'User successfully registered' })
   @ApiResponse({ status: 409, description: 'Email or phone already exists' })
@@ -35,7 +35,7 @@ export class AuthController {
   }
 
   @Post('signup-business')
-  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 requests per minute
+  @Throttle({ default: { limit: process.env.NODE_ENV === 'production' ? 3 : 100, ttl: 60000 } })
   @ApiOperation({ summary: 'Register a new business owner with their business' })
   @ApiResponse({ status: 201, description: 'User and business successfully registered' })
   @ApiResponse({ status: 409, description: 'Email, phone, or username already exists' })
@@ -45,7 +45,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 requests per minute
+  @Throttle({ default: { limit: process.env.NODE_ENV === 'production' ? 5 : 100, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user' })
   @ApiResponse({ status: 200, description: 'Login successful' })

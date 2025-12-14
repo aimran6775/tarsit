@@ -3,7 +3,7 @@
  * Tests all auth-related endpoints
  */
 
-const { expectStatus, expectData, expect, runTest } = require('../utils/test-helpers');
+const { expectStatus, expectData, expect, runTest, generateTestPassword } = require('../utils/test-helpers');
 
 async function testAuth(context) {
   const { api } = context;
@@ -12,7 +12,7 @@ async function testAuth(context) {
   // Test: POST /api/auth/signup
   results.push(await runTest('POST /auth/signup - Customer signup', async () => {
     const uniqueEmail = `test-customer-${Date.now()}-${Math.random().toString(36).substring(7)}@test.tarsit.com`;
-    const password = 'TestPassword123!@#';
+    const password = generateTestPassword();
     
     // Wait to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -49,7 +49,7 @@ async function testAuth(context) {
     const categoryId = Array.isArray(categories) ? categories[0].id : categories[0]?.id || categories.id;
 
     const uniqueEmail = `test-business-${Date.now()}-${Math.random().toString(36).substring(7)}@test.tarsit.com`;
-    const password = 'TestPassword123!@#';
+    const password = generateTestPassword();
     
     // Wait to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -91,7 +91,7 @@ async function testAuth(context) {
   results.push(await runTest('POST /auth/login - Valid credentials', async () => {
     // Use existing user or create one
     const email = `test-login-${Date.now()}@test.tarsit.com`;
-    const password = 'TestPassword123!';
+    const password = generateTestPassword();
     
     await api.post('/auth/signup', {
       email,
@@ -115,7 +115,7 @@ async function testAuth(context) {
   results.push(await runTest('POST /auth/login - Invalid credentials', async () => {
     const response = await api.post('/auth/login', {
       email: 'nonexistent@test.tarsit.com',
-      password: 'WrongPassword123!',
+      password: 'Wrong@Password123!',
     });
     expectStatus(response, 401);
   }));
@@ -161,20 +161,25 @@ async function testAuth(context) {
     if (!context.tokens.customerToken) {
       throw new Error('No auth token available');
     }
-    // Get refresh token from login
-    const loginResponse = await api.post('/auth/login', {
-      email: `test-refresh-${Date.now()}@test.tarsit.com`,
-      password: 'TestPassword123!@#',
-    });
+    const password = generateTestPassword();
+    const email = `test-refresh-${Date.now()}@test.tarsit.com`;
+    
+    // Create user first
     await api.post('/auth/signup', {
-      email: loginResponse.data.user?.email || `test-refresh-${Date.now()}@test.tarsit.com`,
-      password: 'TestPassword123!@#',
+      email,
+      password,
       firstName: 'Refresh',
       lastName: 'Test',
     });
     
+    // Login to get refresh token
+    const loginResponse = await api.post('/auth/login', {
+      email,
+      password,
+    });
+    
     const refreshResponse = await api.post('/auth/refresh', {}, {
-      headers: { Authorization: `Bearer ${context.tokens.customerToken}` },
+      headers: { Authorization: `Bearer ${loginResponse.data.accessToken}` },
     });
     expectStatus(refreshResponse, 200);
     expect(refreshResponse.data.accessToken, 'Access token should exist');

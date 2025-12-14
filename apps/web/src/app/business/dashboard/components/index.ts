@@ -12,3 +12,8 @@ export { InviteModal } from './InviteModal';
 export { HoursTab } from './HoursTab';
 export { SettingsTab } from './SettingsTab';
 export { OnboardingChecklist } from './OnboardingChecklist';
+export { ServicesTab } from './ServicesTab';
+export { BusinessMessagesTab } from './BusinessMessagesTab';
+export { ProfileTab } from './ProfileTab';
+export { HelpTab } from './HelpTab';
+export { AnalyticsTab } from './AnalyticsTab';

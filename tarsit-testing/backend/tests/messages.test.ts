@@ -29,7 +29,7 @@ async function testMessages(context) {
       throw new Error('No customer token available');
     }
     const existingBusiness = await getExistingBusiness(prisma, api);
-    
+
     const response = await api.post('/chats', {
       businessId: existingBusiness.id,
     }, {
@@ -44,8 +44,9 @@ async function testMessages(context) {
     expect(data.id, 'Message ID should exist');
   }));
 
-  // Test: GET /api/chats/:id/messages - Get messages
-  results.push(await runTest('GET /chats/:id/messages - Get chat messages', async () => {
+  // Test: GET /api/messages/:chatId - Get messages for a chat
+  // The correct endpoint is GET /messages/:chatId, not GET /chats/:id/messages
+  results.push(await runTest('GET /messages/:chatId - Get chat messages', async () => {
     if (!context.tokens.customerToken) {
       throw new Error('No customer token available');
     }
@@ -53,18 +54,20 @@ async function testMessages(context) {
     const chatsResponse = await api.get('/chats?limit=1', {
       headers: { Authorization: `Bearer ${context.tokens.customerToken}` },
     });
-    const chats = expectData(chatsResponse, 'chats') || expectData(chatsResponse);
+    const chatsData = expectData(chatsResponse);
+    const chats = chatsData.chats || chatsData.data || chatsData;
     if (!chats || (Array.isArray(chats) && chats.length === 0)) {
       throw new Error('No chats available for testing');
     }
     const chatId = Array.isArray(chats) ? chats[0].id : chats.id;
-    
-    const response = await api.get(`/chats/${chatId}/messages?page=1&limit=50`, {
+
+    // Use the correct endpoint: /messages/:chatId
+    const response = await api.get(`/messages/${chatId}?page=1&limit=50`, {
       headers: { Authorization: `Bearer ${context.tokens.customerToken}` },
     });
     expectStatus(response, 200);
     const data = expectData(response);
-    expect(Array.isArray(data.messages || data), 'Messages should be an array');
+    expect(Array.isArray(data.messages || data.data || data), 'Messages should be an array');
   }));
 
   // Test: POST /api/messages - Send message
@@ -79,8 +82,8 @@ async function testMessages(context) {
     }, {
       headers: { Authorization: `Bearer ${context.tokens.customerToken}` },
     });
-    
-    const chatId = chatResponse.data.id || (chatResponse.status === 409 ? 
+
+    const chatId = chatResponse.data.id || (chatResponse.status === 409 ?
       (await api.get('/chats', {
         headers: { Authorization: `Bearer ${context.tokens.customerToken}` },
       })).data.chats?.[0]?.id : null);
@@ -103,13 +106,25 @@ async function testMessages(context) {
     context.testData.messageIds.push(data.id);
   }));
 
-  // Test: PATCH /api/messages/:id/read - Mark as read
-  results.push(await runTest('PATCH /messages/:id/read - Mark message as read', async () => {
-    if (!context.tokens.customerToken || context.testData.messageIds.length === 0) {
-      throw new Error('No message to mark as read');
+  // Test: PATCH /api/messages/:chatId/mark-as-read - Mark all messages in a chat as read
+  // The correct endpoint is PATCH /messages/:chatId/mark-as-read
+  results.push(await runTest('PATCH /messages/:chatId/mark-as-read - Mark messages as read', async () => {
+    if (!context.tokens.customerToken) {
+      throw new Error('No customer token available');
     }
-    const messageId = context.testData.messageIds[0];
-    const response = await api.patch(`/messages/${messageId}/read`, {}, {
+    // Get a chat first
+    const chatsResponse = await api.get('/chats?limit=1', {
+      headers: { Authorization: `Bearer ${context.tokens.customerToken}` },
+    });
+    const chatsData = expectData(chatsResponse);
+    const chats = chatsData.chats || chatsData.data || chatsData;
+    if (!chats || (Array.isArray(chats) && chats.length === 0)) {
+      throw new Error('No chats available for testing');
+    }
+    const chatId = Array.isArray(chats) ? chats[0].id : chats.id;
+
+    // Use the correct endpoint: /messages/:chatId/mark-as-read
+    const response = await api.patch(`/messages/${chatId}/mark-as-read`, {}, {
       headers: { Authorization: `Bearer ${context.tokens.customerToken}` },
     });
     expectStatus(response, 200);

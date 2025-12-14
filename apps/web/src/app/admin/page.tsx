@@ -20,6 +20,7 @@ import {
   BroadcastModal,
   UserDetailModal,
   BusinessDetailModal,
+  TarsTab,
 } from './components';
 import type {
   TabType,
@@ -42,7 +43,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 export default function AdminDashboardPage() {
   const { user, isLoading: authLoading, logout } = useAuth();
   const router = useRouter();
-  
+
   // Get token from localStorage
   const getToken = () => {
     if (typeof window !== 'undefined') {
@@ -67,6 +68,8 @@ export default function AdminDashboardPage() {
   const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
   const [aiInsights, setAiInsights] = useState<AIInsights | null>(null);
   const [settings, setSettings] = useState<PlatformSettings | null>(null);
+  const [tarsActions, setTarsActions] = useState<any[]>([]);
+  const [tarsLoading, setTarsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Filter State - Users
@@ -349,6 +352,80 @@ export default function AdminDashboardPage() {
     }
   }, [fetchAPI]);
 
+  // TARS Functions
+  const fetchTarsActions = useCallback(async () => {
+    setTarsLoading(true);
+    try {
+      const data = await fetchAPI('/api/tars/admin/actions/pending');
+      setTarsActions(data.actions || []);
+    } catch {
+      // Mock TARS actions for demo
+      setTarsActions([
+        {
+          id: '1',
+          actionType: 'create_appointment',
+          description: 'User requested to book an appointment at Tech Spa for December 20th at 2pm',
+          status: 'PENDING',
+          priority: 0,
+          createdAt: new Date().toISOString(),
+          actionData: { service: 'Deep Tissue Massage', date: '2024-12-20', time: '14:00' },
+          user: { firstName: 'John', lastName: 'Doe', email: 'john@example.com' },
+          business: { name: 'Tech Spa & Wellness' },
+        },
+        {
+          id: '2',
+          actionType: 'update_business_info',
+          description: 'Business owner wants to change operating hours to 24/7',
+          status: 'PENDING',
+          priority: 1,
+          createdAt: new Date(Date.now() - 3600000).toISOString(),
+          actionData: { hours: '24/7', reason: 'Holiday season demand' },
+          business: { name: 'Quick Mart Express' },
+        },
+      ]);
+    } finally {
+      setTarsLoading(false);
+    }
+  }, [fetchAPI]);
+
+  const handleTarsApprove = async (actionId: string, notes?: string) => {
+    try {
+      await fetchAPI(`/api/tars/admin/actions/${actionId}/approve${notes ? `?notes=${encodeURIComponent(notes)}` : ''}`, {
+        method: 'POST',
+      });
+      await fetchTarsActions();
+    } catch (error) {
+      console.error('Failed to approve action:', error);
+      alert('Failed to approve action');
+    }
+  };
+
+  const handleTarsReject = async (actionId: string, reason: string) => {
+    try {
+      await fetchAPI(`/api/tars/admin/actions/${actionId}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      });
+      await fetchTarsActions();
+    } catch (error) {
+      console.error('Failed to reject action:', error);
+      alert('Failed to reject action');
+    }
+  };
+
+  const handleTarsBulkReview = async (actionIds: string[], decision: 'approve' | 'reject', notes?: string) => {
+    try {
+      await fetchAPI('/api/tars/admin/actions/bulk-review', {
+        method: 'POST',
+        body: JSON.stringify({ actionIds, decision, notes }),
+      });
+      await fetchTarsActions();
+    } catch (error) {
+      console.error('Failed to bulk review actions:', error);
+      alert('Failed to process bulk review');
+    }
+  };
+
   // Initial Data Load
   useEffect(() => {
     if (authLoading) return;
@@ -394,6 +471,9 @@ export default function AdminDashboardPage() {
       case 'audit-logs':
         fetchAuditLogs();
         break;
+      case 'tars':
+        fetchTarsActions();
+        break;
       case 'system':
         fetchSystemHealth();
         fetchAiInsights();
@@ -402,7 +482,7 @@ export default function AdminDashboardPage() {
         fetchSettings();
         break;
     }
-  }, [activeTab, user, fetchUsers, fetchBusinesses, fetchVerifications, fetchReviews, fetchAuditLogs, fetchSystemHealth, fetchAiInsights, fetchSettings]);
+  }, [activeTab, user, fetchUsers, fetchBusinesses, fetchVerifications, fetchReviews, fetchAuditLogs, fetchTarsActions, fetchSystemHealth, fetchAiInsights, fetchSettings]);
 
   // Action Handlers
   const handleRefresh = async () => {
@@ -637,10 +717,10 @@ export default function AdminDashboardPage() {
           {activeTab === 'categories' && (
             <CategoriesTab
               categories={[]}
-              onAddCategory={() => {}}
-              onEditCategory={() => {}}
-              onDeleteCategory={() => {}}
-              onReorderCategory={() => {}}
+              onAddCategory={() => { }}
+              onEditCategory={() => { }}
+              onDeleteCategory={() => { }}
+              onReorderCategory={() => { }}
             />
           )}
 
@@ -666,6 +746,17 @@ export default function AdminDashboardPage() {
               setAuditActionFilter={setAuditActionFilter}
               auditPage={auditPage}
               setAuditPage={setAuditPage}
+            />
+          )}
+
+          {activeTab === 'tars' && (
+            <TarsTab
+              actions={tarsActions}
+              loading={tarsLoading}
+              onApprove={handleTarsApprove}
+              onReject={handleTarsReject}
+              onBulkReview={handleTarsBulkReview}
+              onRefresh={fetchTarsActions}
             />
           )}
 

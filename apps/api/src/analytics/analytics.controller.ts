@@ -7,9 +7,9 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('analytics')
-@Controller('api/analytics')
+@Controller('analytics')
 export class AnalyticsController {
-  constructor(private readonly analyticsService: AnalyticsService) {}
+  constructor(private readonly analyticsService: AnalyticsService) { }
 
   @Post('events')
   @ApiOperation({ summary: 'Track analytics event' })

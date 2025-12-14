@@ -4,15 +4,16 @@
 // TAB TYPES
 // ============================================================================
 
-export type TabType = 
-  | 'overview' 
-  | 'users' 
-  | 'businesses' 
-  | 'verifications' 
+export type TabType =
+  | 'overview'
+  | 'users'
+  | 'businesses'
+  | 'verifications'
   | 'reviews'
   | 'categories'
+  | 'tars'
   | 'system'
-  | 'reports' 
+  | 'reports'
   | 'audit-logs'
   | 'settings';
 
@@ -61,10 +62,10 @@ export interface Business {
   slug?: string;
   description?: string;
   tagline?: string;
-  owner?: { 
+  owner?: {
     id: string;
     firstName: string;
-    lastName: string; 
+    lastName: string;
     email: string;
   };
   ownerName?: string;
@@ -112,10 +113,10 @@ export interface BusinessesResponse {
 
 export interface VerificationRequest {
   id: string;
-  business: { 
-    id: string; 
-    name: string; 
-    slug: string; 
+  business: {
+    id: string;
+    name: string;
+    slug: string;
     logoImage?: string;
     owner: { firstName: string; lastName: string; email: string };
   };
@@ -137,9 +138,9 @@ export interface Review {
   rating: number;
   title?: string;
   comment?: string;
-  user: { 
+  user: {
     id: string;
-    firstName: string; 
+    firstName: string;
     lastName: string;
     email: string;
   };
@@ -367,7 +368,7 @@ export const getRoleColor = (role: string): string => {
 export const getStatusColor = (status: string, isActive?: boolean): string => {
   if (isActive === false) return 'bg-red-500/20 text-red-400 border-red-500/30';
   switch (status?.toUpperCase()) {
-    case 'ACTIVE': 
+    case 'ACTIVE':
     case 'APPROVED':
     case 'VERIFIED':
       return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
@@ -399,7 +400,7 @@ export const formatUptime = (seconds: number): string => {
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  
+
   if (days > 0) return `${days}d ${hours}h ${minutes}m`;
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;

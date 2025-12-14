@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Map, { Marker, NavigationControl, FullscreenControl } from 'react-map-gl';
+import Map, { Marker, NavigationControl, FullscreenControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapPin, Navigation } from 'lucide-react';
 
@@ -41,7 +41,7 @@ export function SimpleMap({
 
   if (!mapboxToken) {
     return (
-      <div 
+      <div
         className={`bg-white/5 border border-white/10 rounded-xl flex items-center justify-center ${className}`}
         style={{ height }}
       >
@@ -85,7 +85,7 @@ export function SimpleMap({
           </>
         )}
       </Map>
-      
+
       {/* Get Directions Button */}
       {interactive && (
         <div className="absolute bottom-4 left-4 right-4 flex justify-center">

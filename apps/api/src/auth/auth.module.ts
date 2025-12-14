@@ -5,9 +5,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
-import { GoogleStrategy } from './strategies/google.strategy';
 import { PrismaModule } from '../prisma/prisma.module';
 import { MailModule } from '../mail/mail.module';
+
+// Conditionally import GoogleStrategy only if credentials are configured
+const optionalProviders = [];
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'placeholder-client-id.apps.googleusercontent.com') {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { GoogleStrategy } = require('./strategies/google.strategy');
+  optionalProviders.push(GoogleStrategy);
+}
 
 @Module({
   imports: [
@@ -24,7 +31,7 @@ import { MailModule } from '../mail/mail.module';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, GoogleStrategy],
+  providers: [AuthService, JwtStrategy, ...optionalProviders],
   exports: [AuthService, JwtModule],
 })
-export class AuthModule {}
+export class AuthModule { }

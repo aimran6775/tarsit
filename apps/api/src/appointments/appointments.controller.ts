@@ -17,11 +17,11 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 import { AppointmentStatus } from '@prisma/client';
 
 @ApiTags('appointments')
-@Controller('api/appointments')
+@Controller('appointments')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class AppointmentsController {
-  constructor(private readonly appointmentsService: AppointmentsService) {}
+  constructor(private readonly appointmentsService: AppointmentsService) { }
 
   @Post()
   @ApiOperation({ summary: 'Book appointment' })

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import {
   Image as ImageIcon,
@@ -8,11 +8,14 @@ import {
   Trash2,
   Loader2,
   Upload,
-  X,
   Info,
+  CheckCircle,
+  AlertCircle,
+  Camera,
+  Pencil,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api/client';
-import { uploadApi, validateImageFile, UploadedImage } from '@/lib/api/upload.api';
+import { uploadApi, validateImageFile } from '@/lib/api/upload.api';
 import { toast } from 'sonner';
 
 interface Photo {
@@ -42,6 +45,42 @@ export function PhotosTab({
   const [uploadingType, setUploadingType] = useState<'photos' | 'cover' | 'logo' | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [settingFeatured, setSettingFeatured] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ total: number; completed: number } | null>(null);
+  const [editingCaption, setEditingCaption] = useState<string | null>(null);
+  const [captionText, setCaptionText] = useState('');
+  const dropZoneRef = useRef<HTMLDivElement>(null);
+
+  // Drag and drop handlers
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget === dropZoneRef.current) {
+      setIsDragging(false);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handlePhotoUpload(files);
+    }
+  }, []);
 
   // Handle business photo upload
   const handlePhotoUpload = async (files: FileList) => {
@@ -64,28 +103,61 @@ export function PhotosTab({
 
     setIsUploading(true);
     setUploadingType('photos');
+    setUploadProgress({ total: fileArray.length, completed: 0 });
+
+    let successCount = 0;
+    let failCount = 0;
 
     try {
-      for (const file of fileArray) {
-        // Upload to Cloudinary
-        const uploaded = await uploadApi.uploadImage(file, 'businesses');
-        
-        // Save to database
-        await apiClient.post('/photos', {
-          businessId,
-          url: uploaded.secureUrl,
-          thumbnail: uploaded.secureUrl, // Cloudinary auto-generates thumbnails
-        });
+      for (let i = 0; i < fileArray.length; i++) {
+        const file = fileArray[i];
+        try {
+          // Upload to Cloudinary
+          const uploaded = await uploadApi.uploadImage(file, 'businesses');
+
+          // Save to database
+          await apiClient.post('/photos', {
+            businessId,
+            url: uploaded.secureUrl,
+            thumbnail: uploaded.secureUrl,
+          });
+
+          successCount++;
+          setUploadProgress({ total: fileArray.length, completed: i + 1 });
+        } catch (err) {
+          console.error(`Failed to upload ${file.name}:`, err);
+          failCount++;
+        }
       }
 
-      toast.success(`Uploaded ${fileArray.length} photo${fileArray.length > 1 ? 's' : ''}`);
-      onPhotosUpdated();
+      if (successCount > 0) {
+        toast.success(`Uploaded ${successCount} photo${successCount > 1 ? 's' : ''}`);
+        onPhotosUpdated();
+      }
+      if (failCount > 0) {
+        toast.error(`Failed to upload ${failCount} photo${failCount > 1 ? 's' : ''}`);
+      }
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload photos');
     } finally {
       setIsUploading(false);
       setUploadingType(null);
+      setUploadProgress(null);
+    }
+  };
+
+  // Handle caption update
+  const handleUpdateCaption = async (photoId: string) => {
+    try {
+      await apiClient.patch(`/photos/${photoId}`, { caption: captionText });
+      toast.success('Caption updated');
+      setEditingCaption(null);
+      setCaptionText('');
+      onPhotosUpdated();
+    } catch (error) {
+      console.error('Caption update error:', error);
+      toast.error('Failed to update caption');
     }
   };
 
@@ -102,7 +174,7 @@ export function PhotosTab({
 
     try {
       const uploaded = await uploadApi.uploadImage(file, 'covers');
-      
+
       await apiClient.patch(`/businesses/${businessId}`, {
         coverImage: uploaded.secureUrl,
       });
@@ -131,7 +203,7 @@ export function PhotosTab({
 
     try {
       const uploaded = await uploadApi.uploadImage(file, 'logos');
-      
+
       await apiClient.patch(`/businesses/${businessId}`, {
         logoImage: uploaded.secureUrl,
       });
@@ -184,7 +256,7 @@ export function PhotosTab({
       {/* Cover & Logo Section */}
       <div className="bg-white/5 rounded-xl p-6 border border-white/10">
         <h3 className="text-lg font-semibold text-white mb-4">Branding</h3>
-        
+
         <div className="grid md:grid-cols-2 gap-6">
           {/* Cover Image */}
           <div>
@@ -304,13 +376,13 @@ export function PhotosTab({
             <h3 className="text-lg font-semibold text-white">Photo Gallery</h3>
             <p className="text-sm text-white/50">{photos.length} / 20 photos</p>
           </div>
-          
+
           {photos.length < 20 && (
             <label className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-medium rounded-xl cursor-pointer hover:from-purple-600 hover:to-indigo-600 transition-all">
               {isUploading && uploadingType === 'photos' ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Uploading...
+                  {uploadProgress ? `${uploadProgress.completed}/${uploadProgress.total}` : 'Uploading...'}
                 </>
               ) : (
                 <>
@@ -328,6 +400,62 @@ export function PhotosTab({
               />
             </label>
           )}
+        </div>
+
+        {/* Upload Progress Bar */}
+        {uploadProgress && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between text-sm mb-1">
+              <span className="text-white/70">Uploading photos...</span>
+              <span className="text-purple-400">{Math.round((uploadProgress.completed / uploadProgress.total) * 100)}%</span>
+            </div>
+            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-300"
+                style={{ width: `${(uploadProgress.completed / uploadProgress.total) * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Drag & Drop Zone */}
+        <div
+          ref={dropZoneRef}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          className={`relative border-2 border-dashed rounded-xl transition-all mb-6 ${isDragging
+              ? 'border-purple-500 bg-purple-500/10'
+              : 'border-white/20 hover:border-white/30'
+            }`}
+        >
+          <div className="p-8 text-center">
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center transition-colors ${isDragging ? 'bg-purple-500/20' : 'bg-white/5'
+              }`}>
+              <Camera className={`h-8 w-8 ${isDragging ? 'text-purple-400' : 'text-white/40'}`} />
+            </div>
+            <p className={`font-medium mb-1 ${isDragging ? 'text-purple-400' : 'text-white/70'}`}>
+              {isDragging ? 'Drop photos here' : 'Drag & drop photos here'}
+            </p>
+            <p className="text-sm text-white/40 mb-4">
+              or click the "Add Photos" button above
+            </p>
+            <div className="flex items-center justify-center gap-4 text-xs text-white/30">
+              <span className="flex items-center gap-1">
+                <CheckCircle className="h-3 w-3 text-green-400" />
+                JPG, PNG, WebP
+              </span>
+              <span className="flex items-center gap-1">
+                <CheckCircle className="h-3 w-3 text-green-400" />
+                Max 10MB each
+              </span>
+              <span className="flex items-center gap-1">
+                <AlertCircle className="h-3 w-3 text-amber-400" />
+                {20 - photos.length} slots left
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Info Banner */}
@@ -349,11 +477,10 @@ export function PhotosTab({
             {photos.map((photo) => (
               <div
                 key={photo.id}
-                className={`relative group aspect-square rounded-xl overflow-hidden border-2 transition-all ${
-                  photo.featured
-                    ? 'border-amber-500'
+                className={`relative group aspect-square rounded-xl overflow-hidden border-2 transition-all ${photo.featured
+                    ? 'border-amber-500 ring-2 ring-amber-500/20'
                     : 'border-transparent hover:border-white/20'
-                }`}
+                  }`}
               >
                 <Image
                   src={photo.url}
@@ -361,7 +488,7 @@ export function PhotosTab({
                   fill
                   className="object-cover"
                 />
-                
+
                 {/* Featured Badge */}
                 {photo.featured && (
                   <div className="absolute top-2 left-2 px-2 py-1 bg-amber-500 rounded-full flex items-center gap-1">
@@ -370,38 +497,90 @@ export function PhotosTab({
                   </div>
                 )}
 
+                {/* Caption */}
+                {photo.caption && (
+                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                    <p className="text-xs text-white truncate">{photo.caption}</p>
+                  </div>
+                )}
+
                 {/* Action Overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  {/* Set Featured */}
-                  {!photo.featured && (
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                  <div className="flex items-center gap-2">
+                    {/* Set Featured */}
+                    {!photo.featured && (
+                      <button
+                        onClick={() => handleSetFeatured(photo.id)}
+                        disabled={settingFeatured === photo.id}
+                        className="p-2 bg-amber-500 rounded-full hover:bg-amber-600 transition-colors disabled:opacity-50"
+                        title="Set as featured"
+                      >
+                        {settingFeatured === photo.id ? (
+                          <Loader2 className="h-4 w-4 text-white animate-spin" />
+                        ) : (
+                          <Star className="h-4 w-4 text-white" />
+                        )}
+                      </button>
+                    )}
+
+                    {/* Edit Caption */}
                     <button
-                      onClick={() => handleSetFeatured(photo.id)}
-                      disabled={settingFeatured === photo.id}
-                      className="p-2 bg-amber-500 rounded-full hover:bg-amber-600 transition-colors disabled:opacity-50"
-                      title="Set as featured"
+                      onClick={() => {
+                        setEditingCaption(photo.id);
+                        setCaptionText(photo.caption || '');
+                      }}
+                      className="p-2 bg-blue-500 rounded-full hover:bg-blue-600 transition-colors"
+                      title="Edit caption"
                     >
-                      {settingFeatured === photo.id ? (
+                      <Pencil className="h-4 w-4 text-white" />
+                    </button>
+
+                    {/* Delete */}
+                    <button
+                      onClick={() => handleDeletePhoto(photo.id)}
+                      disabled={deletingId === photo.id}
+                      className="p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors disabled:opacity-50"
+                      title="Delete photo"
+                    >
+                      {deletingId === photo.id ? (
                         <Loader2 className="h-4 w-4 text-white animate-spin" />
                       ) : (
-                        <Star className="h-4 w-4 text-white" />
+                        <Trash2 className="h-4 w-4 text-white" />
                       )}
                     </button>
-                  )}
-
-                  {/* Delete */}
-                  <button
-                    onClick={() => handleDeletePhoto(photo.id)}
-                    disabled={deletingId === photo.id}
-                    className="p-2 bg-red-500 rounded-full hover:bg-red-600 transition-colors disabled:opacity-50"
-                    title="Delete photo"
-                  >
-                    {deletingId === photo.id ? (
-                      <Loader2 className="h-4 w-4 text-white animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4 text-white" />
-                    )}
-                  </button>
+                  </div>
                 </div>
+
+                {/* Caption Edit Modal */}
+                {editingCaption === photo.id && (
+                  <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-3">
+                    <input
+                      type="text"
+                      value={captionText}
+                      onChange={(e) => setCaptionText(e.target.value)}
+                      placeholder="Add a caption..."
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white text-sm placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      autoFocus
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        onClick={() => handleUpdateCaption(photo.id)}
+                        className="px-3 py-1 bg-purple-500 text-white text-xs rounded-lg hover:bg-purple-600"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditingCaption(null);
+                          setCaptionText('');
+                        }}
+                        className="px-3 py-1 bg-white/10 text-white text-xs rounded-lg hover:bg-white/20"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

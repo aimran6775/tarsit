@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Search, MapPin, Star, Building2, Check, Filter, Grid3X3, List, SlidersHorizontal, X, ChevronDown, Heart, TrendingUp, Navigation, DollarSign, Award, Map as MapIcon, Crosshair } from 'lucide-react';
 import { BusinessMap } from '@/components/map';
 import { useGeolocation } from '@/hooks/use-geolocation';
+import { EmptySearchIllustration, ErrorIllustration } from '@/components/illustrations';
 
 interface Business {
   id: string;
@@ -70,21 +71,21 @@ function SearchContent() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [location, setLocation] = useState(searchParams.get('location') || '');
-  
+
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
   const [selectedPrice, setSelectedPrice] = useState(searchParams.get('priceRange') || '');
   const [selectedRating, setSelectedRating] = useState(searchParams.get('rating') || '');
   const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'relevance');
-  
+
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
   const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
-  
+
   // Geolocation
   const { latitude, longitude, loading: geoLoading, getCurrentPosition } = useGeolocation();
 
@@ -119,7 +120,7 @@ function SearchContent() {
       const price = searchParams.get('priceRange');
       const rating = searchParams.get('rating');
       const page = searchParams.get('page');
-      
+
       if (q) params.set('q', q);
       if (category) params.set('categorySlug', category); // Use slug-based filtering
       if (loc) params.set('location', loc);
@@ -136,7 +137,7 @@ function SearchContent() {
 
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
       const response = await fetch(apiUrl + '/search?' + params.toString());
-      
+
       if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
       setSearchResults(await response.json());
     } catch (err) {
@@ -213,27 +214,27 @@ function SearchContent() {
             </h1>
             <p className="text-white/60 text-lg">Discover the best services in your area</p>
           </div>
-          
+
           <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
             <div className="flex flex-col md:flex-row gap-3 p-2 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10">
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
-                <input 
-                  type="text" 
-                  placeholder="What are you looking for?" 
-                  value={query} 
-                  onChange={(e) => setQuery(e.target.value)} 
-                  className="w-full h-14 pl-12 pr-4 rounded-xl bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 border border-white/10 text-base transition-all" 
+                <input
+                  type="text"
+                  placeholder="What are you looking for?"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full h-14 pl-12 pr-4 rounded-xl bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 border border-white/10 text-base transition-all"
                 />
               </div>
               <div className="w-full md:w-64 relative">
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
-                <input 
-                  type="text" 
-                  placeholder="City or ZIP code" 
-                  value={location} 
-                  onChange={(e) => setLocation(e.target.value)} 
-                  className="w-full h-14 pl-12 pr-12 rounded-xl bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 border border-white/10 text-base transition-all" 
+                <input
+                  type="text"
+                  placeholder="City or ZIP code"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full h-14 pl-12 pr-12 rounded-xl bg-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 border border-white/10 text-base transition-all"
                 />
                 <button
                   type="button"
@@ -245,8 +246,8 @@ function SearchContent() {
                   <Crosshair className={`h-4 w-4 text-white/50 ${geoLoading ? 'animate-spin' : ''}`} />
                 </button>
               </div>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="h-14 px-8 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg shadow-purple-500/25 transition-all"
               >
                 <Search className="h-5 w-5" />Search
@@ -261,20 +262,20 @@ function SearchContent() {
         <div className="border-b border-white/10 bg-white/[0.02]">
           <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-              <button 
-                onClick={() => updateSearch({ category: '' })} 
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${!selectedCategory 
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25' 
+              <button
+                onClick={() => updateSearch({ category: '' })}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${!selectedCategory
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25'
                   : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'}`}
               >
                 All Categories
               </button>
               {categories.slice(0, 8).map(cat => (
-                <button 
-                  key={cat.id} 
-                  onClick={() => { setSelectedCategory(cat.slug); updateSearch({ category: cat.slug }); }} 
-                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat.slug 
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25' 
+                <button
+                  key={cat.id}
+                  onClick={() => { setSelectedCategory(cat.slug); updateSearch({ category: cat.slug }); }}
+                  className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedCategory === cat.slug
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25'
                     : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'}`}
                 >
                   {cat.name}
@@ -302,22 +303,22 @@ function SearchContent() {
           <div className="flex items-center gap-3">
             {/* View Toggle */}
             <div className="hidden md:flex items-center bg-white/5 rounded-lg p-1 border border-white/10">
-              <button 
-                onClick={() => setViewMode('grid')} 
+              <button
+                onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white'}`}
                 title="Grid view"
               >
                 <Grid3X3 className="h-4 w-4" />
               </button>
-              <button 
-                onClick={() => setViewMode('list')} 
+              <button
+                onClick={() => setViewMode('list')}
                 className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white'}`}
                 title="List view"
               >
                 <List className="h-4 w-4" />
               </button>
-              <button 
-                onClick={() => setViewMode('map')} 
+              <button
+                onClick={() => setViewMode('map')}
                 className={`p-2 rounded-md transition-all ${viewMode === 'map' ? 'bg-white/10 text-white' : 'text-white/50 hover:text-white'}`}
                 title="Map view"
               >
@@ -326,9 +327,9 @@ function SearchContent() {
             </div>
             {/* Sort Dropdown */}
             <div className="relative">
-              <select 
-                value={sortBy} 
-                onChange={(e) => { setSortBy(e.target.value); updateSearch({ sort: e.target.value }); }} 
+              <select
+                value={sortBy}
+                onChange={(e) => { setSortBy(e.target.value); updateSearch({ sort: e.target.value }); }}
                 className="appearance-none h-10 pl-4 pr-10 rounded-lg bg-white/5 border border-white/10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 cursor-pointer transition-all"
               >
                 {SORT_OPTIONS.map(opt => <option key={opt.value} value={opt.value} className="bg-neutral-900">{opt.label}</option>)}
@@ -336,8 +337,8 @@ function SearchContent() {
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40 pointer-events-none" />
             </div>
             {/* Filters Button */}
-            <button 
-              onClick={() => setShowFilters(true)} 
+            <button
+              onClick={() => setShowFilters(true)}
               className="h-10 px-4 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-white hover:bg-white/10 flex items-center gap-2 transition-all"
             >
               <SlidersHorizontal className="h-4 w-4" />
@@ -398,10 +399,8 @@ function SearchContent() {
 
         {/* Error State */}
         {error && (
-          <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
-            <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
-              <X className="h-8 w-8 text-red-400" />
-            </div>
+          <div className="text-center py-16 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
+            <ErrorIllustration className="w-48 h-36 mx-auto mb-6" />
             <h3 className="text-lg font-medium text-white mb-2">Something went wrong</h3>
             <p className="text-white/50 text-sm mb-6">{error}</p>
             <button onClick={fetchResults} className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg shadow-purple-500/25">
@@ -412,12 +411,10 @@ function SearchContent() {
 
         {/* Empty State */}
         {!loading && !error && searchResults?.businesses.length === 0 && (
-          <div className="text-center py-20 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
-            <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-6">
-              <Building2 className="h-10 w-10 text-white/40" />
-            </div>
+          <div className="text-center py-16 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-xl">
+            <EmptySearchIllustration className="w-56 h-40 mx-auto mb-6" />
             <h3 className="text-xl font-semibold text-white mb-2">No businesses found</h3>
-            <p className="text-white/50 mb-6 max-w-md mx-auto">We couldn't find any businesses matching your criteria.</p>
+            <p className="text-white/50 mb-6 max-w-md mx-auto">We couldn't find any businesses matching your criteria. Try adjusting your filters or search terms.</p>
             <div className="flex items-center justify-center gap-3">
               <button onClick={clearFilters} className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg text-sm font-medium hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg shadow-purple-500/25">
                 Clear Filters
@@ -491,10 +488,10 @@ function SearchContent() {
                       )}
                     </div>
                     {/* Favorite Button */}
-                    <button 
-                      onClick={(e) => { e.preventDefault(); toggleFavorite(business.id); }} 
-                      className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all backdrop-blur-sm ${favorites.has(business.id) 
-                        ? 'bg-rose-500 text-white' 
+                    <button
+                      onClick={(e) => { e.preventDefault(); toggleFavorite(business.id); }}
+                      className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all backdrop-blur-sm ${favorites.has(business.id)
+                        ? 'bg-rose-500 text-white'
                         : 'bg-black/50 text-white/70 hover:bg-black/70 hover:text-rose-400 border border-white/10'}`}
                     >
                       <Heart className={`h-4 w-4${favorites.has(business.id) ? ' fill-current' : ''}`} />
@@ -547,20 +544,20 @@ function SearchContent() {
         {/* Pagination */}
         {searchResults && searchResults.pagination.totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-12">
-            <button 
-              disabled={searchResults.pagination.page <= 1} 
-              onClick={() => updateSearch({ page: String(searchResults.pagination.page - 1) })} 
+            <button
+              disabled={searchResults.pagination.page <= 1}
+              onClick={() => updateSearch({ page: String(searchResults.pagination.page - 1) })}
               className="h-10 px-4 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               Previous
             </button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, searchResults.pagination.totalPages) }, (_, i) => (
-                <button 
-                  key={i + 1} 
-                  onClick={() => updateSearch({ page: String(i + 1) })} 
-                  className={`h-10 w-10 rounded-lg text-sm font-medium transition-all ${searchResults.pagination.page === i + 1 
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25' 
+                <button
+                  key={i + 1}
+                  onClick={() => updateSearch({ page: String(i + 1) })}
+                  className={`h-10 w-10 rounded-lg text-sm font-medium transition-all ${searchResults.pagination.page === i + 1
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25'
                     : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'}`}
                 >
                   {i + 1}
@@ -569,8 +566,8 @@ function SearchContent() {
               {searchResults.pagination.totalPages > 5 && (
                 <>
                   <span className="px-2 text-white/40">...</span>
-                  <button 
-                    onClick={() => updateSearch({ page: String(searchResults.pagination.totalPages) })} 
+                  <button
+                    onClick={() => updateSearch({ page: String(searchResults.pagination.totalPages) })}
                     className="h-10 w-10 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-white hover:bg-white/10 transition-all"
                   >
                     {searchResults.pagination.totalPages}
@@ -578,9 +575,9 @@ function SearchContent() {
                 </>
               )}
             </div>
-            <button 
-              disabled={searchResults.pagination.page >= searchResults.pagination.totalPages} 
-              onClick={() => updateSearch({ page: String(searchResults.pagination.page + 1) })} 
+            <button
+              disabled={searchResults.pagination.page >= searchResults.pagination.totalPages}
+              onClick={() => updateSearch({ page: String(searchResults.pagination.page + 1) })}
               className="h-10 px-4 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-white hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               Next
@@ -630,10 +627,10 @@ function SearchContent() {
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
                     {PRICE_OPTIONS.map(opt => (
-                      <label 
-                        key={opt.value} 
-                        className={`flex items-center justify-center p-3 rounded-lg border cursor-pointer transition-all ${selectedPrice === opt.value 
-                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 border-purple-500 text-white' 
+                      <label
+                        key={opt.value}
+                        className={`flex items-center justify-center p-3 rounded-lg border cursor-pointer transition-all ${selectedPrice === opt.value
+                          ? 'bg-gradient-to-r from-purple-600 to-indigo-600 border-purple-500 text-white'
                           : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10'}`}
                       >
                         <input type="radio" name="price" checked={selectedPrice === opt.value} onChange={() => setSelectedPrice(opt.value)} className="sr-only" />

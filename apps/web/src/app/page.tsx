@@ -1,27 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Star, MapPin, Clock, MessageCircle, Calendar, Shield, Building2 } from 'lucide-react';
+import { ArrowRight, Star, MapPin, Clock, MessageCircle, Calendar, Shield, TrendingUp, CheckCircle } from 'lucide-react';
 import { HeroSearch } from '@/components/features';
 import { useCategories, useStats } from '@/hooks';
-
-// Category emoji mapping
-const categoryEmojis: Record<string, string> = {
-  'restaurants': '🍽️',
-  'beauty-spas': '💆',
-  'beauty-wellness': '💆',
-  'home-services': '🏠',
-  'auto-services': '🚗',
-  'automotive': '🚗',
-  'health-medical': '🏥',
-  'professional-services': '💼',
-  'shopping': '🛍️',
-  'entertainment': '🎭',
-  'fitness': '💪',
-  'fitness-health': '💪',
-  'education': '📚',
-  'food-dining': '🍽️',
-};
+import { getCategoryIcon } from '@/lib/category-icons';
+import { DiscoverFeatureIllustration, ConnectFeatureIllustration, BookFeatureIllustration, TrustFeatureIllustration } from '@/components/illustrations/feature-illustrations';
+import { RotatingText } from '@/components/ui/rotating-text';
 
 // Fallback categories if API fails
 const fallbackCategories = [
@@ -36,39 +21,6 @@ const fallbackCategories = [
 export default function HomePage() {
   const { data: categories = fallbackCategories, isLoading: categoriesLoading } = useCategories();
   const { data: stats } = useStats();
-
-  const features = [
-    {
-      icon: MapPin,
-      title: 'Local Discovery',
-      description: 'Find trusted businesses in your neighborhood',
-    },
-    {
-      icon: MessageCircle,
-      title: 'Instant Chat',
-      description: 'Connect directly with business owners',
-    },
-    {
-      icon: Calendar,
-      title: 'Easy Booking',
-      description: 'Schedule appointments in seconds',
-    },
-    {
-      icon: Star,
-      title: 'Verified Reviews',
-      description: 'Real feedback from real customers',
-    },
-    {
-      icon: Clock,
-      title: 'Real-time Updates',
-      description: 'Live availability and wait times',
-    },
-    {
-      icon: Shield,
-      title: 'Secure & Trusted',
-      description: 'Verified businesses you can count on',
-    },
-  ];
 
   // Format numbers with K/M suffix
   const formatNumber = (num: number): string => {
@@ -107,13 +59,18 @@ export default function HomePage() {
         <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
           {/* Main Heading */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold text-white tracking-tight mb-6">
-            Find local businesses
+            Discover local businesses
             <br />
-            <span className="text-white/60">you'll love</span>
+            <span className="text-white/60">you'll </span>
+            <RotatingText
+              words={['love', 'need', 'trust', 'enjoy']}
+              className="text-purple-400 font-bold"
+              interval={2500}
+            />
           </h1>
 
           <p className="text-lg sm:text-xl text-white/50 mb-10 max-w-2xl mx-auto">
-            Discover, connect, and book with trusted local services. 
+            Discover, connect, and book with trusted local services.
             All in one place.
           </p>
 
@@ -179,23 +136,26 @@ export default function HomePage() {
                 </div>
               ))
             ) : (
-              displayCategories.map((category) => (
-                <Link
-                  key={category.id || category.slug}
-                  href={`/search?category=${category.slug}`}
-                  className="group p-6 rounded-2xl bg-neutral-900/50 border border-neutral-800 hover:border-purple-500/30 hover:bg-neutral-900 transition-all duration-300"
-                >
-                  <div className="text-3xl mb-3 transition-transform duration-300 group-hover:scale-110">
-                    {categoryEmojis[category.slug] || '📁'}
-                  </div>
-                  <h3 className="font-medium text-white text-sm mb-1 group-hover:text-purple-400 transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="text-xs text-neutral-500">
-                    {(category as { _count?: { businesses: number } })._count?.businesses || 0} places
-                  </p>
-                </Link>
-              ))
+              displayCategories.map((category) => {
+                const CategoryIcon = getCategoryIcon(category.slug);
+                return (
+                  <Link
+                    key={category.id || category.slug}
+                    href={`/search?category=${category.slug}`}
+                    className="group p-6 rounded-2xl bg-neutral-900/50 border border-neutral-800 hover:border-purple-500/30 hover:bg-neutral-900 transition-all duration-300"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-500/20 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110">
+                      <CategoryIcon className="h-6 w-6 text-purple-400" />
+                    </div>
+                    <h3 className="font-medium text-white text-sm mb-1 group-hover:text-purple-400 transition-colors">
+                      {category.name}
+                    </h3>
+                    <p className="text-xs text-neutral-500">
+                      {(category as { _count?: { businesses: number } })._count?.businesses || 0} places
+                    </p>
+                  </Link>
+                );
+              })
             )}
           </div>
 
@@ -212,29 +172,124 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Features Section - How It Works */}
       <section className="py-24 bg-neutral-900/50">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-4">
-              Why tarsit?
+              How tarsit works
             </h2>
             <p className="text-neutral-400 text-lg max-w-2xl mx-auto">
-              Everything you need to discover and connect with local businesses
+              Discover, connect, and book with local businesses in three simple steps
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="p-6 rounded-2xl bg-neutral-900/50 border border-neutral-800 hover:border-purple-500/20 transition-all duration-300"
-              >
-                <feature.icon className="h-6 w-6 text-purple-400 mb-4" />
-                <h3 className="font-medium text-white mb-2">{feature.title}</h3>
-                <p className="text-sm text-neutral-400">{feature.description}</p>
+          {/* Feature 1: Discover */}
+          <div className="grid md:grid-cols-2 gap-12 items-center mb-24">
+            <div className="order-2 md:order-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm mb-4">
+                <MapPin className="h-4 w-4" />
+                Step 1
               </div>
-            ))}
+              <h3 className="text-2xl font-semibold text-white mb-4">Discover local businesses</h3>
+              <p className="text-neutral-400 mb-6">
+                Search by category, location, or service. Our smart search helps you find exactly what you need, whether it's a salon, restaurant, mechanic, or home service.
+              </p>
+              <ul className="space-y-3">
+                {['Location-based recommendations', 'Verified business profiles', 'Real customer ratings'].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-neutral-300">
+                    <CheckCircle className="h-5 w-5 text-purple-400 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="order-1 md:order-2 flex justify-center">
+              <DiscoverFeatureIllustration className="w-full max-w-md" />
+            </div>
+          </div>
+
+          {/* Feature 2: Connect */}
+          <div className="grid md:grid-cols-2 gap-12 items-center mb-24">
+            <div className="flex justify-center">
+              <ConnectFeatureIllustration className="w-full max-w-md" />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm mb-4">
+                <MessageCircle className="h-4 w-4" />
+                Step 2
+              </div>
+              <h3 className="text-2xl font-semibold text-white mb-4">Connect directly</h3>
+              <p className="text-neutral-400 mb-6">
+                Chat with business owners instantly. Ask questions, get quotes, and discuss your needs before making a commitment.
+              </p>
+              <ul className="space-y-3">
+                {['Instant messaging', 'Real-time responses', 'No phone tag necessary'].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-neutral-300">
+                    <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Feature 3: Book */}
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="order-2 md:order-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/10 border border-indigo-500/20 rounded-full text-indigo-400 text-sm mb-4">
+                <Calendar className="h-4 w-4" />
+                Step 3
+              </div>
+              <h3 className="text-2xl font-semibold text-white mb-4">Book with confidence</h3>
+              <p className="text-neutral-400 mb-6">
+                Schedule appointments online, view real-time availability, and receive instant confirmations. Managing your bookings has never been easier.
+              </p>
+              <ul className="space-y-3">
+                {['Online scheduling', 'Automated reminders', 'Easy rescheduling'].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-neutral-300">
+                    <CheckCircle className="h-5 w-5 text-indigo-400 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="order-1 md:order-2 flex justify-center">
+              <BookFeatureIllustration className="w-full max-w-md" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Section */}
+      <section className="py-24 bg-neutral-950">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="flex justify-center">
+              <TrustFeatureIllustration className="w-full max-w-sm" />
+            </div>
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-6">
+                Trusted by thousands
+              </h2>
+              <p className="text-neutral-400 text-lg mb-8">
+                Every business on tarsit is verified. We ensure quality through real reviews, verified profiles, and secure transactions.
+              </p>
+              <div className="grid grid-cols-2 gap-6">
+                {[
+                  { icon: Shield, label: 'Verified businesses', value: 'Identity checked' },
+                  { icon: Star, label: 'Real reviews', value: 'Authentic feedback' },
+                  { icon: Clock, label: 'Fast support', value: '24/7 available' },
+                  { icon: TrendingUp, label: 'Growing network', value: '2,500+ businesses' },
+                ].map((item) => (
+                  <div key={item.label} className="p-4 rounded-xl bg-white/5 border border-white/10">
+                    <item.icon className="h-5 w-5 text-emerald-400 mb-2" />
+                    <p className="text-white font-medium text-sm">{item.label}</p>
+                    <p className="text-neutral-500 text-xs">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -246,18 +301,18 @@ export default function HomePage() {
             Ready to grow your business?
           </h2>
           <p className="text-neutral-400 text-lg mb-10 max-w-xl mx-auto">
-            Join thousands of businesses reaching new customers every day. 
+            Join thousands of businesses reaching new customers every day.
             Get started for free.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
+            <Link
               href="/business/register"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-neutral-950 bg-white hover:bg-neutral-100 rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
             >
               List your business
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link 
+            <Link
               href="/business/login"
               className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-medium text-white bg-transparent border border-neutral-700 hover:border-purple-500/50 hover:bg-purple-500/10 rounded-full transition-all duration-200"
             >
@@ -266,31 +321,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="py-12 border-t border-neutral-800">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="text-neutral-400 text-sm">
-              © 2024 tarsit. All rights reserved.
-            </div>
-            <div className="flex gap-6 text-sm">
-              <Link href="/about" className="text-neutral-400 hover:text-white transition-colors link-underline">
-                About
-              </Link>
-              <Link href="/privacy" className="text-neutral-400 hover:text-white transition-colors link-underline">
-                Privacy
-              </Link>
-              <Link href="/terms" className="text-neutral-400 hover:text-white transition-colors link-underline">
-                Terms
-              </Link>
-              <Link href="/contact" className="text-neutral-400 hover:text-white transition-colors link-underline">
-                Contact
-              </Link>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

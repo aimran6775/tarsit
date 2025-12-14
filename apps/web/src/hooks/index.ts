@@ -6,3 +6,4 @@ export { useCategories, useCategory, useCategoryBySlug } from './use-categories'
 export { useStats, type PlatformStats } from './use-stats';
 export { useSocket } from './use-socket';
 export { useGeolocation } from './use-geolocation';
+export { useAppleMap } from './useAppleMap';

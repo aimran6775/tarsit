@@ -22,7 +22,8 @@ async function testHealth(context) {
     expectStatus(response, 200);
     const data = expectData(response);
     expect(data.status, 'Status should exist');
-    expect(data.database, 'Database info should exist');
+    // Database info is in checks.database
+    expect(data.checks?.database || data.database, 'Database info should exist');
   }));
 
   // Test: GET /api/health/ready

@@ -1,6 +1,26 @@
 // Business Dashboard Types
 
-export type Tab = 'overview' | 'appointments' | 'reviews' | 'photos' | 'team' | 'hours' | 'settings';
+export type Tab = 'overview' | 'profile' | 'services' | 'appointments' | 'messages' | 'reviews' | 'photos' | 'team' | 'hours' | 'analytics' | 'settings' | 'help';
+
+export interface VisibilitySettings {
+  showPhone: boolean;
+  showEmail: boolean;
+  showWebsite: boolean;
+  showHours: boolean;
+  showServices: boolean;
+  showReviews: boolean;
+  messagesEnabled: boolean;
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  duration: number;
+  bookable: boolean;
+  order: number;
+}
 
 export interface Business {
   id: string;
@@ -10,24 +30,27 @@ export interface Business {
   tagline?: string;
   rating: number;
   reviewCount: number;
-  photos?: { url: string }[];
+  photos?: { id: string; url: string; caption?: string; featured: boolean; order: number }[];
   coverImage?: string;
   logoImage?: string;
   category: { id: string; name: string };
+  categoryId: string;
   city: string;
   state: string;
+  country?: string;
   phone: string;
   email?: string;
   website?: string;
   addressLine1: string;
   addressLine2?: string;
   zipCode: string;
+  priceRange?: 'BUDGET' | 'MODERATE' | 'EXPENSIVE';
   verified: boolean;
   appointmentsEnabled: boolean;
   appointmentDuration?: number;
   appointmentBuffer?: number;
   advanceBookingDays?: number;
-  services?: { id: string; name: string; price?: number }[];
+  services?: Service[];
   businessHours?: BusinessHours[];
 }
 

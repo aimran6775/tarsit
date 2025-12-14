@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.module';
+import { PrismaService } from '../../prisma/prisma.service';
 import * as crypto from 'crypto';
 
 /**

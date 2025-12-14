@@ -16,9 +16,9 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @ApiTags('services')
-@Controller('api/services')
+@Controller('services')
 export class ServicesController {
-  constructor(private readonly servicesService: ServicesService) {}
+  constructor(private readonly servicesService: ServicesService) { }
 
   @Post()
   @UseGuards(JwtAuthGuard)

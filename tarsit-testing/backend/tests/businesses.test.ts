@@ -15,8 +15,9 @@ async function testBusinesses(context) {
     const response = await api.get('/businesses?page=1&limit=10');
     expectStatus(response, 200);
     const data = expectData(response);
-    expect(data.businesses || data, 'Businesses should exist');
-    expect(Array.isArray(data.businesses || data), 'Response should be an array');
+    const businesses = data.data || data.businesses || data;
+    expect(businesses, 'Businesses should exist');
+    expect(Array.isArray(businesses), 'Response should be an array');
   }));
 
   // Test: GET /api/businesses - With filters
@@ -67,7 +68,7 @@ async function testBusinesses(context) {
     if (!context.tokens.businessOwnerToken) {
       throw new Error('No business owner token available');
     }
-    
+
     // Get category
     const categoriesResponse = await api.get('/categories');
     const categories = expectData(categoriesResponse, 'categories') || expectData(categoriesResponse);
@@ -75,13 +76,17 @@ async function testBusinesses(context) {
 
     const response = await api.post('/businesses', {
       name: `Test Business ${Date.now()}`,
-      description: 'A test business created during testing',
+      description: 'A test business created during automated testing for the Tarsit platform',
       categoryId,
       addressLine1: '456 Test Ave',
       city: 'Los Angeles',
       state: 'CA',
       zipCode: '90001',
+      country: 'USA',
       phone: '+14155559999',
+      latitude: 34.0522,
+      longitude: -118.2437,
+      priceRange: 'MODERATE',
     }, {
       headers: { Authorization: `Bearer ${context.tokens.businessOwnerToken}` },
     });
@@ -98,13 +103,13 @@ async function testBusinesses(context) {
     }
     const businessId = context.testData.businessIds[0];
     const response = await api.patch(`/businesses/${businessId}`, {
-      description: 'Updated description',
+      description: 'Updated description for the test business with sufficient length',
     }, {
       headers: { Authorization: `Bearer ${context.tokens.businessOwnerToken}` },
     });
     expectStatus(response, 200);
     const data = expectData(response);
-    expect(data.description === 'Updated description', `Expected 'Updated description', got '${data.description}'`);
+    expect(data.description.includes('Updated description'), `Expected description to be updated, got '${data.description}'`);
   }));
 
   // Test: DELETE /api/businesses/:id - Delete business

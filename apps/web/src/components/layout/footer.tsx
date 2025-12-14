@@ -106,7 +106,7 @@ export function Footer() {
             © {new Date().getFullYear()} Tarsit. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-sm text-white/30">
-            <span>Made with ♥ for local businesses</span>
+            <span>Supporting local businesses everywhere</span>
           </div>
         </div>
       </div>

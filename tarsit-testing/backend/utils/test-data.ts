@@ -1,220 +1,165 @@
 /**
  * Test Data Generators
- * Creates realistic test data for testing
+ * Uses permanent test accounts from the database
+ * See TEST_ACCOUNTS.md for full documentation
  */
 
-const { generateTestEmail, generateTestPassword } = require('./test-helpers');
-
-// Colors for logging (if needed)
-const colors = {
-  yellow: '\x1b[33m',
-  reset: '\x1b[0m',
+// ============================================================================
+// PERMANENT TEST ACCOUNTS
+// These accounts are created by prisma seed and should always exist
+// ============================================================================
+const TEST_ACCOUNTS = {
+  admin: {
+    email: 'admin@tarsit.com',
+    password: 'Tarsit1234!',
+    role: 'ADMIN',
+  },
+  customer: {
+    email: 'testcustomer@tarsit.com',
+    password: 'Tarsit1234!',
+    role: 'CUSTOMER',
+  },
+  businessOwner: {
+    email: 'testowner@tarsit.com',
+    password: 'Tarsit1234!',
+    role: 'BUSINESS_OWNER',
+  },
 };
 
 /**
- * Create test users
+ * Login with a permanent test account
  */
-async function createTestUsers(prisma, api) {
-  const customerEmail = generateTestEmail();
-  const businessOwnerEmail = generateTestEmail();
-  const adminEmail = generateTestEmail();
-  const password = generateTestPassword();
-
-  // Wait to avoid rate limiting
-  await new Promise(resolve => setTimeout(resolve, 2000));
-
-  // Create customer
-  const customerSignup = await api.post('/auth/signup', {
-    email: customerEmail,
-    password,
-    firstName: 'Test',
-    lastName: 'Customer',
-    role: 'CUSTOMER',
+async function loginTestAccount(api: any, accountType: 'admin' | 'customer' | 'businessOwner') {
+  const account = TEST_ACCOUNTS[accountType];
+  const response = await api.post('/auth/login', {
+    email: account.email,
+    password: account.password,
   });
 
-  if (customerSignup.status === 429) {
-    throw new Error('Rate limited - cannot create test users');
+  if (response.status !== 200) {
+    throw new Error(`Failed to login ${accountType}: ${JSON.stringify(response.data)}`);
   }
 
-  if (customerSignup.status !== 201) {
-    throw new Error(`Customer signup failed: ${JSON.stringify(customerSignup.data)}`);
-  }
+  return {
+    token: response.data.accessToken,
+    user: response.data.user,
+  };
+}
 
-  // Wait before login
-  await new Promise(resolve => setTimeout(resolve, 500));
+/**
+ * Get test users by logging into permanent accounts
+ * No longer creates ephemeral users - uses seeded accounts
+ */
+async function createTestUsers(prisma: any, api: any) {
+  console.log('   🔐 Logging into permanent test accounts...');
 
-  const customerLogin = await api.post('/auth/login', {
-    email: customerEmail,
-    password,
-  });
+  // Login customer
+  const customerLogin = await loginTestAccount(api, 'customer');
+  console.log('   ✓ Customer logged in');
 
-  if (customerLogin.status === 429) {
-    throw new Error('Rate limited - cannot login test user');
-  }
+  // Login business owner and get their business
+  const businessOwnerLogin = await loginTestAccount(api, 'businessOwner');
+  console.log('   ✓ Business owner logged in');
 
-  if (customerLogin.status !== 200 || !customerLogin.data.accessToken) {
-    throw new Error(`Customer login failed: ${JSON.stringify(customerLogin.data)}`);
-  }
-
-  // Create business owner
-  const businessOwnerSignup = await api.post('/auth/signup-business', {
-    email: businessOwnerEmail,
-    password,
-    firstName: 'Test',
-    lastName: 'BusinessOwner',
-    business: {
-      name: 'Test Business',
-      description: 'A test business for testing purposes',
-      categoryId: await getFirstCategoryId(prisma, api),
-      addressLine1: '123 Test Street',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94102',
-      phone: '+14155551234',
-    },
-  });
-
-  const businessOwnerLogin = await api.post('/auth/login', {
-    email: businessOwnerEmail,
-    password,
-  });
-
-  // Get admin user (or skip if Prisma fails - we'll use API to find one)
-  let admin = null;
-  let adminToken = null;
-  
+  // Get the test business owned by testowner@tarsit.com
+  let businessId: string | null = null;
   try {
-    admin = await prisma.user.findFirst({
-      where: { role: 'ADMIN' },
+    const business = await prisma.business.findFirst({
+      where: { owner: { email: 'testowner@tarsit.com' } },
     });
+    if (business) {
+      businessId = business.id;
+      console.log('   ✓ Test business found');
+    }
   } catch (error) {
-    // Prisma failed, try to find admin via API or skip
-      // Prisma failed, will skip admin tests
-  }
-
-  if (!admin) {
-    // Try to create admin via API signup (if endpoint exists) or skip
-    try {
-      // For now, skip admin creation - tests will work without it
-      admin = { id: 'skip', email: adminEmail };
-    } catch (error) {
-      // Skip admin tests
-    }
-  } else {
-    // Try to login as admin
-    try {
-      const adminLogin = await api.post('/auth/login', {
-        email: admin.email,
-        password: password, // Try the test password
-      });
-      if (adminLogin.status === 200 && adminLogin.data.accessToken) {
-        adminToken = adminLogin.data.accessToken;
-      }
-    } catch (error) {
-      // Admin may have different password, that's okay - tests will skip
+    // Try API fallback
+    const bizResponse = await api.get('/businesses?limit=1', {
+      headers: { Authorization: `Bearer ${businessOwnerLogin.token}` },
+    });
+    if (bizResponse.data?.data?.[0]) {
+      businessId = bizResponse.data.data[0].id;
     }
   }
 
-  // Handle different response structures
-  const customerId = customerSignup.data?.user?.id || customerSignup.data?.id;
-  const businessOwnerId = businessOwnerSignup.data?.user?.id || businessOwnerSignup.data?.id;
-  const businessId = businessOwnerSignup.data?.business?.id || businessOwnerSignup.data?.businessId;
-
-  if (!customerId || !customerLogin.data?.accessToken) {
-    throw new Error(`Customer creation failed: ${JSON.stringify(customerSignup.data)}`);
-  }
-
-  if (!businessOwnerId || !businessOwnerLogin.data?.accessToken || !businessId) {
-    throw new Error(`Business owner creation failed: ${JSON.stringify(businessOwnerSignup.data)}`);
+  // Login admin
+  let adminToken: string | null = null;
+  let adminUser: any = null;
+  try {
+    const adminLogin = await loginTestAccount(api, 'admin');
+    adminToken = adminLogin.token;
+    adminUser = adminLogin.user;
+    console.log('   ✓ Admin logged in');
+  } catch (error: any) {
+    console.log(`   ⚠ Admin login failed: ${error.message}`);
+    adminUser = { id: 'skip', email: TEST_ACCOUNTS.admin.email };
   }
 
   return {
     customer: {
-      id: customerId,
-      email: customerEmail,
-      token: customerLogin.data.accessToken,
+      id: customerLogin.user.id,
+      email: TEST_ACCOUNTS.customer.email,
+      token: customerLogin.token,
     },
     businessOwner: {
-      id: businessOwnerId,
-      email: businessOwnerEmail,
-      token: businessOwnerLogin.data.accessToken,
+      id: businessOwnerLogin.user.id,
+      email: TEST_ACCOUNTS.businessOwner.email,
+      token: businessOwnerLogin.token,
       businessId: businessId,
     },
     admin: {
-      id: admin?.id || 'skip',
-      email: admin?.email || adminEmail,
+      id: adminUser?.id || 'skip',
+      email: TEST_ACCOUNTS.admin.email,
       token: adminToken,
     },
   };
 }
 
 /**
- * Get first category ID from database or API
- */
-async function getFirstCategoryId(prisma, api) {
-  try {
-    const category = await prisma.category.findFirst();
-    if (category) {
-      return category.id;
-    }
-  } catch (error) {
-    // If Prisma fails, try API
-  }
-  
-  // Fallback to API
-  try {
-    const response = await api.get('/categories');
-    const categories = response.data.categories || response.data;
-    if (Array.isArray(categories) && categories.length > 0) {
-      return categories[0].id;
-    }
-    if (categories && categories.id) {
-      return categories.id;
-    }
-  } catch (error) {
-    // API also failed
-  }
-  
-  throw new Error('No categories found in database. Please seed categories first.');
-}
-
-/**
  * Get existing business for read tests
  * Uses API first, falls back to Prisma if needed
  */
-async function getExistingBusiness(prisma, api) {
+async function getExistingBusiness(prisma: any, api: any) {
   // Always use API first (more reliable and doesn't require direct DB access)
   try {
     const response = await api.get('/businesses?limit=1&page=1');
     if (response.status === 200) {
-      const data = response.data;
-      const businesses = data.businesses || (Array.isArray(data) ? data : [data]);
-      
-      if (Array.isArray(businesses) && businesses.length > 0) {
-        return businesses[0];
+      const responseData = response.data;
+
+      // Handle { data: [...], meta: {...} } structure
+      if (responseData.data && Array.isArray(responseData.data) && responseData.data.length > 0) {
+        return responseData.data[0];
       }
-      if (businesses && businesses.id) {
-        return businesses;
+
+      // Handle { businesses: [...] } structure
+      if (responseData.businesses && Array.isArray(responseData.businesses) && responseData.businesses.length > 0) {
+        return responseData.businesses[0];
       }
-      if (data && data.id) {
-        return data;
+
+      // Handle direct array
+      if (Array.isArray(responseData) && responseData.length > 0) {
+        return responseData[0];
+      }
+
+      // Handle single object with id
+      if (responseData && responseData.id) {
+        return responseData;
       }
     }
   } catch (error) {
-    // API failed, try Prisma only if api is not available
-    if (!api) {
-      try {
-        const business = await prisma.business.findFirst({
-          where: { active: true },
-          include: { category: true },
-        });
-        if (business) {
-          return business;
-        }
-      } catch (prismaError) {
-        // Prisma also failed
-      }
+    // API failed, try Prisma
+  }
+
+  // Fallback to Prisma
+  try {
+    const business = await prisma.business.findFirst({
+      where: { active: true },
+      include: { category: true },
+    });
+    if (business) {
+      return business;
     }
+  } catch (prismaError) {
+    // Prisma also failed
   }
 
   throw new Error('No businesses found in database for read tests');
@@ -223,7 +168,7 @@ async function getExistingBusiness(prisma, api) {
 /**
  * Get existing user for read tests
  */
-async function getExistingUser(prisma) {
+async function getExistingUser(prisma: any) {
   const user = await prisma.user.findFirst({
     where: { active: true },
   });
@@ -233,8 +178,51 @@ async function getExistingUser(prisma) {
   return user;
 }
 
+/**
+ * Get test business owned by testowner@tarsit.com
+ */
+async function getTestBusiness(prisma: any) {
+  const business = await prisma.business.findFirst({
+    where: { owner: { email: 'testowner@tarsit.com' } },
+  });
+  if (!business) {
+    throw new Error('Test business not found. Please run: pnpm prisma db seed');
+  }
+  return business;
+}
+
+/**
+ * Get first category ID
+ */
+async function getFirstCategoryId(prisma: any, api: any) {
+  try {
+    const category = await prisma.category.findFirst();
+    if (category) {
+      return category.id;
+    }
+  } catch (error) {
+    // If Prisma fails, try API
+  }
+
+  try {
+    const response = await api.get('/categories');
+    const categories = response.data?.data || response.data?.categories || response.data;
+    if (Array.isArray(categories) && categories.length > 0) {
+      return categories[0].id;
+    }
+  } catch (error) {
+    // API also failed
+  }
+
+  throw new Error('No categories found. Please seed the database first.');
+}
+
 module.exports = {
+  TEST_ACCOUNTS,
   createTestUsers,
+  loginTestAccount,
   getExistingBusiness,
   getExistingUser,
+  getTestBusiness,
+  getFirstCategoryId,
 };

@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, Search, ArrowLeft, MapPin } from 'lucide-react';
+import { Home, Search } from 'lucide-react';
+import { NotFoundIllustration } from '@/components/illustrations';
 
 export default function NotFound() {
   return (
@@ -9,13 +10,11 @@ export default function NotFound() {
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-neutral-950 to-indigo-900/10" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(168,85,247,0.1),transparent_50%)]" />
-      
+
       <div className="relative text-center max-w-lg">
-        {/* 404 Number */}
-        <div className="mb-8">
-          <span className="text-[150px] md:text-[200px] font-bold leading-none bg-gradient-to-b from-white/20 to-white/5 bg-clip-text text-transparent">
-            404
-          </span>
+        {/* 404 Illustration */}
+        <div className="mb-8 flex justify-center">
+          <NotFoundIllustration className="w-64 h-48 md:w-80 md:h-60" />
         </div>
 
         {/* Message */}

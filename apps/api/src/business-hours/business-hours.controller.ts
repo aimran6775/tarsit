@@ -14,9 +14,9 @@ import { SetBusinessHoursDto, BusinessHourDto, UpdateAppointmentSettingsDto } fr
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('business-hours')
-@Controller('api/businesses/:businessId')
+@Controller('businesses/:businessId')
 export class BusinessHoursController {
-  constructor(private readonly businessHoursService: BusinessHoursService) {}
+  constructor(private readonly businessHoursService: BusinessHoursService) { }
 
   @Get('hours')
   @ApiOperation({ summary: 'Get business hours for a business' })

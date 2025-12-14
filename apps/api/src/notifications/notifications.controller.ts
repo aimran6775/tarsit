@@ -16,11 +16,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @ApiTags('notifications')
-@Controller('api/notifications')
+@Controller('notifications')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class NotificationsController {
-  constructor(private readonly notificationsService: NotificationsService) {}
+  constructor(private readonly notificationsService: NotificationsService) { }
 
   @Post()
   @ApiOperation({ summary: 'Create notification (system/admin use)' })

@@ -28,6 +28,7 @@ import { AdminModule } from './admin/admin.module';
 import { HealthModule } from './health/health.module';
 import { TeamModule } from './team/team.module';
 import { BusinessHoursModule } from './business-hours/business-hours.module';
+import { TarsModule } from './tars/tars.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { BusinessHoursModule } from './business-hours/business-hours.module';
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 60 seconds
-        limit: 100, // 100 requests per minute (general)
+        // Higher limit in development/test mode for easier testing
+        limit: process.env.NODE_ENV === 'production' ? 100 : 1000,
       },
     ]),
     CacheModule.register({
@@ -67,6 +69,7 @@ import { BusinessHoursModule } from './business-hours/business-hours.module';
     HealthModule,
     TeamModule,
     BusinessHoursModule,
+    TarsModule,
   ],
   controllers: [],
   providers: [

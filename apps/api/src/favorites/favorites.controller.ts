@@ -15,11 +15,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
 
 @ApiTags('favorites')
-@Controller('api/favorites')
+@Controller('favorites')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class FavoritesController {
-  constructor(private readonly favoritesService: FavoritesService) {}
+  constructor(private readonly favoritesService: FavoritesService) { }
 
   @Post()
   @ApiOperation({ summary: 'Add business to favorites' })

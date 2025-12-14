@@ -13,44 +13,15 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useCategories } from '@/hooks';
-
-// Category emoji mapping
-const categoryEmojis: Record<string, string> = {
-  'beauty-spa': '💆',
-  'beauty-wellness': '💆',
-  'restaurants': '🍽️',
-  'food-dining': '🍽️',
-  'auto-services': '🚗',
-  'automotive': '🚗',
-  'home-services': '🏠',
-  'health-fitness': '💪',
-  'fitness-health': '💪',
-  'fitness': '💪',
-  'professional': '💼',
-  'professional-services': '💼',
-  'hair-salons': '💇',
-  'healthcare': '🏥',
-  'health-medical': '🏥',
-  'technology': '💻',
-  'shopping': '🛍️',
-  'childcare': '👶',
-  'pet-services': '🐾',
-  'contractors': '🔧',
-  'arts-entertainment': '🎭',
-  'entertainment': '🎭',
-  'education': '📚',
-};
+import { getCategoryIcon } from '@/lib/category-icons';
 
 export default function CategoriesPage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Fetch categories from API
   const { data: categories = [], isLoading, error } = useCategories();
 
-  // Get emoji for category
-  const getEmoji = (slug: string) => categoryEmojis[slug] || '📁';
-  
   // Filter top categories by business count
   const topCategories = [...categories]
     .filter(cat => cat._count && cat._count.businesses > 0)
@@ -59,9 +30,9 @@ export default function CategoriesPage() {
 
   // Filter categories based on search
   const filteredCategories = searchQuery
-    ? categories.filter(cat => 
-        cat.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+    ? categories.filter(cat =>
+      cat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
     : categories;
 
   const handleCategoryClick = (slug: string) => {
@@ -137,14 +108,14 @@ export default function CategoriesPage() {
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-neutral-950 to-indigo-900/20" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(168,85,247,0.15),transparent_50%)]" />
-        
+
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
               Explore <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Categories</span>
             </h1>
             <p className="text-lg text-neutral-400 max-w-2xl mx-auto mb-8">
-              Discover local businesses across {categories.length}+ categories. 
+              Discover local businesses across {categories.length}+ categories.
               From beauty to tech, find exactly what you need.
             </p>
 
@@ -200,35 +171,40 @@ export default function CategoriesPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {topCategories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryClick(category.slug)}
-                  className="group p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/30 hover:bg-white/[0.08] transition-all text-left"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="text-4xl">{getEmoji(category.slug)}</div>
-                    <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-semibold flex items-center gap-1">
-                      <TrendingUp className="h-3 w-3" />
-                      Top
-                    </span>
-                  </div>
-                  
-                  <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-purple-400 transition-colors">
-                    {category.name}
-                  </h3>
-                  <p className="text-sm text-neutral-500 mb-4">
-                    {category.description || 'Explore businesses in this category'}
-                  </p>
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-neutral-400">
-                      <span className="text-white font-medium">{(category._count?.businesses || 0).toLocaleString()}</span> businesses
-                    </span>
-                    <ChevronRight className="h-5 w-5 text-neutral-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
-                  </div>
-                </button>
-              ))}
+              {topCategories.map((category) => {
+                const CategoryIcon = getCategoryIcon(category.slug);
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.slug)}
+                    className="group p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-purple-500/30 hover:bg-white/[0.08] transition-all text-left"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-500/20 flex items-center justify-center">
+                        <CategoryIcon className="h-7 w-7 text-purple-400" />
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-semibold flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3" />
+                        Top
+                      </span>
+                    </div>
+
+                    <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-purple-400 transition-colors">
+                      {category.name}
+                    </h3>
+                    <p className="text-sm text-neutral-500 mb-4">
+                      {category.description || 'Explore businesses in this category'}
+                    </p>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-neutral-400">
+                        <span className="text-white font-medium">{(category._count?.businesses || 0).toLocaleString()}</span> businesses
+                      </span>
+                      <ChevronRight className="h-5 w-5 text-neutral-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all" />
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </section>
         )}
@@ -245,7 +221,7 @@ export default function CategoriesPage() {
                   {searchQuery ? 'Search Results' : 'All Categories'}
                 </h2>
                 <p className="text-neutral-500">
-                  {searchQuery 
+                  {searchQuery
                     ? `${filteredCategories.length} categories found`
                     : 'Browse through all available categories'}
                 </p>
@@ -268,26 +244,31 @@ export default function CategoriesPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {filteredCategories.map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryClick(category.slug)}
-                  className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/30 hover:bg-white/[0.08] transition-all text-left"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-2xl">{getEmoji(category.slug)}</div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-white truncate group-hover:text-purple-400 transition-colors">
-                        {category.name}
-                      </h3>
-                      <p className="text-xs text-neutral-500">
-                        {(category._count?.businesses || 0).toLocaleString()} listings
-                      </p>
+              {filteredCategories.map((category) => {
+                const CategoryIcon = getCategoryIcon(category.slug);
+                return (
+                  <button
+                    key={category.id}
+                    onClick={() => handleCategoryClick(category.slug)}
+                    className="group p-4 rounded-xl bg-white/5 border border-white/10 hover:border-purple-500/30 hover:bg-white/[0.08] transition-all text-left"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+                        <CategoryIcon className="h-5 w-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-white truncate group-hover:text-purple-400 transition-colors">
+                          {category.name}
+                        </h3>
+                        <p className="text-xs text-neutral-500">
+                          {(category._count?.businesses || 0).toLocaleString()} listings
+                        </p>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-neutral-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
                     </div>
-                    <ChevronRight className="h-4 w-4 text-neutral-600 group-hover:text-purple-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
         </section>

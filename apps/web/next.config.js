@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  
+
   // Image optimization
   images: {
     domains: ['localhost', 'tarsit.com', 'images.unsplash.com'],
@@ -38,13 +38,14 @@ const nextConfig = {
 
   // Performance optimizations
   swcMinify: true,
-  
+
   // Experimental features
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
-    optimizeCss: true,
+    // optimizeCss disabled - requires 'critters' package
+    // optimizeCss: true,
   },
 
   // Webpack optimizations

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
-import Map, { Marker, Popup, NavigationControl, FullscreenControl, GeolocateControl } from 'react-map-gl';
+import Map, { Marker, Popup, NavigationControl, FullscreenControl, GeolocateControl } from 'react-map-gl/mapbox';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -57,7 +57,7 @@ export function BusinessMap({
   const mapCenter = useMemo(() => {
     if (center) return center;
     if (businesses.length === 0) return [-98.5795, 39.8283];
-    
+
     const avgLng = businesses.reduce((sum, b) => sum + b.longitude, 0) / businesses.length;
     const avgLat = businesses.reduce((sum, b) => sum + b.latitude, 0) / businesses.length;
     return [avgLng, avgLat] as [number, number];
@@ -98,7 +98,7 @@ export function BusinessMap({
 
   if (!mapboxToken) {
     return (
-      <div 
+      <div
         className={`bg-white/5 border border-white/10 rounded-xl flex items-center justify-center ${className}`}
         style={{ height }}
       >
@@ -179,7 +179,7 @@ export function BusinessMap({
                     <MapPin className="h-6 w-6 text-white/40" />
                   </div>
                 )}
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <Link
@@ -194,11 +194,11 @@ export function BusinessMap({
                       </span>
                     )}
                   </div>
-                  
+
                   {selectedBusiness.category && (
                     <p className="text-xs text-white/50 mb-2">{selectedBusiness.category.name}</p>
                   )}
-                  
+
                   {selectedBusiness.rating && (
                     <div className="flex items-center gap-1 mb-2">
                       <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
@@ -208,7 +208,7 @@ export function BusinessMap({
                       </span>
                     </div>
                   )}
-                  
+
                   <button
                     onClick={() => handleGetDirections(selectedBusiness)}
                     className="flex items-center gap-1.5 text-xs text-purple-400 hover:text-purple-300 transition-colors mt-2"
@@ -217,7 +217,7 @@ export function BusinessMap({
                     Get Directions
                   </button>
                 </div>
-                
+
                 <button
                   onClick={() => setSelectedBusiness(null)}
                   className="p-1 hover:bg-white/10 rounded transition-colors flex-shrink-0"

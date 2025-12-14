@@ -378,34 +378,6 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
-  tarsit-testing:
-    dependencies:
-      '@prisma/client':
-        specifier: ^5.22.0
-        version: 5.22.0
-      axios:
-        specifier: ^1.13.2
-        version: 1.13.2
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.4.5
-      form-data:
-        specifier: ^4.0.5
-        version: 4.0.5
-      playwright:
-        specifier: ^1.57.0
-        version: 1.57.0
-    devDependencies:
-      '@types/node':
-        specifier: ^20.10.5
-        version: 20.19.25
-      tsx:
-        specifier: ^4.7.0
-        version: 4.21.0
-      typescript:
-        specifier: ^5.3.3
-        version: 5.9.3
-
 packages:
 
   /@acemir/cssom@0.9.29:
@@ -2679,17 +2651,6 @@ packages:
     dependencies:
       playwright: 1.57.0
     dev: true
-
-  /@prisma/client@5.22.0:
-    resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
-    engines: {node: '>=16.13'}
-    requiresBuild: true
-    peerDependencies:
-      prisma: '*'
-    peerDependenciesMeta:
-      prisma:
-        optional: true
-    dev: false
 
   /@prisma/client@5.22.0(prisma@5.22.0):
     resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}

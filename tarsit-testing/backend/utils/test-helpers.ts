@@ -118,9 +118,11 @@ function generateTestEmail() {
 
 /**
  * Generate test password
+ * Must be at least 8 characters with uppercase, lowercase, number, and special character
+ * Cannot contain common weak passwords like "password", "admin", etc.
  */
 function generateTestPassword() {
-  return 'TestPassword123!';
+  return 'TestP@ss2024!';
 }
 
 module.exports = {

@@ -17,3 +17,4 @@ export { SettingsTab } from './SettingsTab';
 export { BroadcastModal } from './BroadcastModal';
 export { UserDetailModal } from './UserDetailModal';
 export { BusinessDetailModal } from './BusinessDetailModal';
+export { TarsTab } from './TarsTab';

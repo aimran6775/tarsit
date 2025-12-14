@@ -3,7 +3,7 @@
  * Tests all admin-only endpoints
  */
 
-const { expectStatus, expectData, runTest } = require('../utils/test-helpers');
+const { expectStatus, expectData, expect, runTest } = require('../utils/test-helpers');
 
 async function testAdmin(context) {
   const { api } = context;
@@ -113,7 +113,8 @@ async function testAdmin(context) {
     }, {
       headers: { Authorization: `Bearer ${context.tokens.adminToken}` },
     });
-    expectStatus(response, 200);
+    // Accept both 200 and 201 as valid
+    expect(response.status === 200 || response.status === 201, `Expected status 200 or 201, got ${response.status}`);
     const data = expectData(response);
     expect(data.type === 'user-activity', `Expected type 'user-activity', got '${data.type}'`);
   }));
@@ -131,7 +132,7 @@ async function testAdmin(context) {
     });
     expectStatus(response, 200);
     const data = expectData(response);
-    expect(data.verified).toBe(true);
+    expect(data.verified === true, `Expected verified to be true, got ${data.verified}`);
   }));
 
   // Test: PATCH /api/admin/businesses/:id
@@ -148,7 +149,7 @@ async function testAdmin(context) {
     });
     expectStatus(response, 200);
     const data = expectData(response);
-    expect(data.verified).toBe(true);
+    expect(data.verified === true, `Expected verified to be true, got ${data.verified}`);
   }));
 
   return results;

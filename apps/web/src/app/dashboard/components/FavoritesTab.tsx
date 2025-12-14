@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Star, Building2 } from 'lucide-react';
 import { Favorite } from '../types';
+import { EmptyFavoritesIllustration } from '@/components/illustrations';
 
 interface FavoritesTabProps {
   favorites: Favorite[];
@@ -14,15 +15,13 @@ export function FavoritesTab({ favorites, onRemoveFavorite }: FavoritesTabProps)
   return (
     <div>
       <h2 className="text-lg font-semibold text-white mb-4">Saved Businesses</h2>
-      
+
       {favorites.length === 0 ? (
         <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-10 text-center">
-          <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-            <Heart className="h-6 w-6 text-white/40" />
-          </div>
+          <EmptyFavoritesIllustration className="w-48 h-36 mx-auto mb-6" />
           <h3 className="font-medium text-white mb-2">No favorites yet</h3>
           <p className="text-sm text-white/50 mb-6">Save businesses you love for quick access</p>
-          <Link 
+          <Link
             href="/search"
             className="inline-flex px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-sm font-medium hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg shadow-purple-500/25"
           >

@@ -3,7 +3,7 @@
  */
 
 const { expectStatus, expectData, expect, runTest } = require('../utils/test-helpers');
-const { getExistingBusiness } = require('../utils/test-data');
+const { getExistingBusiness, getTestBusiness } = require('../utils/test-data');
 
 async function testServices(context) {
   const { api, prisma } = context;
@@ -33,18 +33,19 @@ async function testServices(context) {
 
   // Test: POST /api/services - Create service
   results.push(await runTest('POST /services - Create service', async () => {
-    if (!context.tokens.businessOwnerToken || context.testData.businessIds.length === 0) {
-      throw new Error('No business owner token or business available');
+    if (!context.tokens.businessOwnerToken) {
+      throw new Error('No business owner token available');
     }
-    const businessId = context.testData.businessIds[0];
-    
+
+    // Use the test business owned by testowner@tarsit.com
+    const testBusiness = await getTestBusiness(prisma);
+
     const response = await api.post('/services', {
-      businessId,
+      businessId: testBusiness.id,
       name: 'Test Service',
-      description: 'A test service',
+      description: 'A test service for testing purposes',
       price: 50,
       duration: 60,
-      bookable: true,
     }, {
       headers: { Authorization: `Bearer ${context.tokens.businessOwnerToken}` },
     });
@@ -54,16 +55,18 @@ async function testServices(context) {
   }));
 
   // Test: GET /api/services/:id - Get single service
+  // Use the test business which has seeded services
   results.push(await runTest('GET /services/:id - Get service by ID', async () => {
-    const existingBusiness = await getExistingBusiness(prisma, api);
-    const servicesResponse = await api.get(`/services?businessId=${existingBusiness.id}&limit=1`);
-    const services = expectData(servicesResponse, 'services') || expectData(servicesResponse);
-    
+    const testBusiness = await getTestBusiness(prisma);
+    const servicesResponse = await api.get(`/services?businessId=${testBusiness.id}&limit=1`);
+    const servicesData = expectData(servicesResponse);
+    const services = servicesData.services || servicesData.data || servicesData;
+
     if (!services || (Array.isArray(services) && services.length === 0)) {
-      throw new Error('No services available for testing');
+      throw new Error('Test business has no services - please run: pnpm prisma db seed');
     }
     const serviceId = Array.isArray(services) ? services[0].id : services.id;
-    
+
     const response = await api.get(`/services/${serviceId}`);
     expectStatus(response, 200);
     const data = expectData(response);

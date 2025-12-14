@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { apiClient } from '@/lib/api/client';
 import { Appointment, Favorite, Chat, TabId } from './types';
@@ -18,14 +18,24 @@ import {
 
 function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading: authLoading, logout } = useAuth();
-  
-  const [activeTab, setActiveTab] = useState<TabId>('appointments');
+
+  // Get tab from URL query param
+  const tabFromUrl = searchParams.get('tab') as TabId | null;
+  const [activeTab, setActiveTab] = useState<TabId>(tabFromUrl || 'appointments');
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  // Update tab when URL changes
+  useEffect(() => {
+    if (tabFromUrl && ['appointments', 'favorites', 'messages', 'settings'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -38,14 +48,14 @@ function DashboardContent() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
-      
+
       try {
         const [appointmentsRes, favoritesRes, chatsRes] = await Promise.allSettled([
           apiClient.get('/appointments/my'),
           apiClient.get('/favorites'),
           apiClient.get('/chats'),
         ]);
-        
+
         if (appointmentsRes.status === 'fulfilled') {
           setAppointments(appointmentsRes.value.data || []);
         }
@@ -69,11 +79,11 @@ function DashboardContent() {
 
   const handleCancelAppointment = async (appointmentId: string) => {
     if (!confirm('Are you sure you want to cancel this appointment?')) return;
-    
+
     setCancellingId(appointmentId);
     try {
       await apiClient.post(`/appointments/${appointmentId}/cancel`, { reason: 'Cancelled by customer' });
-      setAppointments(prev => 
+      setAppointments(prev =>
         prev.map(a => a.id === appointmentId ? { ...a, status: 'cancelled' } : a)
       );
     } catch (error) {
@@ -94,11 +104,11 @@ function DashboardContent() {
   };
 
   // Filter appointments
-  const upcomingAppointments = appointments.filter(a => 
-    (a.status === 'pending' || a.status === 'confirmed') && 
+  const upcomingAppointments = appointments.filter(a =>
+    (a.status === 'pending' || a.status === 'confirmed') &&
     new Date(a.appointmentDate) >= new Date(new Date().setHours(0, 0, 0, 0))
   );
-  const pastAppointments = appointments.filter(a => 
+  const pastAppointments = appointments.filter(a =>
     a.status === 'completed' || a.status === 'cancelled' || a.status === 'no_show' ||
     new Date(a.appointmentDate) < new Date(new Date().setHours(0, 0, 0, 0))
   );
@@ -116,7 +126,7 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-neutral-950">
       {/* Header */}
-      <DashboardHeader 
+      <DashboardHeader
         firstName={user?.firstName}
         email={user?.email}
         onLogout={logout}

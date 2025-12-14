@@ -19,24 +19,24 @@ import { GetUser } from '../auth/decorators/get-user.decorator';
 @UseGuards(JwtAuthGuard)
 @Controller('messages')
 export class MessagesController {
-  constructor(private readonly messagesService: MessagesService) {}
+  constructor(private readonly messagesService: MessagesService) { }
 
   @Post()
   @ApiOperation({ summary: 'Send a message in a chat' })
-  create(@GetUser('sub') userId: string, @Body() createMessageDto: CreateMessageDto) {
+  create(@GetUser('id') userId: string, @Body() createMessageDto: CreateMessageDto) {
     return this.messagesService.create(userId, createMessageDto);
   }
 
   @Get('unread-count')
   @ApiOperation({ summary: 'Get unread message count for current user' })
-  getUnreadCount(@GetUser('sub') userId: string) {
+  getUnreadCount(@GetUser('id') userId: string) {
     return this.messagesService.getUnreadCount(userId);
   }
 
   @Get(':chatId')
   @ApiOperation({ summary: 'Get all messages in a chat' })
   findAll(
-    @GetUser('sub') userId: string,
+    @GetUser('id') userId: string,
     @Param('chatId') chatId: string,
     @Query() query: MessageQueryDto,
   ) {
@@ -45,7 +45,7 @@ export class MessagesController {
 
   @Patch(':chatId/mark-as-read')
   @ApiOperation({ summary: 'Mark all messages in a chat as read' })
-  markAsRead(@GetUser('sub') userId: string, @Param('chatId') chatId: string) {
+  markAsRead(@GetUser('id') userId: string, @Param('chatId') chatId: string) {
     return this.messagesService.markAsRead(userId, chatId);
   }
 }

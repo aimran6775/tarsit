@@ -26,7 +26,7 @@ async function main() {
   // SEED CATEGORIES
   // ============================================================================
   console.log('📂 Creating categories...');
-  
+
   const categories = await Promise.all([
     // Main categories
     prisma.category.create({
@@ -128,22 +128,63 @@ async function main() {
   // ============================================================================
   console.log('👥 Creating users...');
 
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  // Password must have: 8+ chars, uppercase, lowercase, number, special char
+  // PERMANENT TEST PASSWORD - documented in tarsit-testing/TEST_ACCOUNTS.md
+  const testPassword = 'Tarsit1234!';
+  const hashedPassword = await bcrypt.hash(testPassword, 10);
 
-  const users = await Promise.all([
-    // Admin user
+  // ============================================================================
+  // PERMANENT TEST ACCOUNTS (for automated testing)
+  // ============================================================================
+  console.log('🔐 Creating permanent test accounts...');
+
+  const permanentTestAccounts = await Promise.all([
+    // Admin test account
     prisma.user.create({
       data: {
         email: 'admin@tarsit.com',
         passwordHash: hashedPassword,
         firstName: 'Admin',
-        lastName: 'User',
+        lastName: 'Tarsit',
         role: 'ADMIN',
         verified: true,
       },
     }),
-    // Business owners
-    ...Array.from({ length: 5 }, (_, i) =>
+    // Customer test account
+    prisma.user.create({
+      data: {
+        email: 'testcustomer@tarsit.com',
+        passwordHash: hashedPassword,
+        firstName: 'Test',
+        lastName: 'Customer',
+        role: 'CUSTOMER',
+        verified: true,
+      },
+    }),
+    // Business owner test account
+    prisma.user.create({
+      data: {
+        email: 'testowner@tarsit.com',
+        phone: '+14155550001',
+        passwordHash: hashedPassword,
+        firstName: 'Test',
+        lastName: 'Owner',
+        role: 'BUSINESS_OWNER',
+        verified: true,
+      },
+    }),
+  ]);
+
+  console.log(`✅ Created ${permanentTestAccounts.length} permanent test accounts\n`);
+
+  // ============================================================================
+  // SAMPLE USERS (additional data for realistic testing)
+  // ============================================================================
+  console.log('👥 Creating sample users...');
+
+  const users = await Promise.all([
+    // Additional business owners
+    ...Array.from({ length: 4 }, (_, i) =>
       prisma.user.create({
         data: {
           email: `owner${i + 1}@example.com`,
@@ -156,8 +197,8 @@ async function main() {
         },
       })
     ),
-    // Regular customers
-    ...Array.from({ length: 4 }, (_, i) =>
+    // Additional customers
+    ...Array.from({ length: 3 }, (_, i) =>
       prisma.user.create({
         data: {
           email: `customer${i + 1}@example.com`,
@@ -171,15 +212,20 @@ async function main() {
     ),
   ]);
 
-  console.log(`✅ Created ${users.length} users\n`);
+  // Combine all users for later use
+  const allUsers = [...permanentTestAccounts, ...users];
+
+  console.log(`✅ Created ${allUsers.length} users total\n`);
 
   // ============================================================================
   // SEED BUSINESSES
   // ============================================================================
   console.log('🏢 Creating businesses...');
 
-  const businessOwners = users.filter((u) => u.role === 'BUSINESS_OWNER');
-  const customers = users.filter((u) => u.role === 'CUSTOMER');
+  // Get test owner for the primary test business
+  const testOwner = permanentTestAccounts.find((u) => u.email === 'testowner@tarsit.com')!;
+  const businessOwners = allUsers.filter((u) => u.role === 'BUSINESS_OWNER');
+  const customers = allUsers.filter((u) => u.role === 'CUSTOMER');
 
   // San Francisco coordinates for realistic locations
   const sfLocations = [
@@ -202,90 +248,131 @@ async function main() {
     priceRange: 'BUDGET' | 'MODERATE' | 'EXPENSIVE';
     services: Array<{ name: string; price: number; duration: number }>;
   }> = [
-    {
-      name: 'QuickFix Phone Repair',
-      category: categories[0].id,
-      description: 'Professional iPhone and Android repair. Screen replacements, battery fixes, and water damage repair. Same-day service available.',
-      addressLine1: '123 Market Street',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94102',
-      phone: '+14155551000',
-      priceRange: 'MODERATE',
-      services: [
-        { name: 'Screen Replacement', price: 89.99, duration: 45 },
-        { name: 'Battery Replacement', price: 59.99, duration: 30 },
-        { name: 'Water Damage Repair', price: 149.99, duration: 120 },
-      ],
-    },
-    {
-      name: 'Elite Auto Care',
-      category: categories[1].id,
-      description: 'Full-service auto repair and maintenance. ASE certified mechanics. Oil changes, brake service, engine diagnostics.',
-      addressLine1: '456 Valencia Street',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94110',
-      phone: '+14155551001',
-      priceRange: 'MODERATE',
-      services: [
-        { name: 'Oil Change', price: 49.99, duration: 30 },
-        { name: 'Brake Service', price: 199.99, duration: 90 },
-        { name: 'Engine Diagnostic', price: 89.99, duration: 60 },
-      ],
-    },
-    {
-      name: 'Bella Salon & Spa',
-      category: categories[2].id,
-      description: 'Upscale salon offering haircuts, coloring, and spa treatments. Experienced stylists and relaxing atmosphere.',
-      addressLine1: '789 Union Street',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94133',
-      phone: '+14155551002',
-      priceRange: 'EXPENSIVE',
-      services: [
-        { name: 'Women\'s Haircut', price: 85.00, duration: 60 },
-        { name: 'Hair Coloring', price: 150.00, duration: 120 },
-        { name: 'Spa Manicure', price: 45.00, duration: 45 },
-      ],
-    },
-    {
-      name: 'Bay Plumbing Pros',
-      category: categories[3].id,
-      description: '24/7 emergency plumbing services. Licensed and insured. Drain cleaning, pipe repair, water heater installation.',
-      addressLine1: '321 Mission Street',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94103',
-      phone: '+14155551003',
-      priceRange: 'MODERATE',
-      services: [
-        { name: 'Drain Cleaning', price: 129.99, duration: 60 },
-        { name: 'Leak Repair', price: 199.99, duration: 90 },
-        { name: 'Water Heater Install', price: 899.99, duration: 180 },
-      ],
-    },
-    {
-      name: 'Golden Gate Cafe',
-      category: categories[4].id,
-      description: 'Cozy neighborhood cafe serving fresh coffee, pastries, and lunch. Free WiFi and outdoor seating.',
-      addressLine1: '567 Haight Street',
-      city: 'San Francisco',
-      state: 'CA',
-      zipCode: '94117',
-      phone: '+14155551004',
-      priceRange: 'BUDGET',
-      services: [
-        { name: 'Espresso Drinks', price: 4.50, duration: 5 },
-        { name: 'Fresh Pastries', price: 3.50, duration: 0 },
-        { name: 'Lunch Special', price: 12.99, duration: 15 },
-      ],
-    },
-  ];
+      {
+        name: 'QuickFix Phone Repair',
+        category: categories[0].id,
+        description: 'Professional iPhone and Android repair. Screen replacements, battery fixes, and water damage repair. Same-day service available.',
+        addressLine1: '123 Market Street',
+        city: 'San Francisco',
+        state: 'CA',
+        zipCode: '94102',
+        phone: '+14155551000',
+        priceRange: 'MODERATE',
+        services: [
+          { name: 'Screen Replacement', price: 89.99, duration: 45 },
+          { name: 'Battery Replacement', price: 59.99, duration: 30 },
+          { name: 'Water Damage Repair', price: 149.99, duration: 120 },
+        ],
+      },
+      {
+        name: 'Elite Auto Care',
+        category: categories[1].id,
+        description: 'Full-service auto repair and maintenance. ASE certified mechanics. Oil changes, brake service, engine diagnostics.',
+        addressLine1: '456 Valencia Street',
+        city: 'San Francisco',
+        state: 'CA',
+        zipCode: '94110',
+        phone: '+14155551001',
+        priceRange: 'MODERATE',
+        services: [
+          { name: 'Oil Change', price: 49.99, duration: 30 },
+          { name: 'Brake Service', price: 199.99, duration: 90 },
+          { name: 'Engine Diagnostic', price: 89.99, duration: 60 },
+        ],
+      },
+      {
+        name: 'Bella Salon & Spa',
+        category: categories[2].id,
+        description: 'Upscale salon offering haircuts, coloring, and spa treatments. Experienced stylists and relaxing atmosphere.',
+        addressLine1: '789 Union Street',
+        city: 'San Francisco',
+        state: 'CA',
+        zipCode: '94133',
+        phone: '+14155551002',
+        priceRange: 'EXPENSIVE',
+        services: [
+          { name: 'Women\'s Haircut', price: 85.00, duration: 60 },
+          { name: 'Hair Coloring', price: 150.00, duration: 120 },
+          { name: 'Spa Manicure', price: 45.00, duration: 45 },
+        ],
+      },
+      {
+        name: 'Bay Plumbing Pros',
+        category: categories[3].id,
+        description: '24/7 emergency plumbing services. Licensed and insured. Drain cleaning, pipe repair, water heater installation.',
+        addressLine1: '321 Mission Street',
+        city: 'San Francisco',
+        state: 'CA',
+        zipCode: '94103',
+        phone: '+14155551003',
+        priceRange: 'MODERATE',
+        services: [
+          { name: 'Drain Cleaning', price: 129.99, duration: 60 },
+          { name: 'Leak Repair', price: 199.99, duration: 90 },
+          { name: 'Water Heater Install', price: 899.99, duration: 180 },
+        ],
+      },
+      {
+        name: 'Golden Gate Cafe',
+        category: categories[4].id,
+        description: 'Cozy neighborhood cafe serving fresh coffee, pastries, and lunch. Free WiFi and outdoor seating.',
+        addressLine1: '567 Haight Street',
+        city: 'San Francisco',
+        state: 'CA',
+        zipCode: '94117',
+        phone: '+14155551004',
+        priceRange: 'BUDGET',
+        services: [
+          { name: 'Espresso Drinks', price: 4.50, duration: 5 },
+          { name: 'Fresh Pastries', price: 3.50, duration: 0 },
+          { name: 'Lunch Special', price: 12.99, duration: 15 },
+        ],
+      },
+    ];
 
-  const businesses = await Promise.all(
-    businessData.map((biz, index) =>
+  const businesses = await Promise.all([
+    // PERMANENT TEST BUSINESS (for automated testing)
+    prisma.business.create({
+      data: {
+        name: 'Test Business Tarsit',
+        slug: 'test-business-tarsit',
+        description: 'Official test business for automated testing. This business belongs to testowner@tarsit.com.',
+        categoryId: categories[0].id, // Electronics Repair
+        ownerId: testOwner.id,
+        addressLine1: '1 Test Street',
+        city: 'San Francisco',
+        state: 'CA',
+        zipCode: '94102',
+        country: 'USA',
+        latitude: 37.7749,
+        longitude: -122.4194,
+        phone: '+14155550001',
+        priceRange: 'MODERATE',
+        verified: true,
+        rating: 4.5,
+        reviewCount: 0,
+        appointmentsEnabled: true,
+        appointmentDuration: 30,
+        advanceBookingDays: 30,
+        hours: {
+          monday: { open: '09:00', close: '18:00' },
+          tuesday: { open: '09:00', close: '18:00' },
+          wednesday: { open: '09:00', close: '18:00' },
+          thursday: { open: '09:00', close: '18:00' },
+          friday: { open: '09:00', close: '18:00' },
+          saturday: { open: '10:00', close: '16:00' },
+          sunday: { closed: true },
+        },
+        services: {
+          create: [
+            { name: 'Test Service 1', price: 50.00, duration: 30, order: 0, bookable: true },
+            { name: 'Test Service 2', price: 100.00, duration: 60, order: 1, bookable: true },
+          ],
+        },
+      },
+    }),
+    // Sample businesses
+    ...businessData.map((biz, index) =>
       prisma.business.create({
         data: {
           name: biz.name,
@@ -324,8 +411,8 @@ async function main() {
           },
         },
       })
-    )
-  );
+    ),
+  ]);
 
   console.log(`✅ Created ${businesses.length} businesses\n`);
 
@@ -362,7 +449,7 @@ async function main() {
     for (let i = 0; i < 3; i++) {
       const template = reviewTemplates[i % reviewTemplates.length];
       const customer = customers[i % customers.length];
-      
+
       reviews.push(
         await prisma.review.create({
           data: {
@@ -390,7 +477,7 @@ async function main() {
     const randomBusinesses = businesses
       .sort(() => 0.5 - Math.random())
       .slice(0, 2);
-    
+
     for (const business of randomBusinesses) {
       favorites.push(
         await prisma.favorite.create({

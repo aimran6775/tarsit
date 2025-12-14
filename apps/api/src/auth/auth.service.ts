@@ -68,7 +68,7 @@ export class AuthService {
         email: dto.email,
         username: dto.username,
         phone: dto.phone,
-        passwordHash: await bcrypt.hash(dto.password, 12),
+        passwordHash,
         firstName: dto.firstName,
         lastName: dto.lastName,
         role: dto.role,
@@ -212,8 +212,8 @@ export class AuthService {
       ? `${baseSlug}-${Date.now().toString(36)}`
       : baseSlug;
 
-    // Hash password
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    // Hash password with increased rounds for better security
+    const passwordHash = await bcrypt.hash(dto.password, 12);
 
     // Create user and business in a transaction
     const result = await this.prisma.$transaction(async (tx) => {
@@ -223,7 +223,7 @@ export class AuthService {
           email: dto.email,
           username: dto.username,
           phone: dto.phone,
-          passwordHash: await bcrypt.hash(dto.password, 12),
+          passwordHash,
           firstName: dto.firstName,
           lastName: dto.lastName,
           role: 'BUSINESS_OWNER',
@@ -468,7 +468,7 @@ export class AuthService {
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
-        passwordHash: await bcrypt.hash(dto.password, 12),
+        passwordHash,
         resetToken: null,
         resetTokenExpiry: null,
       },
