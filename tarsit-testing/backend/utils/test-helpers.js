@@ -4,6 +4,13 @@
 
 const axios = require('axios');
 
+// Minimal expect helper (boolean assertion)
+function expect(condition, message = 'Assertion failed') {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
 /**
  * Create API client for testing
  */
@@ -55,10 +62,13 @@ function expectData(response, key) {
   if (!response.data) {
     throw new Error('Response has no data');
   }
-  if (key && !response.data[key]) {
+  // If a key is requested but data is an array, return the array (API returns bare arrays)
+  if (key) {
+    if (response.data[key]) return response.data[key];
+    if (Array.isArray(response.data)) return response.data;
     throw new Error(`Response data missing key: ${key}`);
   }
-  return key ? response.data[key] : response.data;
+  return response.data;
 }
 
 /**
@@ -100,4 +110,5 @@ module.exports = {
   wait,
   generateTestEmail,
   generateTestPassword,
+  expect,
 };

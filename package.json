@@ -14,7 +14,8 @@
     "test:tarsit": "cd tarsit-testing && bash run-tests.sh",
     "test:tarsit:backend": "cd tarsit-testing/backend && node test-backend.js",
     "test:tarsit:frontend": "cd tarsit-testing/frontend && node test-frontend.js",
-    "test:tarsit:setup": "cd tarsit-testing && bash setup-test-db.sh"
+    "test:tarsit:setup": "cd tarsit-testing && bash setup-test-db.sh",
+    "test:tarsit:check": "cd tarsit-testing && bash check-test-readiness.sh"
   },
   "workspaces": [
     "apps/*",

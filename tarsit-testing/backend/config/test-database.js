@@ -10,9 +10,8 @@ const path = require('path');
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../../apps/api/.env') });
 
-const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL || 
-  (process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(/\/[^\/]+$/, '/tarsit_test') : null) ||
-  'postgresql://user:password@localhost:5432/tarsit_test';
+// Use production database for real-time testing
+const TEST_DATABASE_URL = process.env.DATABASE_URL;
 
 /**
  * Create test database connection

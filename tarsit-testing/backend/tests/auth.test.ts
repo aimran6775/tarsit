@@ -3,9 +3,20 @@
  * Tests all auth-related endpoints
  */
 
-const { expectStatus, expectData, expect, runTest, generateTestPassword } = require('../utils/test-helpers');
+import { expectStatus, expectData, expect, runTest, generateTestPassword } from '../utils/test-helpers.js';
+import type { TestResult } from '../../shared/types.js';
+import type { AxiosInstance } from 'axios';
 
-async function testAuth(context) {
+interface TestContext {
+  api: AxiosInstance;
+  testData: {
+    userIds: string[];
+    businessIds: string[];
+    tokens: { [key: string]: string };
+  };
+}
+
+export async function testAuth(context: TestContext): Promise<TestResult[]> {
   const { api } = context;
   const results: TestResult[] = [];
 
@@ -211,5 +222,3 @@ async function testAuth(context) {
 
   return results;
 }
-
-module.exports = { testAuth };

@@ -64,7 +64,9 @@ function printHeader() {
   log('╚══════════════════════════════════════════════════════════════╝', colors.cyan);
   console.log();
   log(`API URL: ${API_URL}`, colors.gray);
-  log(`Test Database: ${TEST_DATABASE_URL.replace(/:[^:@]+@/, ':****@')}`, colors.gray);
+  const dbUrl = TEST_DATABASE_URL || 'Not configured';
+  const maskedUrl = dbUrl === 'Not configured' ? dbUrl : dbUrl.replace(/:[^:@]+@/, ':****@');
+  log(`Test Database: ${maskedUrl}`, colors.gray);
   console.log();
 }
 
