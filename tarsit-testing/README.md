@@ -2,7 +2,33 @@
 
 Comprehensive testing system for the entire Tarsit platform. Tests every API endpoint, UI component, and user flow to ensure nothing fails.
 
-## Quick Start
+## 🤖 NEW: Intelligent Test Agent
+
+We now have an **autonomous test agent** that provides:
+- ✨ Smart health checks before testing
+- 🔄 Automatic retry on failures
+- 🚦 Rate limit detection and handling
+- 📊 Beautiful HTML reports
+- 💡 Actionable recommendations
+- 🎯 Full coverage of backend + frontend
+
+### Quick Start with Test Agent
+
+```bash
+# Interactive menu (recommended for first time)
+cd tarsit-testing
+./quick-start.sh
+
+# Or run directly
+node test-agent.js
+
+# Or use pnpm
+pnpm test:agent
+```
+
+See [TEST_AGENT.md](TEST_AGENT.md) for complete documentation.
+
+## Quick Start (Traditional Testing)
 
 ```bash
 # Setup test database (first time only)

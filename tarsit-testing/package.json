@@ -5,7 +5,12 @@
   "scripts": {
     "test:backend": "npx tsx backend/test-backend.ts",
     "test:frontend": "npx tsx frontend/test-frontend.ts",
-    "test:all": "pnpm test:backend && pnpm test:frontend"
+    "test:all": "pnpm test:backend && pnpm test:frontend",
+    "test:agent": "node test-agent.js",
+    "test:agent:backend": "node test-agent.js --backend-only",
+    "test:agent:frontend": "node test-agent.js --frontend-only",
+    "test:agent:verbose": "node test-agent.js --verbose",
+    "agent": "node test-agent.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
