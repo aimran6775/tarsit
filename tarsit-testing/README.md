@@ -5,25 +5,27 @@ Comprehensive testing system for the entire Tarsit platform. Tests every API end
 ## Quick Start
 
 ```bash
-# Setup test database (first time only)
+# Check if environment is ready for testing
 cd tarsit-testing
-./setup-test-db.sh
+./check-test-readiness.sh
 
 # Test everything (backend + frontend)
-pnpm test:tarsit
+pnpm test:all
 
 # Test backend only
-pnpm test:tarsit:backend
+pnpm test:backend
 
 # Test frontend only
-pnpm test:tarsit:frontend
+pnpm test:frontend
 ```
 
 ## Prerequisites
 
 1. **Backend running:** `cd apps/api && pnpm dev`
-2. **Frontend running:** `cd apps/web && pnpm dev`
-3. **Test database setup:** Run `./setup-test-db.sh` once
+2. **Frontend running:** `cd apps/web && pnpm dev` (for frontend tests)
+3. **Environment configured:** `apps/api/.env` must exist with DATABASE_URL
+
+📖 **For detailed setup instructions, see [TESTING_SETUP.md](./TESTING_SETUP.md)**
 
 ## Structure
 
