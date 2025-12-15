@@ -23,6 +23,7 @@ process.env.DATABASE_URL = TEST_DATABASE_URL;
 // Import test modules
 const { createApiClient, runTest, expectStatus, expectData } = require('./utils/test-helpers');
 const { createTestUsers, getExistingBusiness } = require('./utils/test-data');
+const { createTestDatabase, setupTestDatabase, cleanupTestDatabase } = require('./config/test-database');
 const { testAuth } = require('./tests/auth.test');
 const { testBusinesses } = require('./tests/businesses.test');
 const { testReviews } = require('./tests/reviews.test');
@@ -61,7 +62,9 @@ function printHeader() {
   log('╚══════════════════════════════════════════════════════════════╝', colors.cyan);
   console.log();
   log(`API URL: ${API_URL}`, colors.gray);
-  log(`Test Database: ${TEST_DATABASE_URL.replace(/:[^:@]+@/, ':****@')}`, colors.gray);
+  const dbUrl = TEST_DATABASE_URL || 'Not configured';
+  const maskedUrl = dbUrl === 'Not configured' ? dbUrl : dbUrl.replace(/:[^:@]+@/, ':****@');
+  log(`Test Database: ${maskedUrl}`, colors.gray);
   console.log();
 }
 

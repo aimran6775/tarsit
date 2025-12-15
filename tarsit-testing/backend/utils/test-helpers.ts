@@ -2,7 +2,8 @@
  * Test Helper Utilities
  */
 
-const axios = require('axios');
+import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
+import type { TestResult } from '../../shared/types.js';
 
 /**
  * Create API client for testing
@@ -18,13 +19,13 @@ export function createApiClient(baseURL: string): AxiosInstance {
 /**
  * Run a test and return result
  */
-async function runTest(name, testFn) {
+export async function runTest(name: string, testFn: () => Promise<void>): Promise<TestResult> {
   const start = Date.now();
   try {
     await testFn();
     const duration = Date.now() - start;
     return { name, passed: true, duration };
-  } catch (error) {
+  } catch (error: any) {
     const duration = Date.now() - start;
     return {
       name,
@@ -39,7 +40,7 @@ async function runTest(name, testFn) {
 /**
  * Assert response status
  */
-function expectStatus(response, expectedStatus) {
+export function expectStatus(response: AxiosResponse, expectedStatus: number): void {
   if (response.status !== expectedStatus) {
     throw new Error(
       `Expected status ${expectedStatus}, got ${response.status}. ` +
@@ -51,7 +52,7 @@ function expectStatus(response, expectedStatus) {
 /**
  * Assert response has data
  */
-function expectData(response, key) {
+export function expectData(response: AxiosResponse, key?: string): any {
   if (!response.data) {
     throw new Error('Response has no data');
   }
@@ -69,7 +70,7 @@ function expectData(response, key) {
 /**
  * Assert a condition (like Jest's expect)
  */
-function expect(condition, message) {
+export function expect(condition: any, message?: string): void {
   if (!condition) {
     throw new Error(message || 'Assertion failed');
   }
@@ -78,7 +79,7 @@ function expect(condition, message) {
 /**
  * Assert value equals expected
  */
-function expectEqual(actual, expected, message) {
+export function expectEqual(actual: any, expected: any, message?: string): void {
   if (actual !== expected) {
     throw new Error(message || `Expected ${expected}, got ${actual}`);
   }
@@ -87,7 +88,7 @@ function expectEqual(actual, expected, message) {
 /**
  * Assert value is truthy
  */
-function expectTruthy(value, message) {
+export function expectTruthy(value: any, message?: string): void {
   if (!value) {
     throw new Error(message || 'Expected truthy value');
   }
@@ -96,7 +97,7 @@ function expectTruthy(value, message) {
 /**
  * Assert response has property
  */
-function expectProperty(obj, property) {
+export function expectProperty(obj: any, property: string): void {
   if (!(property in obj)) {
     throw new Error(`Missing property: ${property}`);
   }
@@ -105,14 +106,14 @@ function expectProperty(obj, property) {
 /**
  * Wait helper
  */
-function wait(ms) {
+export function wait(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
  * Generate test email
  */
-function generateTestEmail() {
+export function generateTestEmail(): string {
   return `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.tarsit.com`;
 }
 
@@ -121,20 +122,6 @@ function generateTestEmail() {
  * Must be at least 8 characters with uppercase, lowercase, number, and special character
  * Cannot contain common weak passwords like "password", "admin", etc.
  */
-function generateTestPassword() {
+export function generateTestPassword(): string {
   return 'TestP@ss2024!';
 }
-
-module.exports = {
-  createApiClient,
-  runTest,
-  expectStatus,
-  expectData,
-  expectProperty,
-  expect,
-  expectEqual,
-  expectTruthy,
-  wait,
-  generateTestEmail,
-  generateTestPassword,
-};
