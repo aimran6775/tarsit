@@ -5,6 +5,7 @@
  * Tests every API endpoint, database operation, and functionality
  */
 
+require('ts-node/register/transpile-only');
 const dotenv = require('dotenv');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
@@ -13,16 +14,14 @@ const { PrismaClient } = require('@prisma/client');
 dotenv.config({ path: path.join(__dirname, '../../apps/api/.env') });
 
 const API_URL = process.env.API_URL || 'http://localhost:4000/api';
-const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL || 
-  (process.env.DATABASE_URL ? process.env.DATABASE_URL.replace(/\/[^\/]+$/, '/tarsit_test') : null) ||
-  'postgresql://user:password@localhost:5432/tarsit_test';
+// Use production database for real-time testing
+const TEST_DATABASE_URL = process.env.DATABASE_URL;
 
-// Set test database URL for Prisma
+// Keep production database
 process.env.DATABASE_URL = TEST_DATABASE_URL;
 
 // Import test modules
 const { createApiClient, runTest, expectStatus, expectData } = require('./utils/test-helpers');
-const { createTestDatabase, setupTestDatabase, cleanupTestDatabase } = require('./config/test-database');
 const { createTestUsers, getExistingBusiness } = require('./utils/test-data');
 const { testAuth } = require('./tests/auth.test');
 const { testBusinesses } = require('./tests/businesses.test');
@@ -164,8 +163,8 @@ async function main() {
   };
   
   try {
-    // Setup test database
-    await setupTestDatabase();
+    // Skip test database setup - using production database
+    log('Using production database for tests...', colors.blue);
     
   // Create test users
   log('Creating test users...', colors.blue);
