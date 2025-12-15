@@ -51,6 +51,14 @@ export function expectStatus(response: AxiosResponse, expectedStatus: number): v
 
 /**
  * Assert response has data
+ * 
+ * Handles two API response patterns:
+ * 1. Wrapped: { "users": [...] } - use expectData(response, 'users')
+ * 2. Direct array: [...] - use expectData(response) or expectData(response, 'anyKey')
+ * 
+ * The second pattern is a fallback for APIs that return arrays directly
+ * without wrapping them in an object. This provides flexibility for different
+ * API response formats.
  */
 export function expectData(response: AxiosResponse, key?: string): any {
   if (!response.data) {
@@ -58,7 +66,7 @@ export function expectData(response: AxiosResponse, key?: string): any {
   }
   // If key is provided but doesn't exist, check if data itself is an array (for direct array responses)
   if (key && !response.data[key]) {
-    // Some APIs return arrays directly, not wrapped in an object
+    // Fallback: Some APIs return arrays directly, not wrapped in an object
     if (Array.isArray(response.data)) {
       return response.data;
     }

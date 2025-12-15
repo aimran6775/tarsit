@@ -101,7 +101,8 @@ fi
 # Check 5: Database connectivity (via Prisma)
 echo -e "${CYAN}[5/6] Checking Database Connectivity...${NC}"
 if [ -f "../apps/api/.env" ]; then
-  export $(cat ../apps/api/.env | grep DATABASE_URL | xargs)
+  # Safely extract DATABASE_URL without exposing to shell
+  DATABASE_URL=$(grep "^DATABASE_URL=" ../apps/api/.env | cut -d '=' -f2- | tr -d '"' | tr -d "'")
   if [ ! -z "$DATABASE_URL" ]; then
     # Try to connect via psql if available
     if command -v psql &> /dev/null; then
