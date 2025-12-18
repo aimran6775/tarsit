@@ -1,25 +1,16 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Patch,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { MessagesService } from './messages.service';
-import { CreateMessageDto, MessageQueryDto } from './dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateMessageDto, MessageQueryDto } from './dto';
+import { MessagesService } from './messages.service';
 
 @ApiTags('messages')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('messages')
 export class MessagesController {
-  constructor(private readonly messagesService: MessagesService) { }
+  constructor(private readonly messagesService: MessagesService) {}
 
   @Post()
   @ApiOperation({ summary: 'Send a message in a chat' })
@@ -33,12 +24,18 @@ export class MessagesController {
     return this.messagesService.getUnreadCount(userId);
   }
 
+  @Get('single/:id')
+  @ApiOperation({ summary: 'Get a single message by ID' })
+  findOne(@GetUser('id') userId: string, @Param('id') id: string) {
+    return this.messagesService.findOne(userId, id);
+  }
+
   @Get(':chatId')
   @ApiOperation({ summary: 'Get all messages in a chat' })
   findAll(
     @GetUser('id') userId: string,
     @Param('chatId') chatId: string,
-    @Query() query: MessageQueryDto,
+    @Query() query: MessageQueryDto
   ) {
     return this.messagesService.findAll(userId, chatId, query);
   }

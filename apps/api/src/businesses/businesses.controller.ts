@@ -1,23 +1,25 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  Query,
-  UseGuards,
-  Request,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { BusinessesService } from './businesses.service';
-import { CreateBusinessDto, UpdateBusinessDto, BusinessQueryDto } from './dto';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../auth/decorators/roles.decorator';
+import { Cache } from '../common/decorators/cache.decorator';
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
+import { BusinessesService } from './businesses.service';
+import { BusinessQueryDto, CreateBusinessDto, UpdateBusinessDto } from './dto';
 
 @ApiTags('Businesses')
 @Controller('businesses')
@@ -27,12 +29,12 @@ export class BusinessesController {
   @Get('my-business')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get the current user\'s business' })
+  @ApiOperation({ summary: "Get the current user's business" })
   @ApiResponse({ status: 200, description: 'Business details' })
   @ApiResponse({ status: 404, description: 'No business found for this user' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getMyBusiness(@Request() req) {
-    return this.businessesService.findByOwnerId(req.user.id);
+  async getMyBusiness(@Request() req: AuthenticatedRequest) {
+    return this.businessesService.findByOwnerId(req.user!.id);
   }
 
   @Post()
@@ -43,11 +45,12 @@ export class BusinessesController {
   @ApiResponse({ status: 201, description: 'Business successfully created' })
   @ApiResponse({ status: 403, description: 'Only business owners can create businesses' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async create(@Request() req, @Body() createBusinessDto: CreateBusinessDto) {
-    return this.businessesService.create(req.user.id, createBusinessDto);
+  async create(@Request() req: AuthenticatedRequest, @Body() createBusinessDto: CreateBusinessDto) {
+    return this.businessesService.create(req.user!.id, createBusinessDto);
   }
 
   @Get()
+  @Cache(60) // Cache for 1 minute
   @ApiOperation({ summary: 'Get all businesses with filters' })
   @ApiResponse({ status: 200, description: 'List of businesses' })
   @ApiQuery({ type: BusinessQueryDto })
@@ -56,6 +59,7 @@ export class BusinessesController {
   }
 
   @Get('slug/:slug')
+  @Cache(300) // Cache for 5 minutes
   @ApiOperation({ summary: 'Get business by slug' })
   @ApiResponse({ status: 200, description: 'Business details' })
   @ApiResponse({ status: 404, description: 'Business not found' })
@@ -64,6 +68,7 @@ export class BusinessesController {
   }
 
   @Get(':id')
+  @Cache(300) // Cache for 5 minutes
   @ApiOperation({ summary: 'Get business by ID' })
   @ApiResponse({ status: 200, description: 'Business details' })
   @ApiResponse({ status: 404, description: 'Business not found' })
@@ -81,10 +86,10 @@ export class BusinessesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async update(
     @Param('id') id: string,
-    @Request() req,
-    @Body() updateBusinessDto: UpdateBusinessDto,
+    @Request() req: AuthenticatedRequest,
+    @Body() updateBusinessDto: UpdateBusinessDto
   ) {
-    return this.businessesService.update(id, req.user.id, req.user.role, updateBusinessDto);
+    return this.businessesService.update(id, req.user!.id, req.user!.role, updateBusinessDto);
   }
 
   @Delete(':id')
@@ -96,7 +101,7 @@ export class BusinessesController {
   @ApiResponse({ status: 403, description: 'You can only delete your own businesses' })
   @ApiResponse({ status: 404, description: 'Business not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async remove(@Param('id') id: string, @Request() req) {
+  async remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     await this.businessesService.remove(id, req.user.id, req.user.role);
   }
 }

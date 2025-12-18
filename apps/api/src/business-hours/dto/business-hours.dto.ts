@@ -17,21 +17,21 @@ export class BusinessHourDto {
   @IsInt()
   @Min(0)
   @Max(6)
-  dayOfWeek: number;
+  dayOfWeek!: number;
 
   @ApiProperty({ description: 'Opening time in HH:MM format', example: '09:00' })
   @IsString()
   @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
     message: 'openTime must be in HH:MM format',
   })
-  openTime: string;
+  openTime!: string;
 
   @ApiProperty({ description: 'Closing time in HH:MM format', example: '17:00' })
   @IsString()
   @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
     message: 'closeTime must be in HH:MM format',
   })
-  closeTime: string;
+  closeTime!: string;
 
   @ApiPropertyOptional({ description: 'Whether the business is closed on this day' })
   @IsBoolean()
@@ -44,7 +44,7 @@ export class SetBusinessHoursDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => BusinessHourDto)
-  hours: BusinessHourDto[];
+  hours!: BusinessHourDto[];
 }
 
 export class UpdateAppointmentSettingsDto {

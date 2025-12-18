@@ -16,10 +16,9 @@ GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_CALLBACK_URL=https://api.yourdomain.com/api/auth/google/callback
 
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
+# Supabase Storage
+SUPABASE_URL=your-supabase-url
+SUPABASE_SERVICE_KEY=your-service-key
 
 # Email
 MAIL_HOST=smtp.gmail.com
@@ -113,4 +112,4 @@ Returns:
 - Use Redis for session management and caching
 - Consider load balancer for multiple instances
 - Database connection pooling (already configured in Prisma)
-- CDN for static assets (Cloudinary handles this)
+- CDN for static assets (Supabase Storage handles this)

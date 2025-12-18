@@ -1,5 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { appointmentApi, type Appointment } from '@/lib/api/appointment.api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 // Query Keys
@@ -18,7 +18,12 @@ export const appointmentKeys = {
 export function useAppointments(filters?: { status?: string; businessId?: string }) {
   return useQuery({
     queryKey: appointmentKeys.list(filters),
-    queryFn: () => appointmentApi.getAll(filters),
+    queryFn: () => {
+      if (filters?.businessId) {
+        return appointmentApi.getBusinessAppointments(filters.businessId);
+      }
+      return appointmentApi.getMyAppointments();
+    },
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 }
@@ -27,7 +32,11 @@ export function useAppointments(filters?: { status?: string; businessId?: string
 export function useUpcomingAppointments() {
   return useQuery({
     queryKey: appointmentKeys.upcoming(),
-    queryFn: () => appointmentApi.getUpcoming(),
+    queryFn: async () => {
+      const appointments = await appointmentApi.getMyAppointments();
+      const now = new Date();
+      return appointments.filter((a) => new Date(a.date + ' ' + a.startTime) > now);
+    },
     staleTime: 2 * 60 * 1000,
   });
 }
@@ -36,7 +45,11 @@ export function useUpcomingAppointments() {
 export function usePastAppointments() {
   return useQuery({
     queryKey: appointmentKeys.past(),
-    queryFn: () => appointmentApi.getPast(),
+    queryFn: async () => {
+      const appointments = await appointmentApi.getMyAppointments();
+      const now = new Date();
+      return appointments.filter((a) => new Date(a.date + ' ' + a.startTime) <= now);
+    },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }

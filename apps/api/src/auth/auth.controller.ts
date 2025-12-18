@@ -1,24 +1,24 @@
 import {
-  Controller,
-  Post,
-  Patch,
   Body,
+  Controller,
+  Get,
   HttpCode,
   HttpStatus,
-  UseGuards,
-  Get,
-  Request,
+  Patch,
+  Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { AuthService } from './auth.service';
-import { SignupDto, LoginDto, ForgotPasswordDto, ResetPasswordDto, UpdateProfileDto } from './dto';
-import { SignupBusinessDto } from './dto/signup-business.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { Response } from 'express';
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
+import { AuthService } from './auth.service';
+import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto, UpdateProfileDto } from './dto';
+import { SignupBusinessDto } from './dto/signup-business.dto';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -61,8 +61,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({ status: 200, description: 'Token refreshed successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async refresh(@Request() req) {
-    return this.authService.refreshToken(req.user.id);
+  async refresh(@Req() req: AuthenticatedRequest) {
+    return this.authService.refreshToken(req.user!.id);
   }
 
   @Get('me')
@@ -71,8 +71,8 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'User profile retrieved' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getProfile(@Request() req) {
-    return this.authService.getProfile(req.user.id);
+  async getProfile(@Req() req: AuthenticatedRequest) {
+    return this.authService.getProfile(req.user!.id);
   }
 
   @Patch('me')
@@ -82,8 +82,8 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Profile updated successfully' })
   @ApiResponse({ status: 409, description: 'Username or phone already taken' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async updateProfile(@Request() req, @Body() dto: UpdateProfileDto) {
-    return this.authService.updateProfile(req.user.id, dto);
+  async updateProfile(@Req() req: AuthenticatedRequest, @Body() dto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user!.id, dto);
   }
 
   @Post('forgot-password')
@@ -138,11 +138,11 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'OAuth login successful' })
   async googleAuthCallback(@Req() req: any, @Res() res: Response) {
     const result = await this.authService.handleOAuthLogin(req.user);
-    
+
     // Redirect to frontend with tokens in URL
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     const redirectUrl = `${frontendUrl}/auth/callback?accessToken=${result.accessToken}&refreshToken=${result.refreshToken}`;
-    
+
     return res.redirect(redirectUrl);
   }
 }

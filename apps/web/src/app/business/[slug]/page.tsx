@@ -1,38 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { apiClient } from '@/lib/api/client';
-import { useAuth } from '@/contexts/auth-context';
-import { BusinessDetail, BusinessHours, TimeSlot } from './types';
-import {
-  BusinessHero,
-  PhotoGallery,
-  ServicesList,
-  ReviewsList,
-  ActionsSidebar,
-  ContactInfo,
-  BusinessHoursCard,
-  BookingModal,
-  ChatModal,
-  LoadingState,
-  ErrorState,
-  MobileActions,
-} from './components';
 import { SimpleMap } from '@/components/map';
+import { useAuth } from '@/contexts/auth-context';
+import { apiClient } from '@/lib/api/client';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import {
+  ActionsSidebar,
+  BookingModal,
+  BusinessHero,
+  BusinessHoursCard,
+  ChatModal,
+  ContactInfo,
+  ErrorState,
+  LoadingState,
+  MobileActions,
+  PhotoGallery,
+  ReviewsList,
+  ServicesList,
+} from './components';
+import { BusinessDetail, BusinessHours, TimeSlot } from './types';
 
 export default function BusinessDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const slug = params.slug as string;
-  
+
   const [business, setBusiness] = useState<BusinessDetail | null>(null);
   const [businessHours, setBusinessHours] = useState<BusinessHours[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
-  
+
   // Booking state
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -56,25 +56,37 @@ export default function BusinessDetailPage() {
         setLoading(true);
         const response = await apiClient.get(`/businesses/${slug}`);
         setBusiness(response.data);
-        
+
         // Check if favorited
         if (isAuthenticated) {
           try {
-            const favResponse = await apiClient.get(`/favorites/check/business/${response.data.id}`);
+            const favResponse = await apiClient.get(
+              `/favorites/check/business/${response.data.id}`
+            );
             setIsFavorited(favResponse.data.isFavorited);
           } catch {
             // Ignore favorite check errors
           }
         }
-        
+
         // Fetch business hours
         try {
           const hoursResponse = await apiClient.get(`/business-hours/${response.data.id}`);
-          const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-          const formattedHours = hoursResponse.data.map((h: { dayOfWeek: number; openTime: string; closeTime: string; isClosed: boolean }) => ({
-            ...h,
-            dayName: daysOfWeek[h.dayOfWeek],
-          }));
+          const daysOfWeek = [
+            'Sunday',
+            'Monday',
+            'Tuesday',
+            'Wednesday',
+            'Thursday',
+            'Friday',
+            'Saturday',
+          ];
+          const formattedHours = hoursResponse.data.map(
+            (h: { dayOfWeek: number; openTime: string; closeTime: string; isClosed: boolean }) => ({
+              ...h,
+              dayName: daysOfWeek[h.dayOfWeek],
+            })
+          );
           setBusinessHours(formattedHours);
         } catch {
           // Ignore hours fetch errors
@@ -96,11 +108,13 @@ export default function BusinessDetailPage() {
   useEffect(() => {
     const fetchSlots = async () => {
       if (!selectedDate || !business) return;
-      
+
       setLoadingSlots(true);
       try {
         const dateStr = selectedDate.toISOString().split('T')[0];
-        const response = await apiClient.get(`/appointments/available-slots/${business.id}?date=${dateStr}`);
+        const response = await apiClient.get(
+          `/appointments/available-slots/${business.id}?date=${dateStr}`
+        );
         setAvailableSlots(response.data);
       } catch (err) {
         console.error('Failed to fetch slots:', err);
@@ -115,7 +129,7 @@ export default function BusinessDetailPage() {
 
   const handleBookAppointment = async () => {
     if (!business || !selectedSlot) return;
-    
+
     if (!isAuthenticated) {
       router.push(`/auth/login?redirect=/business/${slug}`);
       return;
@@ -140,7 +154,7 @@ export default function BusinessDetailPage() {
 
   const handleSendMessage = async () => {
     if (!business || !chatMessage.trim()) return;
-    
+
     if (!isAuthenticated) {
       router.push(`/auth/login?redirect=/business/${slug}`);
       return;
@@ -150,8 +164,10 @@ export default function BusinessDetailPage() {
     try {
       // First check if chat exists
       const chatsResponse = await apiClient.get('/chats');
-      const existingChat = chatsResponse.data?.find?.((c: { businessId: string }) => c.businessId === business.id);
-      
+      const existingChat = chatsResponse.data?.find?.(
+        (c: { businessId: string }) => c.businessId === business.id
+      );
+
       let chatId;
       if (existingChat) {
         chatId = existingChat.id;
@@ -183,9 +199,9 @@ export default function BusinessDetailPage() {
       router.push(`/auth/login?redirect=/business/${slug}`);
       return;
     }
-    
+
     if (!business) return;
-    
+
     try {
       if (isFavorited) {
         await apiClient.delete(`/favorites/business/${business.id}`);
@@ -214,10 +230,10 @@ export default function BusinessDetailPage() {
   return (
     <div className="min-h-screen bg-neutral-950">
       {/* Hero Section */}
-      <BusinessHero 
-        business={business} 
-        isFavorited={isFavorited} 
-        onToggleFavorite={handleToggleFavorite} 
+      <BusinessHero
+        business={business}
+        isFavorited={isFavorited}
+        onToggleFavorite={handleToggleFavorite}
       />
 
       {/* Main Content */}
@@ -235,39 +251,41 @@ export default function BusinessDetailPage() {
             {/* About */}
             <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
               <h2 className="text-lg font-semibold text-white mb-4">About</h2>
-              <p className="text-white/70 leading-relaxed">
-                {business.description}
-              </p>
+              <p className="text-white/70 leading-relaxed">{business.description}</p>
             </div>
 
             {/* Photo Gallery */}
             <PhotoGallery photos={business.photos || []} businessName={business.name} />
 
             {/* Services */}
-            <ServicesList 
-              services={business.services || []} 
-              appointmentsEnabled={business.appointmentsEnabled}
-              onBookService={handleBookService}
-            />
+            {business.showServices !== false && (
+              <ServicesList
+                services={business.services || []}
+                appointmentsEnabled={business.appointmentsEnabled}
+                onBookService={handleBookService}
+              />
+            )}
 
             {/* Reviews */}
-            <ReviewsList 
-              reviews={business.reviews || []}
-              rating={business.rating}
-              reviewCount={business.reviewCount}
-              businessId={business.id}
-              businessName={business.name}
-              businessOwnerId={business.owner?.id}
-              onReviewAdded={async () => {
-                // Refetch business data to get updated reviews
-                try {
-                  const response = await apiClient.get(`/businesses/${slug}`);
-                  setBusiness(response.data);
-                } catch {
-                  // Ignore errors - user will see stale data until refresh
-                }
-              }}
-            />
+            {business.showReviews !== false && (
+              <ReviewsList
+                reviews={business.reviews || []}
+                rating={business.rating}
+                reviewCount={business.reviewCount}
+                businessId={business.id}
+                businessName={business.name}
+                businessOwnerId={business.owner?.id}
+                onReviewAdded={async () => {
+                  // Refetch business data to get updated reviews
+                  try {
+                    const response = await apiClient.get(`/businesses/${slug}`);
+                    setBusiness(response.data);
+                  } catch {
+                    // Ignore errors - user will see stale data until refresh
+                  }
+                }}
+              />
+            )}
 
             {/* Location Map */}
             {business.latitude && business.longitude && (
@@ -309,7 +327,7 @@ export default function BusinessDetailPage() {
             <ContactInfo business={business} />
 
             {/* Business Hours */}
-            <BusinessHoursCard hours={businessHours} />
+            {business.showHours !== false && <BusinessHoursCard hours={businessHours} />}
           </div>
         </div>
       </div>

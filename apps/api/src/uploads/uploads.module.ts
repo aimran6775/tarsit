@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { UploadsService } from './uploads.service';
 import { UploadsController } from './uploads.controller';
-import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { SupabaseModule } from '../supabase/supabase.module';
 
 @Module({
-  imports: [CloudinaryModule],
+  imports: [SupabaseModule],
   controllers: [UploadsController],
   providers: [UploadsService],
   exports: [UploadsService],

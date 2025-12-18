@@ -130,7 +130,7 @@ async function main() {
 
   // Password must have: 8+ chars, uppercase, lowercase, number, special char
   // PERMANENT TEST PASSWORD - documented in tarsit-testing/TEST_ACCOUNTS.md
-  const testPassword = 'Tarsit1234!';
+  const testPassword = 'abdullah1234!';
   const hashedPassword = await bcrypt.hash(testPassword, 10);
 
   // ============================================================================
@@ -232,7 +232,7 @@ async function main() {
     { lat: 37.7749, lng: -122.4194, area: 'Downtown SF' },
     { lat: 37.7849, lng: -122.4094, area: 'North Beach' },
     { lat: 37.7649, lng: -122.4294, area: 'Mission District' },
-    { lat: 37.7949, lng: -122.3994, area: 'Fisherman\'s Wharf' },
+    { lat: 37.7949, lng: -122.3994, area: "Fisherman's Wharf" },
     { lat: 37.7549, lng: -122.4494, area: 'Sunset District' },
   ];
 
@@ -248,87 +248,92 @@ async function main() {
     priceRange: 'BUDGET' | 'MODERATE' | 'EXPENSIVE';
     services: Array<{ name: string; price: number; duration: number }>;
   }> = [
-      {
-        name: 'QuickFix Phone Repair',
-        category: categories[0].id,
-        description: 'Professional iPhone and Android repair. Screen replacements, battery fixes, and water damage repair. Same-day service available.',
-        addressLine1: '123 Market Street',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94102',
-        phone: '+14155551000',
-        priceRange: 'MODERATE',
-        services: [
-          { name: 'Screen Replacement', price: 89.99, duration: 45 },
-          { name: 'Battery Replacement', price: 59.99, duration: 30 },
-          { name: 'Water Damage Repair', price: 149.99, duration: 120 },
-        ],
-      },
-      {
-        name: 'Elite Auto Care',
-        category: categories[1].id,
-        description: 'Full-service auto repair and maintenance. ASE certified mechanics. Oil changes, brake service, engine diagnostics.',
-        addressLine1: '456 Valencia Street',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94110',
-        phone: '+14155551001',
-        priceRange: 'MODERATE',
-        services: [
-          { name: 'Oil Change', price: 49.99, duration: 30 },
-          { name: 'Brake Service', price: 199.99, duration: 90 },
-          { name: 'Engine Diagnostic', price: 89.99, duration: 60 },
-        ],
-      },
-      {
-        name: 'Bella Salon & Spa',
-        category: categories[2].id,
-        description: 'Upscale salon offering haircuts, coloring, and spa treatments. Experienced stylists and relaxing atmosphere.',
-        addressLine1: '789 Union Street',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94133',
-        phone: '+14155551002',
-        priceRange: 'EXPENSIVE',
-        services: [
-          { name: 'Women\'s Haircut', price: 85.00, duration: 60 },
-          { name: 'Hair Coloring', price: 150.00, duration: 120 },
-          { name: 'Spa Manicure', price: 45.00, duration: 45 },
-        ],
-      },
-      {
-        name: 'Bay Plumbing Pros',
-        category: categories[3].id,
-        description: '24/7 emergency plumbing services. Licensed and insured. Drain cleaning, pipe repair, water heater installation.',
-        addressLine1: '321 Mission Street',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94103',
-        phone: '+14155551003',
-        priceRange: 'MODERATE',
-        services: [
-          { name: 'Drain Cleaning', price: 129.99, duration: 60 },
-          { name: 'Leak Repair', price: 199.99, duration: 90 },
-          { name: 'Water Heater Install', price: 899.99, duration: 180 },
-        ],
-      },
-      {
-        name: 'Golden Gate Cafe',
-        category: categories[4].id,
-        description: 'Cozy neighborhood cafe serving fresh coffee, pastries, and lunch. Free WiFi and outdoor seating.',
-        addressLine1: '567 Haight Street',
-        city: 'San Francisco',
-        state: 'CA',
-        zipCode: '94117',
-        phone: '+14155551004',
-        priceRange: 'BUDGET',
-        services: [
-          { name: 'Espresso Drinks', price: 4.50, duration: 5 },
-          { name: 'Fresh Pastries', price: 3.50, duration: 0 },
-          { name: 'Lunch Special', price: 12.99, duration: 15 },
-        ],
-      },
-    ];
+    {
+      name: 'QuickFix Phone Repair',
+      category: categories[0].id,
+      description:
+        'Professional iPhone and Android repair. Screen replacements, battery fixes, and water damage repair. Same-day service available.',
+      addressLine1: '123 Market Street',
+      city: 'San Francisco',
+      state: 'CA',
+      zipCode: '94102',
+      phone: '+14155551000',
+      priceRange: 'MODERATE',
+      services: [
+        { name: 'Screen Replacement', price: 89.99, duration: 45 },
+        { name: 'Battery Replacement', price: 59.99, duration: 30 },
+        { name: 'Water Damage Repair', price: 149.99, duration: 120 },
+      ],
+    },
+    {
+      name: 'Elite Auto Care',
+      category: categories[1].id,
+      description:
+        'Full-service auto repair and maintenance. ASE certified mechanics. Oil changes, brake service, engine diagnostics.',
+      addressLine1: '456 Valencia Street',
+      city: 'San Francisco',
+      state: 'CA',
+      zipCode: '94110',
+      phone: '+14155551001',
+      priceRange: 'MODERATE',
+      services: [
+        { name: 'Oil Change', price: 49.99, duration: 30 },
+        { name: 'Brake Service', price: 199.99, duration: 90 },
+        { name: 'Engine Diagnostic', price: 89.99, duration: 60 },
+      ],
+    },
+    {
+      name: 'Bella Salon & Spa',
+      category: categories[2].id,
+      description:
+        'Upscale salon offering haircuts, coloring, and spa treatments. Experienced stylists and relaxing atmosphere.',
+      addressLine1: '789 Union Street',
+      city: 'San Francisco',
+      state: 'CA',
+      zipCode: '94133',
+      phone: '+14155551002',
+      priceRange: 'EXPENSIVE',
+      services: [
+        { name: "Women's Haircut", price: 85.0, duration: 60 },
+        { name: 'Hair Coloring', price: 150.0, duration: 120 },
+        { name: 'Spa Manicure', price: 45.0, duration: 45 },
+      ],
+    },
+    {
+      name: 'Bay Plumbing Pros',
+      category: categories[3].id,
+      description:
+        '24/7 emergency plumbing services. Licensed and insured. Drain cleaning, pipe repair, water heater installation.',
+      addressLine1: '321 Mission Street',
+      city: 'San Francisco',
+      state: 'CA',
+      zipCode: '94103',
+      phone: '+14155551003',
+      priceRange: 'MODERATE',
+      services: [
+        { name: 'Drain Cleaning', price: 129.99, duration: 60 },
+        { name: 'Leak Repair', price: 199.99, duration: 90 },
+        { name: 'Water Heater Install', price: 899.99, duration: 180 },
+      ],
+    },
+    {
+      name: 'Golden Gate Cafe',
+      category: categories[4].id,
+      description:
+        'Cozy neighborhood cafe serving fresh coffee, pastries, and lunch. Free WiFi and outdoor seating.',
+      addressLine1: '567 Haight Street',
+      city: 'San Francisco',
+      state: 'CA',
+      zipCode: '94117',
+      phone: '+14155551004',
+      priceRange: 'BUDGET',
+      services: [
+        { name: 'Espresso Drinks', price: 4.5, duration: 5 },
+        { name: 'Fresh Pastries', price: 3.5, duration: 0 },
+        { name: 'Lunch Special', price: 12.99, duration: 15 },
+      ],
+    },
+  ];
 
   const businesses = await Promise.all([
     // PERMANENT TEST BUSINESS (for automated testing)
@@ -336,7 +341,8 @@ async function main() {
       data: {
         name: 'Test Business Tarsit',
         slug: 'test-business-tarsit',
-        description: 'Official test business for automated testing. This business belongs to testowner@tarsit.com.',
+        description:
+          'Official test business for automated testing. This business belongs to testowner@tarsit.com.',
         categoryId: categories[0].id, // Electronics Repair
         ownerId: testOwner.id,
         addressLine1: '1 Test Street',
@@ -365,8 +371,8 @@ async function main() {
         },
         services: {
           create: [
-            { name: 'Test Service 1', price: 50.00, duration: 30, order: 0, bookable: true },
-            { name: 'Test Service 2', price: 100.00, duration: 60, order: 1, bookable: true },
+            { name: 'Test Service 1', price: 50.0, duration: 30, order: 0, bookable: true },
+            { name: 'Test Service 2', price: 100.0, duration: 60, order: 1, bookable: true },
           ],
         },
       },
@@ -435,7 +441,7 @@ async function main() {
     {
       rating: 5,
       title: 'Best in the area',
-      comment: 'Amazing service and fair prices. Can\'t ask for more!',
+      comment: "Amazing service and fair prices. Can't ask for more!",
     },
     {
       rating: 4,
@@ -474,9 +480,7 @@ async function main() {
   const favorites = [];
   for (const customer of customers) {
     // Each customer favorites 2 random businesses
-    const randomBusinesses = businesses
-      .sort(() => 0.5 - Math.random())
-      .slice(0, 2);
+    const randomBusinesses = businesses.sort(() => 0.5 - Math.random()).slice(0, 2);
 
     for (const business of randomBusinesses) {
       favorites.push(

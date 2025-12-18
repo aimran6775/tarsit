@@ -177,7 +177,7 @@ export class AnalyticsService {
         take: 10,
         orderBy: { rating: 'desc' },
         where: {
-          rating: { not: null },
+          rating: { gte: 0 },
         },
         include: {
           category: true,
@@ -199,7 +199,7 @@ export class AnalyticsService {
         totalAppointments,
       },
       recentBusinesses,
-      topBusinesses: topBusinesses.map((b) => ({
+      topBusinesses: topBusinesses.map((b: any) => ({
         id: b.id,
         name: b.name,
         slug: b.slug,

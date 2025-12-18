@@ -14,11 +14,11 @@ export enum TeamRole {
 export class InviteTeamMemberDto {
   @ApiProperty({ description: 'Email of the team member to invite' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ enum: TeamRole, description: 'Role of the team member' })
   @IsEnum(TeamRole)
-  role: TeamRole;
+  role!: TeamRole;
 
   @ApiPropertyOptional({ description: 'Permission to manage chat' })
   @IsBoolean()

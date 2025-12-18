@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, Bell, RefreshCw, Search, Shield } from 'lucide-react';
+import { Bell, Menu, RefreshCw, Search, Shield } from 'lucide-react';
 import type { TabType } from '../types';
 
 interface TopHeaderProps {
@@ -11,12 +11,22 @@ interface TopHeaderProps {
 }
 
 const tabLabels: Record<TabType, { title: string; description: string }> = {
-  overview: { title: 'Dashboard Overview', description: 'Real-time platform monitoring and analytics' },
+  overview: {
+    title: 'Dashboard Overview',
+    description: 'Real-time platform monitoring and analytics',
+  },
   users: { title: 'User Management', description: 'Manage all platform users and permissions' },
   businesses: { title: 'Business Management', description: 'Oversee all registered businesses' },
-  verifications: { title: 'Verification Requests', description: 'Review and process business verifications' },
-  reviews: { title: 'Content Moderation', description: 'Manage reviews and user-generated content' },
+  verifications: {
+    title: 'Verification Requests',
+    description: 'Review and process business verifications',
+  },
+  reviews: {
+    title: 'Content Moderation',
+    description: 'Manage reviews and user-generated content',
+  },
   categories: { title: 'Category Management', description: 'Organize business categories' },
+  tars: { title: 'Tars AI Management', description: 'Manage AI settings and interactions' },
   system: { title: 'System Monitoring', description: 'Server health and performance metrics' },
   reports: { title: 'Reports & Analytics', description: 'Generate and export platform reports' },
   'audit-logs': { title: 'Audit Logs', description: 'Track all administrative actions' },
@@ -25,18 +35,18 @@ const tabLabels: Record<TabType, { title: string; description: string }> = {
 
 export function TopHeader({ activeTab, onMenuClick, onRefresh, isRefreshing }: TopHeaderProps) {
   const tab = tabLabels[activeTab];
-  const currentDate = new Date().toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    month: 'long', 
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
   });
 
   return (
     <header className="sticky top-0 z-40 bg-neutral-900/95 backdrop-blur-xl border-b border-white/10">
       <div className="flex items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={onMenuClick}
             className="lg:hidden p-2 rounded-lg hover:bg-white/5 transition-colors"
           >
@@ -61,7 +71,7 @@ export function TopHeader({ activeTab, onMenuClick, onRefresh, isRefreshing }: T
           </div>
 
           {/* Refresh */}
-          <button 
+          <button
             onClick={onRefresh}
             disabled={isRefreshing}
             className="p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors disabled:opacity-50"

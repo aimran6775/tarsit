@@ -1,16 +1,21 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MailModule } from '../mail/mail.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { SupabaseModule } from '../supabase/supabase.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { SupabaseAuthGuard } from './guards/supabase-auth.guard';
 import { JwtStrategy } from './jwt.strategy';
-import { PrismaModule } from '../prisma/prisma.module';
-import { MailModule } from '../mail/mail.module';
 
 // Conditionally import GoogleStrategy only if credentials are configured
 const optionalProviders = [];
-if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'placeholder-client-id.apps.googleusercontent.com') {
+if (
+  process.env.GOOGLE_CLIENT_ID &&
+  process.env.GOOGLE_CLIENT_ID !== 'placeholder-client-id.apps.googleusercontent.com'
+) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { GoogleStrategy } = require('./strategies/google.strategy');
   optionalProviders.push(GoogleStrategy);
@@ -20,6 +25,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'placeholde
   imports: [
     PrismaModule,
     MailModule,
+    SupabaseModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -31,7 +37,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_ID !== 'placeholde
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy, ...optionalProviders],
-  exports: [AuthService, JwtModule],
+  providers: [AuthService, JwtStrategy, SupabaseAuthGuard, ...optionalProviders],
+  exports: [AuthService, JwtModule, SupabaseAuthGuard],
 })
-export class AuthModule { }
+export class AuthModule {}

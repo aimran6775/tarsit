@@ -1,11 +1,24 @@
 'use client';
 
-import { useState } from 'react';
-import { 
-  X, User, Mail, Phone, Calendar, 
-  Building2, Star, MessageSquare, Clock, AlertCircle,
-  Check, Ban, Trash2, Edit2, Save, Key
+import {
+  AlertCircle,
+  Ban,
+  Building2,
+  Calendar,
+  Check,
+  Clock,
+  Edit2,
+  Key,
+  Mail,
+  MessageSquare,
+  Phone,
+  Save,
+  Star,
+  Trash2,
+  User,
+  X,
 } from 'lucide-react';
+import { useState } from 'react';
 import type { User as UserType } from '../types';
 
 interface UserDetailModalProps {
@@ -68,14 +81,13 @@ export function UserDetailModal({
     USER: 'bg-blue-500/20 text-blue-400',
     BUSINESS_OWNER: 'bg-purple-500/20 text-purple-400',
     ADMIN: 'bg-red-500/20 text-red-400',
+    SUPER_ADMIN: 'bg-red-500/20 text-red-400',
+    CUSTOMER: 'bg-green-500/20 text-green-400',
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-neutral-900 rounded-2xl border border-white/10 w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="p-6 border-b border-white/10">
@@ -104,26 +116,27 @@ export function UserDetailModal({
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${statusColors[user.status]}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-xs font-medium ${statusColors[user.status]}`}
+                  >
                     {user.status}
                   </span>
-                  <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${roleColors[user.role]}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-xs font-medium ${roleColors[user.role]}`}
+                  >
                     {user.role.replace('_', ' ')}
                   </span>
                 </div>
               </div>
             </div>
-            <button
-              onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/10 text-white/50"
-            >
+            <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10 text-white/50">
               <X className="h-5 w-5" />
             </button>
           </div>
 
           {/* Tabs */}
           <div className="flex gap-1 mt-6">
-            {tabs.map(tab => (
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
@@ -180,7 +193,9 @@ export function UserDetailModal({
                           <input
                             type="text"
                             value={editedUser.firstName || ''}
-                            onChange={(e) => setEditedUser({ ...editedUser, firstName: e.target.value })}
+                            onChange={(e) =>
+                              setEditedUser({ ...editedUser, firstName: e.target.value })
+                            }
                             className="w-full h-10 px-3 rounded-lg bg-white/5 border border-white/10 text-white"
                           />
                         </div>
@@ -189,7 +204,9 @@ export function UserDetailModal({
                           <input
                             type="text"
                             value={editedUser.lastName || ''}
-                            onChange={(e) => setEditedUser({ ...editedUser, lastName: e.target.value })}
+                            onChange={(e) =>
+                              setEditedUser({ ...editedUser, lastName: e.target.value })
+                            }
                             className="w-full h-10 px-3 rounded-lg bg-white/5 border border-white/10 text-white"
                           />
                         </div>
@@ -373,9 +390,7 @@ export function UserDetailModal({
 
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-white/10">
-          <p className="text-sm text-white/40">
-            User ID: {user.id.substring(0, 8)}...
-          </p>
+          <p className="text-sm text-white/40">User ID: {user.id.substring(0, 8)}...</p>
           <div className="flex gap-2">
             {isEditing ? (
               <>

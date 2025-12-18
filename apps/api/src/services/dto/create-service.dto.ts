@@ -4,12 +4,12 @@ import { IsString, IsNumber, IsOptional, Min, MaxLength } from 'class-validator'
 export class CreateServiceDto {
   @ApiProperty({ example: 'cuid123', description: 'Business ID' })
   @IsString()
-  businessId: string;
+  businessId!: string;
 
   @ApiProperty({ example: 'Haircut & Styling', description: 'Service name' })
   @IsString()
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'Professional haircut with consultation and styling',
@@ -17,12 +17,12 @@ export class CreateServiceDto {
   })
   @IsString()
   @MaxLength(500)
-  description: string;
+  description!: string;
 
   @ApiProperty({ example: 45.0, description: 'Service price' })
   @IsNumber()
   @Min(0)
-  price: number;
+  price!: number;
 
   @ApiProperty({ example: 60, description: 'Duration in minutes', required: false })
   @IsOptional()

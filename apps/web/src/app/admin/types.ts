@@ -299,10 +299,17 @@ export interface VerificationsResponse {
 // ============================================================================
 
 export interface BroadcastMessage {
+  id?: string;
   title: string;
   content: string;
-  type: 'info' | 'warning' | 'alert' | 'success';
-  recipients: 'all' | 'businesses' | 'customers' | 'admins';
+  type: 'info' | 'warning' | 'alert' | 'success' | 'error';
+  recipients: 'all' | 'businesses' | 'customers' | 'admins' | 'users';
+  channels?: string[];
+  scheduledAt?: string | null;
+  sentAt?: string | null;
+  createdBy?: string;
+  createdAt?: string;
+  status?: 'scheduled' | 'sent';
 }
 
 // ============================================================================
@@ -310,16 +317,32 @@ export interface BroadcastMessage {
 // ============================================================================
 
 export interface PlatformSettings {
-  requireEmailVerification: boolean;
-  autoApproveBusinesses: boolean;
-  enableBookingFeature: boolean;
-  enableChatFeature: boolean;
+  platformName: string;
+  platformEmail: string;
   maintenanceMode: boolean;
-  maxUploadSize: number;
-  defaultResultsPerPage: number;
-  siteName: string;
-  siteDescription: string;
-  supportEmail: string;
+  registrationEnabled: boolean;
+  businessRegistrationEnabled: boolean;
+  emailVerificationRequired: boolean;
+  autoApproveBusinesses: boolean;
+  maxPhotosPerBusiness: number;
+  maxServicesPerBusiness: number;
+  reviewModerationEnabled: boolean;
+  chatEnabled: boolean;
+  notificationsEnabled: boolean;
+  analyticsEnabled: boolean;
+  defaultCurrency: string;
+  defaultTimezone: string;
+  supportedLanguages: string[];
+
+  // Legacy/Optional fields
+  requireEmailVerification?: boolean;
+  enableBookingFeature?: boolean;
+  enableChatFeature?: boolean;
+  maxUploadSize?: number;
+  defaultResultsPerPage?: number;
+  siteName?: string;
+  siteDescription?: string;
+  supportEmail?: string;
 }
 
 export interface NotificationSettings {
@@ -357,11 +380,16 @@ export interface ActivityItem {
 
 export const getRoleColor = (role: string): string => {
   switch (role) {
-    case 'SUPER_ADMIN': return 'bg-red-500/20 text-red-400 border-red-500/30';
-    case 'ADMIN': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-    case 'BUSINESS_OWNER': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-    case 'CUSTOMER': return 'bg-white/10 text-white/70 border-white/20';
-    default: return 'bg-white/10 text-white/50 border-white/20';
+    case 'SUPER_ADMIN':
+      return 'bg-red-500/20 text-red-400 border-red-500/30';
+    case 'ADMIN':
+      return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+    case 'BUSINESS_OWNER':
+      return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+    case 'CUSTOMER':
+      return 'bg-white/10 text-white/70 border-white/20';
+    default:
+      return 'bg-white/10 text-white/50 border-white/20';
   }
 };
 
@@ -372,21 +400,27 @@ export const getStatusColor = (status: string, isActive?: boolean): string => {
     case 'APPROVED':
     case 'VERIFIED':
       return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-    case 'PENDING': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+    case 'PENDING':
+      return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
     case 'SUSPENDED':
     case 'REJECTED':
     case 'INACTIVE':
       return 'bg-red-500/20 text-red-400 border-red-500/30';
-    default: return 'bg-white/10 text-white/50 border-white/20';
+    default:
+      return 'bg-white/10 text-white/50 border-white/20';
   }
 };
 
 export const getHealthColor = (status: string): string => {
   switch (status) {
-    case 'healthy': return 'text-emerald-400';
-    case 'degraded': return 'text-amber-400';
-    case 'unhealthy': return 'text-red-400';
-    default: return 'text-white/50';
+    case 'healthy':
+      return 'text-emerald-400';
+    case 'degraded':
+      return 'text-amber-400';
+    case 'unhealthy':
+      return 'text-red-400';
+    default:
+      return 'text-white/50';
   }
 };
 
@@ -415,12 +449,19 @@ export const formatBytes = (bytes: number): string => {
 
 export const getActivityIcon = (type: string): string => {
   switch (type) {
-    case 'user': return '👤';
-    case 'business': return '🏢';
-    case 'review': return '⭐';
-    case 'appointment': return '📅';
-    case 'verification': return '✅';
-    case 'system': return '⚙️';
-    default: return '📌';
+    case 'user':
+      return '👤';
+    case 'business':
+      return '🏢';
+    case 'review':
+      return '⭐';
+    case 'appointment':
+      return '📅';
+    case 'verification':
+      return '✅';
+    case 'system':
+      return '⚙️';
+    default:
+      return '📌';
   }
 };

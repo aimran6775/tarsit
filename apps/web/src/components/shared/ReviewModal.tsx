@@ -32,7 +32,7 @@ export function ReviewModal({
   businessName,
   onReviewSubmitted,
 }: ReviewModalProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [rating, setRating] = useState(0);
   const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');

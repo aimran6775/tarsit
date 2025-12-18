@@ -11,7 +11,7 @@ A modern, production-ready platform to help small brick-and-mortar service busin
 - 💬 **Real-Time Messaging** - WebSocket-powered chat between customers and businesses
 - 📅 **Appointment Booking** - Schedule and manage appointments
 - 🗺️ **Interactive Maps** - Mapbox integration with directions and location search
-- 📸 **Image Management** - Cloudinary-powered image uploads and optimization
+- 📸 **Image Management** - Supabase Storage-powered image uploads
 - 📊 **Analytics Dashboard** - Business insights and platform analytics
 - 👑 **Admin Panel** - Complete admin dashboard for platform management
 - 🔒 **Enterprise Security** - Rate limiting, CSRF protection, input sanitization
@@ -24,7 +24,7 @@ This is a monorepo built with:
 - **Next.js 14** - Frontend (React, TypeScript, Tailwind, App Router)
 - **NestJS** - Backend API (TypeScript, Prisma, PostgreSQL)
 - **Supabase** - PostgreSQL database + Auth
-- **Cloudinary** - Image storage and optimization
+- **Supabase Storage** - Image storage
 - **Mapbox** - Interactive maps
 - **Upstash Redis** - Caching layer
 - **Socket.io** - Real-time communication
@@ -94,7 +94,7 @@ pnpm dev
 - **Hosting:** Vercel (frontend) + Railway/Render (backend)
 - **Database:** Supabase PostgreSQL (Prisma ORM)
 - **Cache:** Upstash Redis
-- **Storage:** Cloudinary (images)
+- **Storage:** Supabase Storage (images)
 - **Maps:** Mapbox
 - **Real-time:** Socket.io
 - **Email:** SMTP (Gmail/SendGrid)

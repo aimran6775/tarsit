@@ -38,9 +38,8 @@
 - Featured business prioritization
 
 #### Phase 10: File Upload & Storage
-- Cloudinary integration
+- Supabase Storage integration
 - 5MB upload limit
-- Auto-optimization (quality 80)
 - Business images, user avatars
 
 #### Phase 11: Email Service

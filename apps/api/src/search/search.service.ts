@@ -358,7 +358,7 @@ export class SearchService {
     const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const currentTime = now.getHours() * 60 + now.getMinutes(); // minutes since midnight
 
-    const todayHours = hours[dayOfWeek];
+    const todayHours = (hours as any)[dayOfWeek];
     if (!todayHours || !todayHours.open || !todayHours.close) return false;
 
     // Parse time strings like "09:00" to minutes

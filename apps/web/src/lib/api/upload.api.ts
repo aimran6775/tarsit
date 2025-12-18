@@ -15,12 +15,7 @@ export interface MultiUploadResponse {
   count: number;
 }
 
-export type UploadFolder = 
-  | 'businesses' 
-  | 'profiles' 
-  | 'reviews' 
-  | 'covers' 
-  | 'logos';
+export type UploadFolder = 'businesses' | 'profiles' | 'reviews' | 'covers' | 'logos' | 'messages';
 
 /**
  * Upload API client for handling image uploads
@@ -45,7 +40,10 @@ export const uploadApi = {
   /**
    * Upload multiple images (max 10)
    */
-  uploadImages: async (files: File[], folder: UploadFolder = 'businesses'): Promise<MultiUploadResponse> => {
+  uploadImages: async (
+    files: File[],
+    folder: UploadFolder = 'businesses'
+  ): Promise<MultiUploadResponse> => {
     const formData = new FormData();
     files.forEach((file) => {
       formData.append('files', file);
@@ -64,9 +62,12 @@ export const uploadApi = {
    * Delete an image by public ID
    */
   deleteImage: async (publicId: string): Promise<{ success: boolean; message: string }> => {
-    const response = await apiClient.delete<{ success: boolean; message: string }>('/uploads/image', {
-      data: { publicId },
-    });
+    const response = await apiClient.delete<{ success: boolean; message: string }>(
+      '/uploads/image',
+      {
+        data: { publicId },
+      }
+    );
     return response.data;
   },
 };
@@ -81,7 +82,7 @@ export function validateImageFile(file: File): { valid: boolean; error?: string 
   if (!ALLOWED_TYPES.includes(file.type)) {
     return {
       valid: false,
-      error: `Invalid file type. Allowed: ${ALLOWED_TYPES.map(t => t.split('/')[1]).join(', ')}`,
+      error: `Invalid file type. Allowed: ${ALLOWED_TYPES.map((t) => t.split('/')[1]).join(', ')}`,
     };
   }
 

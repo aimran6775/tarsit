@@ -5,16 +5,16 @@ import { NotificationType } from '@prisma/client';
 export class CreateNotificationDto {
   @ApiProperty({ example: 'cuid123', description: 'User ID to notify' })
   @IsString()
-  userId: string;
+  userId!: string;
 
   @ApiProperty({ enum: NotificationType, description: 'Notification type' })
   @IsEnum(NotificationType)
-  type: NotificationType;
+  type!: NotificationType;
 
   @ApiProperty({ example: 'Your appointment has been confirmed', description: 'Title' })
   @IsString()
   @MaxLength(100)
-  title: string;
+  title!: string;
 
   @ApiProperty({
     example: 'Your appointment at ABC Business is confirmed for Dec 15 at 2:00 PM',
@@ -22,5 +22,5 @@ export class CreateNotificationDto {
   })
   @IsString()
   @MaxLength(500)
-  message: string;
+  message!: string;
 }

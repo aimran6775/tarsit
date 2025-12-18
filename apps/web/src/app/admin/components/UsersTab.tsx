@@ -1,10 +1,19 @@
 'use client';
 
-import Image from 'next/image';
-import { 
-  Search, Download, Eye, Mail, Ban, UserCheck, Trash2, 
-  User, Shield, ChevronLeft, ChevronRight
+import {
+  Ban,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Eye,
+  Mail,
+  Search,
+  Shield,
+  Trash2,
+  User,
+  UserCheck,
 } from 'lucide-react';
+import Image from 'next/image';
 import type { User as UserType, UsersResponse } from '../types';
 import { getRoleColor } from '../types';
 
@@ -44,19 +53,19 @@ export function UsersTab({
         </div>
         <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
           <p className="text-2xl font-bold text-emerald-400">
-            {users.filter(u => u.active).length}
+            {users.filter((u) => u.active).length}
           </p>
           <p className="text-sm text-white/50">Active Users</p>
         </div>
         <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
           <p className="text-2xl font-bold text-purple-400">
-            {users.filter(u => u.role === 'ADMIN' || u.role === 'SUPER_ADMIN').length}
+            {users.filter((u) => u.role === 'ADMIN' || u.role === 'SUPER_ADMIN').length}
           </p>
           <p className="text-sm text-white/50">Admins</p>
         </div>
         <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
           <p className="text-2xl font-bold text-blue-400">
-            {users.filter(u => u.role === 'BUSINESS_OWNER').length}
+            {users.filter((u) => u.role === 'BUSINESS_OWNER').length}
           </p>
           <p className="text-sm text-white/50">Business Owners</p>
         </div>
@@ -79,11 +88,21 @@ export function UsersTab({
           onChange={(e) => setUserRoleFilter(e.target.value)}
           className="h-12 px-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
         >
-          <option value="" className="bg-neutral-900">All Roles</option>
-          <option value="SUPER_ADMIN" className="bg-neutral-900">Super Admin</option>
-          <option value="ADMIN" className="bg-neutral-900">Admin</option>
-          <option value="BUSINESS_OWNER" className="bg-neutral-900">Business Owner</option>
-          <option value="CUSTOMER" className="bg-neutral-900">Customer</option>
+          <option value="" className="bg-neutral-900">
+            All Roles
+          </option>
+          <option value="SUPER_ADMIN" className="bg-neutral-900">
+            Super Admin
+          </option>
+          <option value="ADMIN" className="bg-neutral-900">
+            Admin
+          </option>
+          <option value="BUSINESS_OWNER" className="bg-neutral-900">
+            Business Owner
+          </option>
+          <option value="CUSTOMER" className="bg-neutral-900">
+            Customer
+          </option>
         </select>
         <button className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg shadow-purple-500/25 flex items-center gap-2">
           <Download className="h-5 w-5" />
@@ -100,22 +119,33 @@ export function UsersTab({
                 <th className="text-left px-6 py-4 text-sm font-semibold text-white/70">User</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-white/70">Role</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-white/70">Status</th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-white/70">Activity</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold text-white/70">
+                  Activity
+                </th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-white/70">Joined</th>
-                <th className="text-right px-6 py-4 text-sm font-semibold text-white/70">Actions</th>
+                <th className="text-right px-6 py-4 text-sm font-semibold text-white/70">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {users.map(user => (
+              {users.map((user) => (
                 <tr key={user.id} className="hover:bg-white/5 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
                         {user.avatar ? (
-                          <Image src={user.avatar} alt="" width={40} height={40} className="rounded-xl" />
+                          <Image
+                            src={user.avatar}
+                            alt=""
+                            width={40}
+                            height={40}
+                            className="rounded-xl"
+                          />
                         ) : (
                           <span className="text-white font-semibold">
-                            {user.firstName?.charAt(0)?.toUpperCase() || user.email.charAt(0).toUpperCase()}
+                            {user.firstName?.charAt(0)?.toUpperCase() ||
+                              user.email.charAt(0).toUpperCase()}
                           </span>
                         )}
                       </div>
@@ -128,29 +158,33 @@ export function UsersTab({
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getRoleColor(user.role)}`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium border ${getRoleColor(user.role)}`}
+                    >
                       {user.role.replace('_', ' ')}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <span className={`w-2 h-2 rounded-full ${user.active ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                      <span className={`text-sm ${user.active ? 'text-emerald-400' : 'text-red-400'}`}>
+                      <span
+                        className={`w-2 h-2 rounded-full ${user.active ? 'bg-emerald-500' : 'bg-red-500'}`}
+                      />
+                      <span
+                        className={`text-sm ${user.active ? 'text-emerald-400' : 'text-red-400'}`}
+                      >
                         {user.active ? 'Active' : 'Suspended'}
                       </span>
                       {user.verified && (
-                        <Shield className="h-4 w-4 text-blue-400" title="Verified" />
+                        <span title="Verified">
+                          <Shield className="h-4 w-4 text-blue-400" />
+                        </span>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="text-sm">
-                      <p className="text-white/70">
-                        {user._count?.businesses || 0} businesses
-                      </p>
-                      <p className="text-white/50">
-                        {user._count?.reviews || 0} reviews
-                      </p>
+                      <p className="text-white/70">{user._count?.businesses || 0} businesses</p>
+                      <p className="text-white/50">{user._count?.reviews || 0} reviews</p>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-sm text-white/50">
@@ -158,21 +192,21 @@ export function UsersTab({
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-1">
-                      <button 
+                      <button
                         onClick={() => onViewUser(user)}
                         className="p-2 rounded-lg hover:bg-white/10 transition-colors"
                         title="View User"
                       >
                         <Eye className="h-4 w-4 text-white/50 hover:text-white" />
                       </button>
-                      <button 
+                      <button
                         className="p-2 rounded-lg hover:bg-white/10 transition-colors"
                         title="Send Email"
                       >
                         <Mail className="h-4 w-4 text-white/50 hover:text-white" />
                       </button>
                       {user.active ? (
-                        <button 
+                        <button
                           onClick={() => onUserAction(user.id, 'suspend')}
                           className="p-2 rounded-lg hover:bg-red-500/20 transition-colors"
                           title="Suspend User"
@@ -180,7 +214,7 @@ export function UsersTab({
                           <Ban className="h-4 w-4 text-red-400" />
                         </button>
                       ) : (
-                        <button 
+                        <button
                           onClick={() => onUserAction(user.id, 'activate')}
                           className="p-2 rounded-lg hover:bg-emerald-500/20 transition-colors"
                           title="Activate User"
@@ -188,7 +222,7 @@ export function UsersTab({
                           <UserCheck className="h-4 w-4 text-emerald-400" />
                         </button>
                       )}
-                      <button 
+                      <button
                         onClick={() => onUserAction(user.id, 'delete')}
                         className="p-2 rounded-lg hover:bg-red-500/20 transition-colors"
                         title="Delete User"
@@ -208,7 +242,8 @@ export function UsersTab({
           <div className="flex items-center justify-between px-6 py-4 border-t border-white/10">
             <p className="text-sm text-white/50">
               Showing {(pagination.page - 1) * pagination.limit + 1} to{' '}
-              {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+              {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total}{' '}
+              users
             </p>
             <div className="flex items-center gap-2">
               <button

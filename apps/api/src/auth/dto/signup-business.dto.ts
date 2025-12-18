@@ -22,24 +22,24 @@ class BusinessDataDto {
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(100)
-  name: string;
+  name!: string;
 
   @ApiProperty({ example: 'Professional iPhone and Android repair services' })
   @IsString()
   @IsNotEmpty()
   @MinLength(20)
   @MaxLength(2000)
-  description: string;
+  description!: string;
 
   @ApiProperty({ example: 'category-uuid-here' })
   @IsString()
   @IsNotEmpty()
-  categoryId: string;
+  categoryId!: string;
 
   @ApiProperty({ example: '123 Market Street' })
   @IsString()
   @IsNotEmpty()
-  addressLine1: string;
+  addressLine1!: string;
 
   @ApiProperty({ example: 'Suite 100', required: false })
   @IsOptional()
@@ -49,19 +49,19 @@ class BusinessDataDto {
   @ApiProperty({ example: 'San Francisco' })
   @IsString()
   @IsNotEmpty()
-  city: string;
+  city!: string;
 
   @ApiProperty({ example: 'CA' })
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(2)
-  state: string;
+  state!: string;
 
   @ApiProperty({ example: '94102' })
   @IsString()
   @IsNotEmpty()
-  zipCode: string;
+  zipCode!: string;
 
   @ApiProperty({ example: 'USA', default: 'USA' })
   @IsOptional()
@@ -71,7 +71,7 @@ class BusinessDataDto {
   @ApiProperty({ example: '+14155551234' })
   @IsString()
   @IsNotEmpty()
-  phone: string;
+  phone!: string;
 
   @ApiProperty({ example: 'contact@example.com', required: false })
   @IsOptional()
@@ -108,7 +108,7 @@ export class SignupBusinessDto {
   // User account fields
   @ApiProperty({ example: 'john@example.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'johndoe', required: false })
   @IsOptional()
@@ -124,17 +124,17 @@ export class SignupBusinessDto {
   })
   @IsString()
   @IsStrongPassword()
-  password: string;
+  password!: string;
 
   @ApiProperty({ example: 'John' })
   @IsString()
   @IsNotEmpty()
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty({ example: 'Doe' })
   @IsString()
   @IsNotEmpty()
-  lastName: string;
+  lastName!: string;
 
   @ApiProperty({ example: '+14155551234', required: false })
   @IsOptional()
@@ -145,5 +145,5 @@ export class SignupBusinessDto {
   @ApiProperty({ type: BusinessDataDto })
   @ValidateNested()
   @Type(() => BusinessDataDto)
-  business: BusinessDataDto;
+  business!: BusinessDataDto;
 }

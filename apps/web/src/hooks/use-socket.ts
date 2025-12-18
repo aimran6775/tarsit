@@ -1,152 +1,122 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { supabase } from '@/lib/supabase';
+import { apiClient } from '@/lib/api/client';
+import { RealtimeChannel } from '@supabase/supabase-js';
 import { useAuth } from '@/contexts/auth-context';
 
 interface UseSocketOptions {
-  namespace?: string;
+  namespace?: string; // Ignored, kept for compatibility
   autoConnect?: boolean;
 }
 
-interface SocketEvents {
-  'new-message': (message: any) => void;
-  'message-notification': (data: { chatId: string; message: any }) => void;
-  'user-typing': (data: { userId: string; chatId: string }) => void;
-  'user-stopped-typing': (data: { userId: string; chatId: string }) => void;
-  'messages-read': (data: { chatId: string; readBy: string }) => void;
-  connect: () => void;
-  disconnect: () => void;
-  error: (error: Error) => void;
-}
-
 export function useSocket(options: UseSocketOptions = {}) {
-  const { namespace = '/messages', autoConnect = true } = options;
-  const { user, isAuthenticated } = useAuth();
+  const { autoConnect = true } = options;
+  const { isAuthenticated } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const socketRef = useRef<Socket | null>(null);
-  const listenersRef = useRef<Map<string, Set<Function>>>(new Map());
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const listenersRef = useRef<Map<string, Set<(...args: any[]) => void>>>(new Map());
 
-  // Initialize socket
   useEffect(() => {
-    if (!autoConnect || !isAuthenticated || !user) {
-      return;
+    if (autoConnect && isAuthenticated) {
+        setIsConnected(true);
     }
+  }, [autoConnect, isAuthenticated]);
 
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-      return;
-    }
-
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-    const socket = io(`${apiUrl}${namespace}`, {
-      auth: {
-        token,
-      },
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionAttempts: 5,
-    });
-
-    socketRef.current = socket;
-
-    // Connection handlers
-    socket.on('connect', () => {
-      setIsConnected(true);
-      setError(null);
-      console.log('Socket connected');
-    });
-
-    socket.on('disconnect', () => {
-      setIsConnected(false);
-      console.log('Socket disconnected');
-    });
-
-    socket.on('connect_error', (err) => {
-      setError(err);
-      console.error('Socket connection error:', err);
-    });
-
-    // Cleanup
-    return () => {
-      socket.disconnect();
-      socketRef.current = null;
-      listenersRef.current.clear();
-    };
-  }, [isAuthenticated, user, namespace, autoConnect]);
-
-  // Generic event listener
-  const on = useCallback(<K extends keyof SocketEvents>(
-    event: K,
-    handler: SocketEvents[K],
-  ) => {
-    if (!socketRef.current) return;
-
-    const socket = socketRef.current;
-    socket.on(event, handler as any);
-
-    // Track listener for cleanup
+  // Event listener management
+  const on = useCallback((event: string, callback: (...args: any[]) => void) => {
     if (!listenersRef.current.has(event)) {
       listenersRef.current.set(event, new Set());
     }
-    listenersRef.current.get(event)!.add(handler);
+    listenersRef.current.get(event)!.add(callback);
 
-    // Return unsubscribe function
     return () => {
-      socket.off(event, handler as any);
-      listenersRef.current.get(event)?.delete(handler);
+      const callbacks = listenersRef.current.get(event);
+      if (callbacks) {
+        callbacks.delete(callback);
+      }
     };
   }, []);
 
-  // Emit event
-  const emit = useCallback((event: string, data: any) => {
-    if (!socketRef.current || !isConnected) {
-      console.warn(`Cannot emit ${event}: socket not connected`);
-      return;
-    }
-    socketRef.current.emit(event, data);
-  }, [isConnected]);
+  const emitLocal = useCallback((event: string, data: any) => {
+      const callbacks = listenersRef.current.get(event);
+      if (callbacks) {
+          callbacks.forEach(cb => cb(data));
+      }
+  }, []);
 
-  // Join chat room
+  // Join chat room -> Subscribe to Supabase channel
   const joinChat = useCallback((chatId: string) => {
-    emit('join-chat', { chatId });
-  }, [emit]);
+    if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+    }
 
-  // Leave chat room
-  const leaveChat = useCallback((chatId: string) => {
-    emit('leave-chat', { chatId });
-  }, [emit]);
+    const channel = supabase
+      .channel(`chat:${chatId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'Message',
+          filter: `chatId=eq.${chatId}`,
+        },
+        (payload) => {
+          const newMessage = payload.new as any;
+          // Fetch full details to get sender info
+          apiClient.get(`/messages/single/${newMessage.id}`)
+            .then(response => {
+               emitLocal('new-message', response.data);
+            })
+            .catch(err => {
+               console.error('Failed to fetch new message details', err);
+               emitLocal('new-message', newMessage);
+            });
+        }
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+            setIsConnected(true);
+        }
+      });
+      
+    channelRef.current = channel;
+  }, [emitLocal]);
 
-  // Send message
-  const sendMessage = useCallback((
+  const leaveChat = useCallback((_chatId: string) => {
+    if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+    }
+  }, []);
+
+  const sendMessage = useCallback(async (
     chatId: string,
     content: string,
     type: 'TEXT' | 'IMAGE' | 'FILE' = 'TEXT',
     attachments?: string[],
   ) => {
-    emit('send-message', { chatId, content, type, attachments });
-  }, [emit]);
+    // Call REST API
+    await apiClient.post('/messages', { chatId, content, type, attachments });
+  }, []);
 
-  // Typing indicators
-  const startTyping = useCallback((chatId: string) => {
-    emit('typing-start', { chatId });
-  }, [emit]);
+  const markAsRead = useCallback(async (chatId: string) => {
+    await apiClient.patch(`/messages/${chatId}/mark-as-read`);
+  }, []);
 
-  const stopTyping = useCallback((chatId: string) => {
-    emit('typing-stop', { chatId });
-  }, [emit]);
+  const startTyping = useCallback((_chatId: string) => {
+      // TODO: Implement broadcast
+  }, []);
 
-  // Mark messages as read
-  const markAsRead = useCallback((chatId: string) => {
-    emit('mark-read', { chatId });
-  }, [emit]);
+  const stopTyping = useCallback((_chatId: string) => {
+      // TODO: Implement broadcast
+  }, []);
 
   return {
-    socket: socketRef.current,
+    socket: null, // No socket object anymore
     isConnected,
-    error,
+    error: null,
     on,
-    emit,
+    emit: () => {}, // No generic emit
     joinChat,
     leaveChat,
     sendMessage,

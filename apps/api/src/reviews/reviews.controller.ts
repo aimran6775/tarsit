@@ -13,6 +13,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto, UpdateReviewDto, ReviewQueryDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -30,7 +31,7 @@ export class ReviewsController {
   @ApiResponse({ status: 409, description: 'You have already reviewed this business' })
   @ApiResponse({ status: 404, description: 'Business not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async create(@Request() req, @Body() createReviewDto: CreateReviewDto) {
+  async create(@Request() req: AuthenticatedRequest, @Body() createReviewDto: CreateReviewDto) {
     return this.reviewsService.create(req.user.id, createReviewDto);
   }
 
@@ -59,7 +60,7 @@ export class ReviewsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async update(
     @Param('id') id: string,
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Body() updateReviewDto: UpdateReviewDto,
   ) {
     return this.reviewsService.update(id, req.user.id, req.user.role, updateReviewDto);
@@ -74,7 +75,7 @@ export class ReviewsController {
   @ApiResponse({ status: 403, description: 'You can only delete your own reviews' })
   @ApiResponse({ status: 404, description: 'Review not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async remove(@Param('id') id: string, @Request() req) {
+  async remove(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     await this.reviewsService.remove(id, req.user.id, req.user.role);
   }
 
@@ -88,7 +89,7 @@ export class ReviewsController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async respond(
     @Param('id') id: string,
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Body('response') responseText: string,
   ) {
     return this.reviewsService.respond(id, req.user.id, req.user.role, responseText);
@@ -103,7 +104,7 @@ export class ReviewsController {
   @ApiResponse({ status: 403, description: 'Only business owners can delete responses' })
   @ApiResponse({ status: 404, description: 'Review not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async deleteResponse(@Param('id') id: string, @Request() req) {
+  async deleteResponse(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     await this.reviewsService.deleteResponse(id, req.user.id, req.user.role);
   }
 }

@@ -112,7 +112,7 @@ export function PhotosTab({
       for (let i = 0; i < fileArray.length; i++) {
         const file = fileArray[i];
         try {
-          // Upload to Cloudinary
+          // Upload to Supabase Storage
           const uploaded = await uploadApi.uploadImage(file, 'businesses');
 
           // Save to database

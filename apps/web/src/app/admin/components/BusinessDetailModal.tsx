@@ -1,11 +1,27 @@
 'use client';
 
-import { useState } from 'react';
-import { 
-  X, Building2, MapPin, Phone, Mail, Globe, Star, Calendar,
-  Clock, Users, DollarSign, Shield, Edit2, Save, Trash2,
-  Check, Ban, AlertCircle, Image, Tag, MessageSquare
+import {
+  AlertCircle,
+  Ban,
+  Building2,
+  Calendar,
+  Check,
+  Edit2,
+  Globe,
+  Image,
+  Mail,
+  MapPin,
+  MessageSquare,
+  Phone,
+  Save,
+  Shield,
+  Star,
+  Tag,
+  Trash2,
+  Users,
+  X,
 } from 'lucide-react';
+import { useState } from 'react';
 import type { Business } from '../types';
 
 interface BusinessDetailModalProps {
@@ -53,7 +69,7 @@ export function BusinessDetailModal({
     setIsEditing(true);
   };
 
-  const tabs = [
+  const tabs: { id: 'overview' | 'analytics' | 'settings'; label: string }[] = [
     { id: 'overview', label: 'Overview' },
     { id: 'analytics', label: 'Analytics' },
     { id: 'settings', label: 'Settings' },
@@ -68,10 +84,7 @@ export function BusinessDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-neutral-900 rounded-2xl border border-white/10 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header with Image */}
         <div className="relative h-48 bg-gradient-to-br from-purple-600/20 to-indigo-600/20">
@@ -87,7 +100,7 @@ export function BusinessDetailModal({
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/50 to-transparent" />
-          
+
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 rounded-lg bg-black/50 hover:bg-black/70 text-white/70"
@@ -99,7 +112,11 @@ export function BusinessDetailModal({
             <div className="flex items-end gap-4">
               <div className="w-20 h-20 rounded-xl bg-neutral-800 border-2 border-neutral-900 flex items-center justify-center overflow-hidden">
                 {business.logo ? (
-                  <img src={business.logo} alt={business.name} className="w-full h-full object-cover" />
+                  <img
+                    src={business.logo}
+                    alt={business.name}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <Building2 className="h-8 w-8 text-white/40" />
                 )}
@@ -114,10 +131,16 @@ export function BusinessDetailModal({
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${statusColors[business.status]}`}>
+                  <span
+                    className={`px-2 py-0.5 rounded-md text-xs font-medium ${statusColors[business.status]}`}
+                  >
                     {business.status}
                   </span>
-                  <span className="text-sm text-white/50">{business.category}</span>
+                  <span className="text-sm text-white/50">
+                    {typeof business.category === 'string'
+                      ? business.category
+                      : business.category.name}
+                  </span>
                 </div>
               </div>
             </div>
@@ -126,10 +149,10 @@ export function BusinessDetailModal({
 
         {/* Tabs */}
         <div className="flex gap-1 px-6 py-3 border-b border-white/10">
-          {tabs.map(tab => (
+          {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 activeTab === tab.id
                   ? 'bg-purple-500/20 text-purple-400'
@@ -152,7 +175,9 @@ export function BusinessDetailModal({
                     <Star className="h-4 w-4" />
                     <span className="text-xs">Rating</span>
                   </div>
-                  <p className="text-2xl font-bold text-white">{business.rating?.toFixed(1) || '0.0'}</p>
+                  <p className="text-2xl font-bold text-white">
+                    {business.rating?.toFixed(1) || '0.0'}
+                  </p>
                   <p className="text-xs text-white/40">{business.reviewCount || 0} reviews</p>
                 </div>
                 <div className="bg-white/5 rounded-xl p-4">
@@ -187,11 +212,15 @@ export function BusinessDetailModal({
                 {isEditing ? (
                   <textarea
                     value={editedBusiness.description || ''}
-                    onChange={(e) => setEditedBusiness({ ...editedBusiness, description: e.target.value })}
+                    onChange={(e) =>
+                      setEditedBusiness({ ...editedBusiness, description: e.target.value })
+                    }
                     className="w-full h-24 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white resize-none"
                   />
                 ) : (
-                  <p className="text-white/70">{business.description || 'No description provided.'}</p>
+                  <p className="text-white/70">
+                    {business.description || 'No description provided.'}
+                  </p>
                 )}
               </div>
 
@@ -206,7 +235,9 @@ export function BusinessDetailModal({
                         <input
                           type="text"
                           value={editedBusiness.name || ''}
-                          onChange={(e) => setEditedBusiness({ ...editedBusiness, name: e.target.value })}
+                          onChange={(e) =>
+                            setEditedBusiness({ ...editedBusiness, name: e.target.value })
+                          }
                           className="w-full h-10 px-3 rounded-lg bg-white/5 border border-white/10 text-white"
                         />
                       </div>
@@ -216,7 +247,9 @@ export function BusinessDetailModal({
                           <input
                             type="tel"
                             value={editedBusiness.phone || ''}
-                            onChange={(e) => setEditedBusiness({ ...editedBusiness, phone: e.target.value })}
+                            onChange={(e) =>
+                              setEditedBusiness({ ...editedBusiness, phone: e.target.value })
+                            }
                             className="w-full h-10 px-3 rounded-lg bg-white/5 border border-white/10 text-white"
                           />
                         </div>
@@ -225,7 +258,9 @@ export function BusinessDetailModal({
                           <input
                             type="email"
                             value={editedBusiness.email || ''}
-                            onChange={(e) => setEditedBusiness({ ...editedBusiness, email: e.target.value })}
+                            onChange={(e) =>
+                              setEditedBusiness({ ...editedBusiness, email: e.target.value })
+                            }
                             className="w-full h-10 px-3 rounded-lg bg-white/5 border border-white/10 text-white"
                           />
                         </div>
@@ -235,7 +270,9 @@ export function BusinessDetailModal({
                         <input
                           type="url"
                           value={editedBusiness.website || ''}
-                          onChange={(e) => setEditedBusiness({ ...editedBusiness, website: e.target.value })}
+                          onChange={(e) =>
+                            setEditedBusiness({ ...editedBusiness, website: e.target.value })
+                          }
                           className="w-full h-10 px-3 rounded-lg bg-white/5 border border-white/10 text-white"
                         />
                       </div>
@@ -263,14 +300,21 @@ export function BusinessDetailModal({
                       {business.website && (
                         <div className="flex items-center gap-3 text-white/70">
                           <Globe className="h-4 w-4 text-white/40" />
-                          <a href={business.website} target="_blank" rel="noopener" className="text-purple-400 hover:underline">
+                          <a
+                            href={business.website}
+                            target="_blank"
+                            rel="noopener"
+                            className="text-purple-400 hover:underline"
+                          >
                             {business.website}
                           </a>
                         </div>
                       )}
                       <div className="flex items-center gap-3 text-white/70">
                         <Calendar className="h-4 w-4 text-white/40" />
-                        <span>Listed since {new Date(business.createdAt).toLocaleDateString()}</span>
+                        <span>
+                          Listed since {new Date(business.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </>
                   )}
@@ -285,7 +329,9 @@ export function BusinessDetailModal({
                     <Users className="h-5 w-5 text-purple-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-white">{business.ownerName || 'Not specified'}</p>
+                    <p className="font-medium text-white">
+                      {business.ownerName || 'Not specified'}
+                    </p>
                     <p className="text-sm text-white/50">{business.ownerEmail || ''}</p>
                   </div>
                 </div>
@@ -403,7 +449,8 @@ export function BusinessDetailModal({
                     <div className="flex-1">
                       <p className="font-medium text-red-400">Are you sure?</p>
                       <p className="text-sm text-red-400/70 mt-1">
-                        This will permanently delete the business and all associated data including reviews, services, and photos.
+                        This will permanently delete the business and all associated data including
+                        reviews, services, and photos.
                       </p>
                       <div className="flex gap-2 mt-4">
                         <button
@@ -432,9 +479,7 @@ export function BusinessDetailModal({
 
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t border-white/10">
-          <p className="text-sm text-white/40">
-            Business ID: {business.id.substring(0, 8)}...
-          </p>
+          <p className="text-sm text-white/40">Business ID: {business.id.substring(0, 8)}...</p>
           <div className="flex gap-2">
             {isEditing ? (
               <>

@@ -17,7 +17,7 @@ export function SearchBar({
   placeholder = 'Search businesses...', 
   className = '',
   compact = false,
-  variant = 'default'
+  variant: _variant = 'default'
 }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');

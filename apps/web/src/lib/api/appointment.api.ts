@@ -50,8 +50,18 @@ export const appointmentApi = {
     return response.data;
   },
 
+  getById: async (id: string): Promise<Appointment> => {
+    const response = await apiClient.get<Appointment>(`/appointments/${id}`);
+    return response.data;
+  },
+
   create: async (data: CreateAppointmentData): Promise<Appointment> => {
     const response = await apiClient.post<Appointment>('/appointments', data);
+    return response.data;
+  },
+
+  update: async (id: string, data: Partial<Appointment>): Promise<Appointment> => {
+    const response = await apiClient.patch<Appointment>(`/appointments/${id}`, data);
     return response.data;
   },
 
@@ -70,7 +80,11 @@ export const appointmentApi = {
     return response.data;
   },
 
-  getAvailableSlots: async (businessId: string, serviceId: string, date: string): Promise<string[]> => {
+  getAvailableSlots: async (
+    businessId: string,
+    serviceId: string,
+    date: string
+  ): Promise<string[]> => {
     const response = await apiClient.get<string[]>(
       `/appointments/available?businessId=${businessId}&serviceId=${serviceId}&date=${date}`
     );

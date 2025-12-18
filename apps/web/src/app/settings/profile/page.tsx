@@ -1,16 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
-import { authApi, uploadApi } from '@/lib/api';
+import { authApi } from '@/lib/api';
 import { ImageUpload } from '@/components/shared';
 import { toast } from 'sonner';
 import { Loader2, ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProfileSettingsPage() {
-  const router = useRouter();
   const { user, refreshUser } = useAuth();
   
   const [firstName, setFirstName] = useState('');

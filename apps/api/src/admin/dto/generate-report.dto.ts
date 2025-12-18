@@ -17,7 +17,7 @@ export enum ReportFormat {
 
 export class GenerateReportDto {
   @IsEnum(ReportType)
-  type: ReportType;
+  type!: ReportType;
 
   @IsOptional()
   @IsDateString()

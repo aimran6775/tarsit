@@ -71,7 +71,7 @@ async function bootstrap() {
         '- 💬 Real-time Chat (WebSocket)\n' +
         '- 📊 Advanced Analytics & Insights\n' +
         '- ✅ Business Verification\n' +
-        '- 📸 Image Upload (Cloudinary)\n' +
+        '- 📸 Image Upload (Supabase Storage)\n' +
         '- 📧 Email Notifications\n' +
         '- 🚀 Performance Optimized with Caching\n\n' +
         '## Authentication\n' +

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto, MessageQueryDto } from './dto';
 
@@ -69,6 +65,44 @@ export class MessagesService {
     });
 
     return message;
+  }
+
+  async findOne(userId: string, messageId: string) {
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            avatar: true,
+          },
+        },
+        chat: {
+          include: {
+            business: { select: { ownerId: true } },
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    // Check access
+    const isCustomer = message.chat.userId === userId;
+    const isBusinessOwner = message.chat.business.ownerId === userId;
+
+    if (!isCustomer && !isBusinessOwner) {
+      throw new ForbiddenException('Not authorized to view this message');
+    }
+
+    // Remove chat from response to keep it clean
+    const { chat, ...messageData } = message;
+    return messageData;
   }
 
   async findAll(userId: string, chatId: string, query: MessageQueryDto) {

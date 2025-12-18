@@ -5,12 +5,12 @@ declare global {
     interface Window {
         mapkit: typeof mapkit;
     }
-}
 
-declare namespace mapkit {
-    function init(options: { authorizationCallback: (done: (token: string) => void) => void }): void;
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace mapkit {
+        function init(options: { authorizationCallback: (done: (token: string) => void) => void }): void;
 
-    class Map {
+        class Map {
         constructor(element: string | HTMLElement, options?: MapConstructorOptions);
         center: Coordinate;
         region: CoordinateRegion;
@@ -185,6 +185,7 @@ declare namespace mapkit {
     }
 
     const Directions: DirectionsConstructor;
+    }
 }
 
 let mapkitLoaded = false;

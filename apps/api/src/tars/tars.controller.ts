@@ -23,18 +23,12 @@ import { AdminGuard } from '../auth/guards/admin.guard';
 import { Request } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
-interface AuthenticatedRequest extends Request {
-    user?: {
-        id: string;
-        email: string;
-        role: string;
-    };
-}
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
 
 // DTOs with class-validator decorators
 class ChatDto {
     @IsString()
-    message: string;
+    message!: string;
 
     @IsOptional()
     @IsString()
@@ -52,10 +46,10 @@ class ChatDto {
 class ReviewActionDto {
     @IsArray()
     @IsString({ each: true })
-    actionIds: string[];
+    actionIds!: string[];
 
     @IsIn(['approve', 'reject'])
-    decision: 'approve' | 'reject';
+    decision!: 'approve' | 'reject';
 
     @IsOptional()
     @IsString()
@@ -86,10 +80,10 @@ class UpdateSettingsDto {
 
 class RememberDto {
     @IsString()
-    key: string;
+    key!: string;
 
     @IsString()
-    value: string;
+    value!: string;
 
     @IsOptional()
     @IsString()

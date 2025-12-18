@@ -9,10 +9,11 @@ This document contains all permanent test accounts used for automated testing in
 All test accounts use the same password for simplicity:
 
 ```
-Password: Tarsit1234!
+Password: abdullah1234!
 ```
 
 Password Requirements:
+
 - 8+ characters ✓
 - Uppercase letter ✓
 - Lowercase letter ✓
@@ -26,16 +27,17 @@ Password Requirements:
 
 ### 🔐 Admin Account
 
-| Field | Value |
-|-------|-------|
-| Email | `admin@tarsit.com` |
-| Password | `Tarsit1234!` |
-| Role | `ADMIN` |
-| First Name | Admin |
-| Last Name | Tarsit |
-| Verified | Yes |
+| Field      | Value              |
+| ---------- | ------------------ |
+| Email      | `admin@tarsit.com` |
+| Password   | `abdullah1234!`    |
+| Role       | `ADMIN`            |
+| First Name | Admin              |
+| Last Name  | Tarsit             |
+| Verified   | Yes                |
 
 **Capabilities:**
+
 - Full administrative access
 - Can manage all users, businesses, categories
 - Can approve/reject verification requests
@@ -45,16 +47,17 @@ Password Requirements:
 
 ### 👤 Customer Test Account
 
-| Field | Value |
-|-------|-------|
-| Email | `testcustomer@tarsit.com` |
-| Password | `Tarsit1234!` |
-| Role | `CUSTOMER` |
-| First Name | Test |
-| Last Name | Customer |
-| Verified | Yes |
+| Field      | Value                     |
+| ---------- | ------------------------- |
+| Email      | `testcustomer@tarsit.com` |
+| Password   | `Tarsit1234!`             |
+| Role       | `CUSTOMER`                |
+| First Name | Test                      |
+| Last Name  | Customer                  |
+| Verified   | Yes                       |
 
 **Capabilities:**
+
 - Browse businesses
 - Leave reviews
 - Book appointments
@@ -65,17 +68,18 @@ Password Requirements:
 
 ### 🏢 Business Owner Test Account
 
-| Field | Value |
-|-------|-------|
-| Email | `testowner@tarsit.com` |
-| Password | `Tarsit1234!` |
-| Role | `BUSINESS_OWNER` |
-| First Name | Test |
-| Last Name | Owner |
-| Phone | +14155550001 |
-| Verified | Yes |
+| Field      | Value                  |
+| ---------- | ---------------------- |
+| Email      | `testowner@tarsit.com` |
+| Password   | `Tarsit1234!`          |
+| Role       | `BUSINESS_OWNER`       |
+| First Name | Test                   |
+| Last Name  | Owner                  |
+| Phone      | +14155550001           |
+| Verified   | Yes                    |
 
 **Capabilities:**
+
 - Manage their own business
 - Respond to reviews
 - Manage appointments
@@ -83,6 +87,7 @@ Password Requirements:
 - View business analytics
 
 **Associated Test Business:**
+
 - Name: `Test Business Tarsit`
 - Slug: `test-business-tarsit`
 - Category: Electronics Repair
@@ -97,25 +102,28 @@ Password Requirements:
 These accounts are created for realistic test data. They also use the password `Tarsit1234!`:
 
 ### Business Owners
-| Email | First Name | Last Name |
-|-------|------------|-----------|
-| owner1@example.com | Business | Owner 1 |
-| owner2@example.com | Business | Owner 2 |
-| owner3@example.com | Business | Owner 3 |
-| owner4@example.com | Business | Owner 4 |
+
+| Email              | First Name | Last Name |
+| ------------------ | ---------- | --------- |
+| owner1@example.com | Business   | Owner 1   |
+| owner2@example.com | Business   | Owner 2   |
+| owner3@example.com | Business   | Owner 3   |
+| owner4@example.com | Business   | Owner 4   |
 
 ### Customers
-| Email | First Name | Last Name |
-|-------|------------|-----------|
-| customer1@example.com | Customer | 1 |
-| customer2@example.com | Customer | 2 |
-| customer3@example.com | Customer | 3 |
+
+| Email                 | First Name | Last Name |
+| --------------------- | ---------- | --------- |
+| customer1@example.com | Customer   | 1         |
+| customer2@example.com | Customer   | 2         |
+| customer3@example.com | Customer   | 3         |
 
 ---
 
 ## API Authentication
 
 ### Login Endpoint
+
 ```bash
 POST /api/auth/login
 Content-Type: application/json
@@ -127,6 +135,7 @@ Content-Type: application/json
 ```
 
 ### Response
+
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -141,6 +150,7 @@ Content-Type: application/json
 ```
 
 ### Using the Token
+
 ```bash
 Authorization: Bearer <accessToken>
 ```
@@ -157,6 +167,7 @@ pnpm prisma db seed
 ```
 
 This will:
+
 1. Clear all existing data
 2. Create all test accounts
 3. Create sample categories, businesses, reviews, etc.
@@ -167,14 +178,14 @@ This will:
 
 After seeding, the database will contain:
 
-| Entity | Count | Notes |
-|--------|-------|-------|
-| Users | 10 | 1 admin, 5 business owners, 4 customers |
-| Categories | 10 | Electronics, Automotive, Beauty, etc. |
-| Businesses | 6 | 1 test business + 5 sample businesses |
-| Services | ~18 | Various services across businesses |
-| Reviews | 15 | Sample reviews on businesses |
-| Favorites | 8 | Sample favorites |
+| Entity     | Count | Notes                                   |
+| ---------- | ----- | --------------------------------------- |
+| Users      | 10    | 1 admin, 5 business owners, 4 customers |
+| Categories | 10    | Electronics, Automotive, Beauty, etc.   |
+| Businesses | 6     | 1 test business + 5 sample businesses   |
+| Services   | ~18   | Various services across businesses      |
+| Reviews    | 15    | Sample reviews on businesses            |
+| Favorites  | 8     | Sample favorites                        |
 
 ---
 
@@ -184,18 +195,18 @@ After seeding, the database will contain:
 // Admin login
 const admin = {
   email: 'admin@tarsit.com',
-  password: 'Tarsit1234!'
+  password: 'Tarsit1234!',
 };
 
 // Customer login
 const customer = {
   email: 'testcustomer@tarsit.com',
-  password: 'Tarsit1234!'
+  password: 'Tarsit1234!',
 };
 
 // Business owner login
 const businessOwner = {
   email: 'testowner@tarsit.com',
-  password: 'Tarsit1234!'
+  password: 'Tarsit1234!',
 };
 ```

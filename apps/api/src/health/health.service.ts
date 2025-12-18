@@ -20,7 +20,7 @@ export class HealthService {
       (check) =>
         typeof check === 'string' ||
         typeof check === 'number' ||
-        check.status === 'healthy',
+        (check as any).status === 'healthy',
     );
 
     return {
@@ -65,7 +65,7 @@ export class HealthService {
     } catch (error) {
       return {
         status: 'unhealthy',
-        error: error.message,
+        error: (error as Error).message,
         connected: false,
       };
     }

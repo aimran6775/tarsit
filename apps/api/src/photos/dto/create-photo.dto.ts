@@ -4,14 +4,14 @@ import { IsString, IsUrl, IsBoolean, IsOptional, MaxLength } from 'class-validat
 export class CreatePhotoDto {
   @ApiProperty({ example: 'cuid123', description: 'Business ID' })
   @IsString()
-  businessId: string;
+  businessId!: string;
 
   @ApiProperty({
     example: 'https://storage.example.com/photo.jpg',
     description: 'Photo URL',
   })
   @IsUrl()
-  url: string;
+  url!: string;
 
   @ApiProperty({
     example: 'Interior view of the restaurant',

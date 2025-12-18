@@ -21,7 +21,7 @@ interface ReviewsTabProps {
   onReviewUpdated?: () => void;
 }
 
-export function ReviewsTab({ reviews, businessName, onReviewUpdated }: ReviewsTabProps) {
+export function ReviewsTab({ reviews, businessName: _businessName, onReviewUpdated }: ReviewsTabProps) {
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [showResponseModal, setShowResponseModal] = useState(false);
   const [filterRating, setFilterRating] = useState<number | 'all'>('all');

@@ -1,21 +1,22 @@
 import {
-  Injectable,
-  ConflictException,
-  UnauthorizedException,
   BadRequestException,
+  ConflictException,
+  Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { validatePasswordStrength } from '../common/validators/password.validator';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { SignupDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './dto';
+import { SupabaseService } from '../supabase/supabase.service';
+import { geocodeAddress, geocodeCityState, getDefaultCityCoordinates } from '../utils/geocoding';
+import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto } from './dto';
 import { SignupBusinessDto } from './dto/signup-business.dto';
 import { JwtPayload } from './jwt.strategy';
-import { MailService } from '../mail/mail.service';
-import { geocodeAddress, geocodeCityState, getDefaultCityCoordinates } from '../utils/geocoding';
-import { validatePasswordStrength } from '../common/validators/password.validator';
 
 @Injectable()
 export class AuthService {
@@ -24,97 +25,103 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private mailService: MailService,
+    private supabaseService: SupabaseService
   ) {}
 
-  async signup(dto: SignupDto) {
-    // Validate password strength
-    const passwordValidation = validatePasswordStrength(dto.password);
-    if (!passwordValidation.isValid) {
-      throw new BadRequestException({
-        message: 'Password does not meet security requirements',
-        errors: passwordValidation.errors,
-      });
-    }
-
-    // Check if user already exists
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: dto.email },
-          dto.phone ? { phone: dto.phone } : {},
-          dto.username ? { username: dto.username } : {},
-        ],
-      },
-    });
-
-    if (existingUser) {
-      if (existingUser.email === dto.email) {
-        throw new ConflictException('Email already registered');
-      }
-      if (dto.phone && existingUser.phone === dto.phone) {
-        throw new ConflictException('Phone number already registered');
-      }
-      if (dto.username && existingUser.username === dto.username) {
-        throw new ConflictException('Username already taken');
-      }
-    }
-
-    // Hash password with increased rounds for better security
-    const passwordHash = await bcrypt.hash(dto.password, 12);
-
-    // Create user
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        username: dto.username,
-        phone: dto.phone,
-        passwordHash,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
+  async registerWithSupabase(dto: SignupDto) {
+    // 1. Sign up with Supabase Auth (Admin API to auto-confirm)
+    const { data, error } = await this.supabaseService.getClient().auth.admin.createUser({
+      email: dto.email,
+      password: dto.password,
+      email_confirm: true, // Auto-confirm email
+      user_metadata: {
+        first_name: dto.firstName,
+        last_name: dto.lastName,
         role: dto.role,
-        verified: false, // Will be verified via email
-      },
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        verified: true,
+        phone: dto.phone,
       },
     });
 
-    // Generate verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationTokenExpiry = new Date(Date.now() + 86400000); // 24 hours
+    if (error) {
+      // Allow "User already registered" error to proceed to local DB check/creation
+      // This handles cases where Supabase has the user but local DB was cleared
+      const msg = error.message.toLowerCase();
+      const isDuplicate =
+        msg.includes('already been registered') ||
+        msg.includes('already registered') ||
+        msg.includes('user already exists') ||
+        (error as any).status === 422;
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        verificationToken,
-        verificationTokenExpiry,
-      },
-    });
-
-    // Send verification email
-    try {
-      await this.mailService.sendVerificationEmail(
-        user.email,
-        user.firstName,
-        verificationToken,
-      );
-    } catch (error) {
-      console.error('Failed to send verification email:', error);
+      if (!isDuplicate) {
+        throw new BadRequestException(`Supabase registration failed: ${error.message}`);
+      }
+    } else if (!data.user) {
+      throw new BadRequestException('Registration failed: No user returned');
     }
 
-    // Generate tokens
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
+    // 2. Create user in local database (Prisma)
+    try {
+      // Check if user exists first to avoid unique constraint errors if trigger already ran
+      const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+      if (existing) {
+        // If user exists locally, we should throw ConflictException so the frontend knows to ask for login
+        throw new ConflictException('User already exists. Please login.');
+      }
 
-    return {
-      user,
-      ...tokens,
-    };
+      // Hash password for local login
+      const passwordHash = await bcrypt.hash(dto.password, 10);
+
+      const user = await this.prisma.user.create({
+        data: {
+          email: dto.email,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          role: dto.role,
+          phone: dto.phone,
+          passwordHash, // Local hash
+          verified: true, // Auto-verified
+        },
+      });
+
+      // Generate tokens since we don't get a session from admin.createUser
+      const tokens = await this.generateTokens(user.id, user.email, user.role);
+
+      // Construct user object for response (handling case where Supabase create failed due to duplicate)
+      const supabaseUser = data?.user || {
+        id: 'existing-supabase-user',
+        email: dto.email,
+        app_metadata: {},
+        user_metadata: {
+          first_name: dto.firstName,
+          last_name: dto.lastName,
+          role: dto.role,
+        },
+        aud: 'authenticated',
+        created_at: new Date().toISOString(),
+      };
+
+      return {
+        user,
+        session: {
+          access_token: tokens.accessToken,
+          refresh_token: tokens.refreshToken,
+          expires_in: 900,
+          token_type: 'bearer',
+          user: supabaseUser as any,
+        },
+      };
+    } catch (dbError) {
+      if (dbError instanceof ConflictException) throw dbError;
+      if ((dbError as any).code === 'P2002') {
+        throw new ConflictException('User already exists in local database');
+      }
+      throw dbError;
+    }
+  }
+
+  async signup(dto: SignupDto) {
+    // Use Supabase for registration
+    return this.registerWithSupabase(dto);
   }
 
   /**
@@ -130,7 +137,7 @@ export class AuthService {
       });
     }
 
-    // Check if user already exists
+    // Check if user already exists locally
     const existingUser = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -208,117 +215,164 @@ export class AuthService {
       where: { slug: baseSlug },
     });
 
-    const slug = existingBusiness
-      ? `${baseSlug}-${Date.now().toString(36)}`
-      : baseSlug;
+    const slug = existingBusiness ? `${baseSlug}-${Date.now().toString(36)}` : baseSlug;
 
-    // Hash password with increased rounds for better security
-    const passwordHash = await bcrypt.hash(dto.password, 12);
+    // 1. Create user in Supabase (Admin API to auto-confirm)
+    let authData: { user: any; session: any } = { user: null, session: null };
 
-    // Create user and business in a transaction
-    const result = await this.prisma.$transaction(async (tx) => {
-      // Create user with BUSINESS_OWNER role
-      const user = await tx.user.create({
-        data: {
-          email: dto.email,
-          username: dto.username,
-          phone: dto.phone,
-          passwordHash,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
+    const { data, error: authError } = await this.supabaseService
+      .getClient()
+      .auth.admin.createUser({
+        email: dto.email,
+        password: dto.password,
+        email_confirm: true,
+        user_metadata: {
+          first_name: dto.firstName,
+          last_name: dto.lastName,
           role: 'BUSINESS_OWNER',
-          verified: false,
+          phone: dto.phone,
         },
       });
 
-      // Create business linked to user
-      const business = await tx.business.create({
-        data: {
-          name: dto.business.name,
-          slug,
-          description: dto.business.description,
-          categoryId: dto.business.categoryId,
-          addressLine1: dto.business.addressLine1,
-          addressLine2: dto.business.addressLine2,
-          city: dto.business.city,
-          state: dto.business.state,
-          zipCode: dto.business.zipCode,
-          country: dto.business.country || 'USA',
-          latitude: latitude!,
-          longitude: longitude!,
-          phone: dto.business.phone,
-          email: dto.business.email,
-          website: dto.business.website,
-          priceRange: dto.business.priceRange || 'MODERATE',
-          ownerId: user.id,
-          verified: false,
-          active: true,
-        },
-        include: {
-          category: true,
-        },
-      });
+    if (authError) {
+      const msg = authError.message.toLowerCase();
+      const isDuplicate =
+        msg.includes('already been registered') ||
+        msg.includes('already registered') ||
+        msg.includes('user already exists') ||
+        (authError as any).status === 422;
 
-      // Generate verification token for email
-      const verificationToken = crypto.randomBytes(32).toString('hex');
-      const verificationTokenExpiry = new Date(Date.now() + 86400000); // 24 hours
+      if (isDuplicate) {
+        // Try to sign in to get the user
+        const { data: signInData, error: signInError } = await this.supabaseService
+          .getClient()
+          .auth.signInWithPassword({
+            email: dto.email,
+            password: dto.password,
+          });
 
-      await tx.user.update({
-        where: { id: user.id },
-        data: {
-          verificationToken,
-          verificationTokenExpiry,
-        },
-      });
-
-      return { user, business, verificationToken };
-    });
-
-    // Send verification email (outside transaction)
-    try {
-      await this.mailService.sendVerificationEmail(
-        result.user.email,
-        result.user.firstName,
-        result.verificationToken,
-      );
-    } catch (error) {
-      console.error('Failed to send verification email:', error);
+        if (signInError) {
+          throw new BadRequestException(
+            `User already exists but login failed: ${signInError.message}`
+          );
+        }
+        authData = signInData;
+      } else {
+        throw new BadRequestException(`Supabase registration failed: ${authError.message}`);
+      }
+    } else {
+      authData = { user: data.user, session: null };
     }
 
-    // Generate tokens
-    const tokens = await this.generateTokens(
-      result.user.id,
-      result.user.email,
-      result.user.role,
-    );
+    if (!authData.user) {
+      throw new BadRequestException('Registration failed: No user returned from Supabase');
+    }
 
-    return {
-      user: {
-        id: result.user.id,
-        email: result.user.email,
-        username: result.user.username,
-        firstName: result.user.firstName,
-        lastName: result.user.lastName,
-        role: result.user.role,
-        verified: result.user.verified,
-      },
-      business: {
-        id: result.business.id,
-        name: result.business.name,
-        slug: result.business.slug,
-        category: result.business.category,
-        city: result.business.city,
-        state: result.business.state,
-        verified: result.business.verified,
-      },
-      ...tokens,
-    };
+    // 2. Create user and business in Prisma
+    try {
+      const result = await this.prisma.$transaction(async (tx) => {
+        // Hash password for local login
+        const passwordHash = await bcrypt.hash(dto.password, 10);
+
+        // Create user with BUSINESS_OWNER role
+        const user = await tx.user.create({
+          data: {
+            email: dto.email,
+            username: dto.username,
+            phone: dto.phone,
+            passwordHash,
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            role: 'BUSINESS_OWNER',
+            verified: false,
+            provider: 'supabase',
+            providerId: authData.user.id,
+          },
+        });
+
+        // Create business linked to user
+        const business = await tx.business.create({
+          data: {
+            name: dto.business.name,
+            slug,
+            description: dto.business.description,
+            categoryId: dto.business.categoryId,
+            addressLine1: dto.business.addressLine1,
+            addressLine2: dto.business.addressLine2,
+            city: dto.business.city,
+            state: dto.business.state,
+            zipCode: dto.business.zipCode,
+            country: dto.business.country || 'USA',
+            latitude: latitude!,
+            longitude: longitude!,
+            phone: dto.business.phone,
+            email: dto.business.email,
+            website: dto.business.website,
+            priceRange: dto.business.priceRange || 'MODERATE',
+            ownerId: user.id,
+            verified: false,
+            active: true,
+          },
+          include: {
+            category: true,
+          },
+        });
+
+        return { user, business };
+      });
+
+      // Generate tokens if we don't have a session from Supabase (e.g. admin.createUser)
+      let tokens;
+      if (!authData.session) {
+        tokens = await this.generateTokens(result.user.id, result.user.email, result.user.role);
+      }
+
+      return {
+        user: {
+          id: result.user.id,
+          email: result.user.email,
+          username: result.user.username,
+          firstName: result.user.firstName,
+          lastName: result.user.lastName,
+          role: result.user.role,
+          verified: result.user.verified,
+        },
+        business: {
+          id: result.business.id,
+          name: result.business.name,
+          slug: result.business.slug,
+          category: result.business.category,
+          city: result.business.city,
+          state: result.business.state,
+          verified: result.business.verified,
+        },
+        session: authData.session || {
+          access_token: tokens!.accessToken,
+          refresh_token: tokens!.refreshToken,
+          expires_in: 900,
+          token_type: 'bearer',
+          user: authData.user,
+        },
+      };
+    } catch (error) {
+      // Rollback Supabase user if Prisma fails
+      console.error('Prisma transaction failed, rolling back Supabase user:', error);
+      if (authData.user) {
+        await this.supabaseService.getClient().auth.admin.deleteUser(authData.user.id);
+      }
+      throw error;
+    }
   }
 
   async login(dto: LoginDto) {
-    // Find user
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+    // Find user by email OR username
+    const user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: dto.email },
+          { username: dto.username || dto.email }, // Allow username in email field or username field
+        ],
+      },
     });
 
     if (!user) {
@@ -331,6 +385,9 @@ export class AuthService {
     }
 
     // Verify password
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -422,11 +479,7 @@ export class AuthService {
 
     // Send password reset email
     try {
-      await this.mailService.sendPasswordResetEmail(
-        user.email,
-        user.firstName,
-        resetToken,
-      );
+      await this.mailService.sendPasswordResetEmail(user.email, user.firstName, resetToken);
     } catch (error) {
       console.error('Failed to send password reset email:', error);
       // Don't throw error to prevent email enumeration
@@ -541,11 +594,7 @@ export class AuthService {
 
     // Send verification email
     try {
-      await this.mailService.sendVerificationEmail(
-        user.email,
-        user.firstName,
-        verificationToken,
-      );
+      await this.mailService.sendVerificationEmail(user.email, user.firstName, verificationToken);
     } catch (error) {
       console.error('Failed to send verification email:', error);
     }
@@ -606,10 +655,7 @@ export class AuthService {
 
         // Send welcome email
         try {
-          await this.mailService.sendWelcomeEmail(
-            user.email,
-            user.firstName,
-          );
+          await this.mailService.sendWelcomeEmail(user.email, user.firstName);
         } catch (error) {
           console.error('Failed to send welcome email:', error);
         }
@@ -665,7 +711,7 @@ export class AuthService {
       phone?: string;
       avatar?: string;
       username?: string;
-    },
+    }
   ) {
     // Check if username is being changed and if it's already taken
     if (dto.username) {

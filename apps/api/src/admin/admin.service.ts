@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { ChatGateway } from '../chat/chat.gateway';
 
 @Injectable()
 export class AdminService {
   constructor(
     private prisma: PrismaService,
-    private configService: ConfigService,
-    private chatGateway: ChatGateway,
+    private configService: ConfigService
   ) {}
 
   // ============================================================================
@@ -93,7 +91,7 @@ export class AdminService {
         newUsers24h,
         activeChats,
         pendingVerifications,
-        onlineUsers: this.chatGateway ? Array.from((this.chatGateway as any).onlineUsers?.keys() || []).length : 0,
+        onlineUsers: 0, // TODO: Implement with Supabase Presence or Redis
       },
       recentActivities,
       timestamp: new Date().toISOString(),
@@ -223,16 +221,19 @@ export class AdminService {
     };
   }
 
-  async updateUser(userId: string, data: {
-    role?: string;
-    verified?: boolean;
-    active?: boolean;
-  }) {
+  async updateUser(
+    userId: string,
+    data: {
+      role?: string;
+      verified?: boolean;
+      active?: boolean;
+    }
+  ) {
     const updateData: any = {
       ...(data.verified !== undefined && { verified: data.verified }),
       ...(data.active !== undefined && { active: data.active }),
     };
-    
+
     // Cast role to UserRole enum if provided
     if (data.role) {
       updateData.role = data.role as any;
@@ -331,11 +332,14 @@ export class AdminService {
     };
   }
 
-  async updateBusiness(businessId: string, data: {
-    verified?: boolean;
-    active?: boolean;
-    featured?: boolean;
-  }) {
+  async updateBusiness(
+    businessId: string,
+    data: {
+      verified?: boolean;
+      active?: boolean;
+      featured?: boolean;
+    }
+  ) {
     return this.prisma.business.update({
       where: { id: businessId },
       data,
@@ -466,12 +470,7 @@ export class AdminService {
 
   async generateAIInsights() {
     // Get recent data for analysis
-    const [
-      recentBusinesses,
-      recentReviews,
-      topCategories,
-      userGrowth,
-    ] = await Promise.all([
+    const [recentBusinesses, recentReviews, topCategories, userGrowth] = await Promise.all([
       this.prisma.business.findMany({
         take: 10,
         orderBy: { createdAt: 'desc' },
@@ -509,18 +508,13 @@ export class AdminService {
       customerSentiment: {
         averageRating: parseFloat(avgRating.toFixed(2)),
         totalReviews: recentReviews.length,
-        sentiment:
-          avgRating >= 4
-            ? 'positive'
-            : avgRating >= 3
-            ? 'neutral'
-            : 'negative',
+        sentiment: avgRating >= 4 ? 'positive' : avgRating >= 3 ? 'neutral' : 'negative',
         insight:
           avgRating >= 4
             ? 'Customer satisfaction is high. Keep up the great work!'
             : avgRating >= 3
-            ? 'Customer satisfaction is moderate. Consider areas for improvement.'
-            : 'Customer satisfaction needs attention. Review feedback and take action.',
+              ? 'Customer satisfaction is moderate. Consider areas for improvement.'
+              : 'Customer satisfaction needs attention. Review feedback and take action.',
       },
       growth: {
         trend: userGrowth.length > 0 ? 'growing' : 'stable',
@@ -707,15 +701,8 @@ export class AdminService {
     type: 'info' | 'warning' | 'alert';
     recipients: 'all' | 'businesses' | 'customers';
   }) {
-    // Send to all online users via WebSocket
-    if (this.chatGateway) {
-      (this.chatGateway.server as any).emit('admin:broadcast', {
-        title: message.title,
-        content: message.content,
-        type: message.type,
-        timestamp: new Date().toISOString(),
-      });
-    }
+    // TODO: Implement broadcast with Supabase Realtime
+    console.log('Broadcast message:', message);
 
     return {
       success: true,

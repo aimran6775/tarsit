@@ -1,24 +1,18 @@
 import {
-  Controller,
-  Post,
-  Delete,
+  BadRequestException,
   Body,
-  UseGuards,
-  UseInterceptors,
+  Controller,
+  Delete,
+  Post,
   UploadedFile,
   UploadedFiles,
-  BadRequestException,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiConsumes,
-  ApiOperation,
-  ApiTags,
-  ApiBody,
-} from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { UploadsService } from './uploads.service';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UploadsService } from './uploads.service';
 
 @ApiTags('uploads')
 @ApiBearerAuth()
@@ -46,10 +40,7 @@ export class UploadsController {
     },
   })
   @UseInterceptors(FileInterceptor('file'))
-  uploadImage(
-    @UploadedFile() file: Express.Multer.File,
-    @Body('folder') folder?: string,
-  ) {
+  uploadImage(@UploadedFile() file: Express.Multer.File, @Body('folder') folder?: string) {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
@@ -80,7 +71,7 @@ export class UploadsController {
   @UseInterceptors(FilesInterceptor('files', 10))
   uploadMultipleImages(
     @UploadedFiles() files: Express.Multer.File[],
-    @Body('folder') folder?: string,
+    @Body('folder') folder?: string
   ) {
     if (!files || files.length === 0) {
       throw new BadRequestException('No files uploaded');
@@ -89,23 +80,23 @@ export class UploadsController {
   }
 
   @Delete('image')
-  @ApiOperation({ summary: 'Delete an image from Cloudinary' })
+  @ApiOperation({ summary: 'Delete an image from storage' })
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        publicId: {
+        path: {
           type: 'string',
-          description: 'Cloudinary public ID of the image',
-          example: 'tarsit/businesses/abc123',
+          description: 'Path of the image in storage',
+          example: 'tarsit/businesses/abc123.jpg',
         },
       },
     },
   })
-  deleteImage(@Body('publicId') publicId: string) {
-    if (!publicId) {
-      throw new BadRequestException('Public ID is required');
+  deleteImage(@Body('path') path: string) {
+    if (!path) {
+      throw new BadRequestException('Path is required');
     }
-    return this.uploadsService.deleteImage(publicId);
+    return this.uploadsService.deleteImage(path);
   }
 }

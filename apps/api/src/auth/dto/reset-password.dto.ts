@@ -9,7 +9,7 @@ export class ResetPasswordDto {
   })
   @IsString()
   @IsNotEmpty()
-  token: string;
+  token!: string;
 
   @ApiProperty({
     description: 'New password (min 8 chars, uppercase, lowercase, number, special char)',
@@ -18,5 +18,5 @@ export class ResetPasswordDto {
   })
   @IsString()
   @IsStrongPassword()
-  newPassword: string;
+  newPassword!: string;
 }

@@ -8,6 +8,8 @@ export interface User {
   lastName: string;
   role: string;
   verified: boolean;
+  phone?: string;
+  avatar?: string;
 }
 
 export interface LoginData {
@@ -54,9 +56,15 @@ export interface SignupBusinessData {
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
   user: User;
+  session?: {
+    access_token: string;
+    refresh_token: string;
+    user: any;
+  };
+  // Legacy support
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export interface BusinessAuthResponse extends AuthResponse {

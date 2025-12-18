@@ -142,7 +142,7 @@ async function generateImage(prompt: string, businessSlug: string): Promise<stri
     }
 
     // For now, we'll store the OpenAI URL directly
-    // In production, you'd upload to Cloudinary or S3
+    // In production, you'd upload to Supabase Storage
     console.log(`  ✅ Image generated for ${businessSlug}`);
     return imageUrl;
   } catch (error) {

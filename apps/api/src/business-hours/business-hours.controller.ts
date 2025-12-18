@@ -7,11 +7,13 @@ import {
   Param,
   UseGuards,
   Request,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { BusinessHoursService } from './business-hours.service';
 import { SetBusinessHoursDto, BusinessHourDto, UpdateAppointmentSettingsDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
 
 @ApiTags('business-hours')
 @Controller('businesses/:businessId')
@@ -35,7 +37,7 @@ export class BusinessHoursController {
   @ApiResponse({ status: 200, description: 'Business hours updated' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
   async setBusinessHours(
-    @Request() req,
+    @Req() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
     @Body() dto: SetBusinessHoursDto,
   ) {
@@ -51,7 +53,7 @@ export class BusinessHoursController {
   @ApiResponse({ status: 200, description: 'Day hours updated' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
   async updateDayHours(
-    @Request() req,
+    @Req() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
     @Param('dayOfWeek') dayOfWeek: string,
     @Body() dto: BusinessHourDto,
@@ -72,7 +74,7 @@ export class BusinessHoursController {
   @ApiResponse({ status: 200, description: 'Default hours initialized' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
   async initializeDefaultHours(
-    @Request() req,
+    @Req() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
   ) {
     // First verify permission - the service will check this
@@ -96,7 +98,7 @@ export class BusinessHoursController {
   @ApiResponse({ status: 200, description: 'Appointment settings updated' })
   @ApiResponse({ status: 403, description: 'Not authorized' })
   async updateAppointmentSettings(
-    @Request() req,
+    @Req() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
     @Body() dto: UpdateAppointmentSettingsDto,
   ) {

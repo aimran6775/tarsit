@@ -19,7 +19,7 @@ interface SimpleMapProps {
 export function SimpleMap({
   latitude,
   longitude,
-  businessName,
+  businessName: _businessName,
   height = '400px',
   zoom = 14,
   interactive = true,

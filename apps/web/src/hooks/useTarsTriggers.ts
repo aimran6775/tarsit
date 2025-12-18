@@ -57,8 +57,6 @@ export function useTarsTriggers(options: UseTarsTriggersOptions = {}) {
 
     const [hasTriggered, setHasTriggered] = useState(false);
     const lastActivityRef = useRef(Date.now());
-    const scrollPositionRef = useRef(0);
-    const clickCountRef = useRef(0);
     const clickTimestampsRef = useRef<number[]>([]);
     const emptySearchCountRef = useRef(0);
     const bookingStartRef = useRef<number | null>(null);

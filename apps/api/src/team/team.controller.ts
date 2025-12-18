@@ -10,6 +10,7 @@ import {
   Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
 import { TeamService } from './team.service';
 import { InviteTeamMemberDto, UpdateTeamMemberDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -25,7 +26,7 @@ export class TeamController {
   @ApiOperation({ summary: 'Invite a team member to a business' })
   @ApiParam({ name: 'businessId', description: 'Business ID' })
   async inviteTeamMember(
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
     @Body() dto: InviteTeamMemberDto,
   ) {
@@ -36,7 +37,7 @@ export class TeamController {
   @ApiOperation({ summary: 'Get all team members for a business' })
   @ApiParam({ name: 'businessId', description: 'Business ID' })
   async getTeamMembers(
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
   ) {
     return this.teamService.getTeamMembers(req.user.id, businessId);
@@ -47,7 +48,7 @@ export class TeamController {
   @ApiParam({ name: 'businessId', description: 'Business ID' })
   @ApiParam({ name: 'memberId', description: 'Team member ID' })
   async updateTeamMember(
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
     @Param('memberId') memberId: string,
     @Body() dto: UpdateTeamMemberDto,
@@ -60,7 +61,7 @@ export class TeamController {
   @ApiParam({ name: 'businessId', description: 'Business ID' })
   @ApiParam({ name: 'memberId', description: 'Team member ID' })
   async removeTeamMember(
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
     @Param('memberId') memberId: string,
   ) {
@@ -71,7 +72,7 @@ export class TeamController {
   @ApiOperation({ summary: 'Accept a team invitation' })
   @ApiParam({ name: 'businessId', description: 'Business ID' })
   async acceptInvitation(
-    @Request() req,
+    @Request() req: AuthenticatedRequest,
     @Param('businessId') businessId: string,
   ) {
     return this.teamService.acceptInvitation(req.user.id, businessId);
@@ -79,7 +80,7 @@ export class TeamController {
 
   @Get('my-memberships')
   @ApiOperation({ summary: 'Get businesses where current user is a team member' })
-  async getMyTeamMemberships(@Request() req) {
+  async getMyTeamMemberships(@Request() req: AuthenticatedRequest) {
     return this.teamService.getMyTeamMemberships(req.user.id);
   }
 }

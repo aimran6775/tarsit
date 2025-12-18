@@ -3,11 +3,11 @@ import {
   BadRequestException,
   PayloadTooLargeException,
 } from '@nestjs/common';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { SupabaseService } from '../supabase/supabase.service';
 
 @Injectable()
 export class UploadsService {
-  constructor(private cloudinaryService: CloudinaryService) {}
+  constructor(private supabaseService: SupabaseService) {}
 
   private readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   private readonly ALLOWED_MIME_TYPES = [
@@ -22,7 +22,7 @@ export class UploadsService {
     this.validateFile(file);
 
     try {
-      const result = await this.cloudinaryService.uploadImage(file, folder);
+      const result = await this.supabaseService.uploadImage(file, folder);
 
       return {
         publicId: result.public_id,
@@ -34,7 +34,7 @@ export class UploadsService {
         bytes: result.bytes,
       };
     } catch (error) {
-      throw new BadRequestException(`Failed to upload image: ${error.message}`);
+      throw new BadRequestException(`Failed to upload image: ${(error as Error).message}`);
     }
   }
 
@@ -54,7 +54,9 @@ export class UploadsService {
     files.forEach((file) => this.validateFile(file));
 
     try {
-      const results = await this.cloudinaryService.uploadImages(files, folder);
+      // Upload files in parallel
+      const uploadPromises = files.map(file => this.supabaseService.uploadImage(file, folder));
+      const results = await Promise.all(uploadPromises);
 
       const images = results.map((result) => ({
         publicId: result.public_id,
@@ -71,16 +73,16 @@ export class UploadsService {
         count: images.length,
       };
     } catch (error) {
-      throw new BadRequestException(`Failed to upload images: ${error.message}`);
+      throw new BadRequestException(`Failed to upload images: ${(error as Error).message}`);
     }
   }
 
   async deleteImage(publicId: string) {
     try {
-      await this.cloudinaryService.deleteImage(publicId);
+      await this.supabaseService.deleteImage(publicId);
       return { success: true, message: 'Image deleted successfully' };
     } catch (error) {
-      throw new BadRequestException(`Failed to delete image: ${error.message}`);
+      throw new BadRequestException(`Failed to delete image: ${(error as Error).message}`);
     }
   }
 

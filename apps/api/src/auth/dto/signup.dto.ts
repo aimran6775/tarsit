@@ -6,7 +6,7 @@ import { IsStrongPassword } from '../../common/validators/password.validator';
 export class SignupDto {
   @ApiProperty({ example: 'john@example.com' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ example: 'johndoe', required: false })
   @IsOptional()
@@ -22,15 +22,15 @@ export class SignupDto {
   })
   @IsString()
   @IsStrongPassword()
-  password: string;
+  password!: string;
 
   @ApiProperty({ example: 'John' })
   @IsString()
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty({ example: 'Doe' })
   @IsString()
-  lastName: string;
+  lastName!: string;
 
   @ApiProperty({ example: '+14155551234', required: false })
   @IsOptional()

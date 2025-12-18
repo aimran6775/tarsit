@@ -1,7 +1,15 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { authApi, User, LoginData, SignupData, SignupBusinessData, BusinessAuthResponse } from '@/lib/api/auth.api';
+import {
+  authApi,
+  BusinessAuthResponse,
+  LoginData,
+  SignupBusinessData,
+  SignupData,
+  User,
+} from '@/lib/api/auth.api';
+import { supabase } from '@/lib/supabase';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
   user: User | null;
@@ -20,76 +28,91 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load user on mount
   useEffect(() => {
-    loadUser();
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        localStorage.setItem('accessToken', session.access_token);
+        refreshUser();
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        localStorage.setItem('accessToken', session.access_token);
+        if (!user) {
+          await refreshUser();
+        }
+      } else {
+        localStorage.removeItem('accessToken');
+        setUser(null);
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const loadUser = async () => {
-    try {
-      const accessToken = localStorage.getItem('accessToken');
-      
-      if (accessToken) {
-        // Fetch current user (apiClient will automatically use the token from localStorage)
-        const currentUser = await authApi.me();
-        setUser(currentUser);
-      }
-    } catch (error) {
-      console.error('Failed to load user:', error);
-      // Clear invalid tokens
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const login = async (data: LoginData) => {
-    const response = await authApi.login(data);
-    
-    // Store tokens
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    
-    // Update state
-    setUser(response.user);
+    if (!data.email && !data.username) {
+      throw new Error('Email or Username is required for login');
+    }
+
+    // Try backend login first (supports username & local password)
+    try {
+      const response = await authApi.login(data);
+      if (response.accessToken) {
+        localStorage.setItem('accessToken', response.accessToken);
+        setUser(response.user);
+        return;
+      }
+    } catch (err) {
+      // Fallback to Supabase direct login if backend fails (only works for email)
+      if (data.email) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+        if (error) throw error;
+      } else {
+        throw err;
+      }
+    }
   };
 
   const signup = async (data: SignupData) => {
     const response = await authApi.signup(data);
-    
-    // Store tokens
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    
-    // Update state
-    setUser(response.user);
+
+    if (response.session) {
+      const { error } = await supabase.auth.setSession(response.session);
+      if (error) throw error;
+    } else {
+      await login({ email: data.email, password: data.password });
+    }
   };
 
   const signupBusiness = async (data: SignupBusinessData): Promise<BusinessAuthResponse> => {
     const response = await authApi.signupBusiness(data);
-    
-    // Store tokens
-    localStorage.setItem('accessToken', response.accessToken);
-    localStorage.setItem('refreshToken', response.refreshToken);
-    
-    // Update state
-    setUser(response.user);
-    
+
+    if (response.session) {
+      const { error } = await supabase.auth.setSession(response.session);
+      if (error) throw error;
+    } else {
+      await login({ email: data.email, password: data.password });
+    }
+
     return response;
   };
 
   const logout = async () => {
-    try {
-      await authApi.logout();
-    } catch (error) {
-      console.error('Logout API error:', error);
-    }
-    
-    // Clear state and storage regardless of API response
+    await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
   };
 
   const refreshUser = async () => {
@@ -99,8 +122,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Failed to refresh user:', error);
       setUser(null);
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
+    } finally {
+      setIsLoading(false);
     }
   };
 

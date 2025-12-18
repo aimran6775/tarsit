@@ -8,7 +8,7 @@ export class CreateVerificationRequestDto {
   })
   @IsString()
   @IsNotEmpty()
-  businessId: string;
+  businessId!: string;
 
   @ApiProperty({
     description: 'Supporting documents or information for verification',
@@ -21,7 +21,7 @@ export class CreateVerificationRequestDto {
 
   @ApiProperty({
     description: 'URLs to uploaded verification documents (business license, tax documents, etc.)',
-    example: ['https://cloudinary.com/doc1.pdf', 'https://cloudinary.com/doc2.pdf'],
+    example: ['https://example.com/doc1.pdf', 'https://example.com/doc2.pdf'],
     required: false,
   })
   @IsArray()

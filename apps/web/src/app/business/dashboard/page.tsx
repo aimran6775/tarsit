@@ -1,41 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { apiClient } from '@/lib/api/client';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import {
+  AnalyticsTab,
+  AppointmentsTab,
+  BusinessHeader,
+  BusinessMessagesTab,
   DashboardHeader,
+  DashboardTabs,
+  HelpTab,
+  HoursTab,
+  InviteModal,
   LoadingState,
   NoBusinessState,
-  BusinessHeader,
-  DashboardTabs,
-  OverviewTab,
-  AppointmentsTab,
-  ReviewsTab,
-  PhotosTab,
-  TeamTab,
-  InviteModal,
-  HoursTab,
-  SettingsTab,
   OnboardingChecklist,
-  ServicesTab,
-  BusinessMessagesTab,
+  OverviewTab,
+  PhotosTab,
   ProfileTab,
-  HelpTab,
-  AnalyticsTab,
+  ReviewsTab,
+  ServicesTab,
+  SettingsTab,
+  TeamTab,
 } from './components';
 import type {
-  Tab,
-  Business,
-  BusinessStats,
   Appointment,
-  TeamMember,
-  BusinessHours,
-  Service,
-  Review,
   AppointmentSettings,
+  Business,
+  BusinessHours,
+  BusinessStats,
   InvitePermissions,
+  Review,
+  Service,
+  Tab,
+  TeamMember,
   VisibilitySettings,
 } from './types';
 
@@ -132,10 +132,11 @@ function Dashboard() {
             setReviews(reviewsRes.value.data || []);
           }
 
-          const pendingCount = appointments.filter(a => a.status === 'pending').length;
+          const pendingCount = appointments.filter((a) => a.status === 'pending').length;
           setStats({
             totalViews: 0,
-            totalAppointments: appointmentsRes.status === 'fulfilled' ? appointmentsRes.value.data?.length || 0 : 0,
+            totalAppointments:
+              appointmentsRes.status === 'fulfilled' ? appointmentsRes.value.data?.length || 0 : 0,
             pendingAppointments: pendingCount,
             totalReviews: businessData.reviewCount || 0,
             averageRating: businessData.rating || 0,
@@ -146,6 +147,16 @@ function Dashboard() {
             appointmentDuration: businessData.appointmentDuration || 60,
             appointmentBuffer: businessData.appointmentBuffer || 15,
             advanceBookingDays: businessData.advanceBookingDays || 30,
+          });
+
+          setVisibilitySettings({
+            showPhone: businessData.showPhone ?? true,
+            showEmail: businessData.showEmail ?? true,
+            showWebsite: businessData.showWebsite ?? true,
+            showHours: businessData.showHours ?? true,
+            showServices: businessData.showServices ?? true,
+            showReviews: businessData.showReviews ?? true,
+            messagesEnabled: businessData.messagingEnabled ?? true,
           });
         }
       } catch (error) {
@@ -169,7 +180,9 @@ function Dashboard() {
   const handleConfirmAppointment = async (appointmentId: string) => {
     try {
       await apiClient.post(`/appointments/${appointmentId}/confirm`);
-      setAppointments(prev => prev.map(a => a.id === appointmentId ? { ...a, status: 'confirmed' } : a));
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === appointmentId ? { ...a, status: 'confirmed' } : a))
+      );
     } catch (error) {
       console.error('Failed to confirm appointment:', error);
       alert('Failed to confirm appointment');
@@ -179,8 +192,12 @@ function Dashboard() {
   const handleCancelAppointment = async (appointmentId: string) => {
     if (!confirm('Are you sure you want to cancel this appointment?')) return;
     try {
-      await apiClient.post(`/appointments/${appointmentId}/cancel`, { reason: 'Cancelled by business' });
-      setAppointments(prev => prev.map(a => a.id === appointmentId ? { ...a, status: 'cancelled' } : a));
+      await apiClient.post(`/appointments/${appointmentId}/cancel`, {
+        reason: 'Cancelled by business',
+      });
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === appointmentId ? { ...a, status: 'cancelled' } : a))
+      );
     } catch (error) {
       console.error('Failed to cancel appointment:', error);
       alert('Failed to cancel appointment');
@@ -190,7 +207,9 @@ function Dashboard() {
   const handleCompleteAppointment = async (appointmentId: string) => {
     try {
       await apiClient.post(`/appointments/${appointmentId}/complete`);
-      setAppointments(prev => prev.map(a => a.id === appointmentId ? { ...a, status: 'completed' } : a));
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === appointmentId ? { ...a, status: 'completed' } : a))
+      );
     } catch (error) {
       console.error('Failed to complete appointment:', error);
       alert('Failed to mark as complete');
@@ -231,7 +250,7 @@ function Dashboard() {
 
     try {
       await apiClient.delete(`/team/business/${business.id}/members/${memberId}`);
-      setTeamMembers(prev => prev.filter(m => m.id !== memberId));
+      setTeamMembers((prev) => prev.filter((m) => m.id !== memberId));
     } catch (error) {
       console.error('Failed to remove member:', error);
       alert('Failed to remove team member');
@@ -245,7 +264,7 @@ function Dashboard() {
     setIsSavingHours(true);
     try {
       await apiClient.post(`/businesses/${business.id}/hours`, {
-        hours: editedHours.map(h => ({
+        hours: editedHours.map((h) => ({
           dayOfWeek: h.dayOfWeek,
           openTime: h.openTime,
           closeTime: h.closeTime,
@@ -279,8 +298,31 @@ function Dashboard() {
 
     setIsSavingSettings(true);
     try {
+      // Save appointment settings
       await apiClient.put(`/businesses/${business.id}/appointment-settings`, appointmentSettings);
-      setBusiness(prev => prev ? { ...prev, ...appointmentSettings } : null);
+
+      // Save visibility settings
+      await apiClient.patch(`/businesses/${business.id}`, {
+        showPhone: visibilitySettings.showPhone,
+        showEmail: visibilitySettings.showEmail,
+        showWebsite: visibilitySettings.showWebsite,
+        showHours: visibilitySettings.showHours,
+        showServices: visibilitySettings.showServices,
+        showReviews: visibilitySettings.showReviews,
+        messagingEnabled: visibilitySettings.messagesEnabled,
+      });
+
+      setBusiness((prev) =>
+        prev
+          ? {
+              ...prev,
+              ...appointmentSettings,
+              ...visibilitySettings,
+              messagingEnabled: visibilitySettings.messagesEnabled,
+            }
+          : null
+      );
+
       alert('Settings saved!');
     } catch (error) {
       console.error('Failed to save settings:', error);
@@ -377,10 +419,7 @@ function Dashboard() {
           )}
 
           {activeTab === 'messages' && business && user && (
-            <BusinessMessagesTab
-              businessId={business.id}
-              currentUserId={user.id}
-            />
+            <BusinessMessagesTab businessId={business.id} currentUserId={user.id} />
           )}
 
           {activeTab === 'reviews' && business && (

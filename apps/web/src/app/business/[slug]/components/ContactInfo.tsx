@@ -1,6 +1,6 @@
 'use client';
 
-import { MapPin, Phone, Mail, Globe } from 'lucide-react';
+import { Globe, Mail, MapPin, Phone } from 'lucide-react';
 import { BusinessDetail, BusinessHours } from '../types';
 
 interface ContactInfoProps {
@@ -12,7 +12,7 @@ export function ContactInfo({ business }: ContactInfoProps) {
     <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
       <h3 className="font-semibold text-white mb-4">Contact</h3>
       <div className="space-y-4">
-        <a 
+        <a
           href={`https://maps.google.com/?q=${encodeURIComponent(
             `${business.addressLine1}, ${business.city}, ${business.state} ${business.zipCode}`
           )}`}
@@ -24,21 +24,25 @@ export function ContactInfo({ business }: ContactInfoProps) {
           <div className="text-sm text-white/60 group-hover:text-white/80 transition-colors">
             <p>{business.addressLine1}</p>
             {business.addressLine2 && <p>{business.addressLine2}</p>}
-            <p>{business.city}, {business.state} {business.zipCode}</p>
+            <p>
+              {business.city}, {business.state} {business.zipCode}
+            </p>
           </div>
         </a>
-        
-        <a 
-          href={`tel:${business.phone}`} 
-          className="flex items-center gap-3 text-white/60 hover:text-white/80 transition-colors"
-        >
-          <Phone className="h-5 w-5 text-white/40" />
-          <span className="text-sm">{business.phone}</span>
-        </a>
 
-        {business.email && (
-          <a 
-            href={`mailto:${business.email}`} 
+        {business.showPhone !== false && (
+          <a
+            href={`tel:${business.phone}`}
+            className="flex items-center gap-3 text-white/60 hover:text-white/80 transition-colors"
+          >
+            <Phone className="h-5 w-5 text-white/40" />
+            <span className="text-sm">{business.phone}</span>
+          </a>
+        )}
+
+        {business.email && business.showEmail !== false && (
+          <a
+            href={`mailto:${business.email}`}
             className="flex items-center gap-3 text-white/60 hover:text-white/80 transition-colors"
           >
             <Mail className="h-5 w-5 text-white/40" />
@@ -46,10 +50,10 @@ export function ContactInfo({ business }: ContactInfoProps) {
           </a>
         )}
 
-        {business.website && (
-          <a 
-            href={business.website} 
-            target="_blank" 
+        {business.website && business.showWebsite !== false && (
+          <a
+            href={business.website}
+            target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 text-white/60 hover:text-white/80 transition-colors"
           >
@@ -76,11 +80,9 @@ export function BusinessHoursCard({ hours }: BusinessHoursCardProps) {
             const today = new Date().getDay();
             const isCurrentDay = h.dayOfWeek === today;
             return (
-              <div 
-                key={h.dayOfWeek} 
-                className={`flex justify-between text-sm ${
-                  isCurrentDay ? 'font-medium' : ''
-                }`}
+              <div
+                key={h.dayOfWeek}
+                className={`flex justify-between text-sm ${isCurrentDay ? 'font-medium' : ''}`}
               >
                 <span className={isCurrentDay ? 'text-white' : 'text-white/50'}>
                   {h.dayName}
@@ -88,13 +90,11 @@ export function BusinessHoursCard({ hours }: BusinessHoursCardProps) {
                     <span className="ml-1.5 text-xs text-emerald-400 font-normal">Today</span>
                   )}
                 </span>
-                <span className={`${
-                  h.isClosed 
-                    ? 'text-red-400' 
-                    : isCurrentDay 
-                      ? 'text-white' 
-                      : 'text-white/70'
-                }`}>
+                <span
+                  className={`${
+                    h.isClosed ? 'text-red-400' : isCurrentDay ? 'text-white' : 'text-white/70'
+                  }`}
+                >
                   {h.isClosed ? 'Closed' : `${h.openTime} - ${h.closeTime}`}
                 </span>
               </div>

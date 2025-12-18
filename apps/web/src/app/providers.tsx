@@ -1,12 +1,12 @@
 'use client';
 
+import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { GlobalTarsWidget } from '@/components/tars/GlobalTarsWidget';
+import { AuthProvider } from '@/contexts/auth-context';
+import { TarsProvider } from '@/contexts/TarsContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Toaster } from 'sonner';
-import { AuthProvider } from '@/contexts/auth-context';
-import { TarsProvider } from '@/contexts/TarsContext';
-import { ErrorBoundary } from '@/components/shared/error-boundary';
-import { GlobalTarsWidget } from '@/components/GlobalTarsWidget';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -25,9 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TarsProvider>
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
+          <ErrorBoundary>{children}</ErrorBoundary>
           <GlobalTarsWidget />
           <Toaster
             position="top-right"

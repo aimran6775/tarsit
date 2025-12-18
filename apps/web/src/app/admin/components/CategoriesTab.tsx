@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { 
-  FolderTree, Plus, Edit2, Trash2, Search, X, Check,
-  ChevronDown, ChevronRight, MoreVertical, Move, GripVertical
+  FolderTree, Plus, Edit2, Trash2, Search, X,
+  ChevronDown, ChevronRight, GripVertical
 } from 'lucide-react';
 
 interface Category {
@@ -32,7 +32,7 @@ export function CategoriesTab({
   onAddCategory,
   onEditCategory,
   onDeleteCategory,
-  onReorderCategory,
+  onReorderCategory: _onReorderCategory,
 }: CategoriesTabProps) {
   const [search, setSearch] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());

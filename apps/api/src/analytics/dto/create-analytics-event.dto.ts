@@ -12,11 +12,11 @@ export enum AnalyticsEventType {
 export class CreateAnalyticsEventDto {
   @ApiProperty({ example: 'cuid123', description: 'Business ID' })
   @IsString()
-  businessId: string;
+  businessId!: string;
 
   @ApiProperty({ enum: AnalyticsEventType, description: 'Event type' })
   @IsEnum(AnalyticsEventType)
-  eventType: AnalyticsEventType;
+  eventType!: AnalyticsEventType;
 
   @ApiPropertyOptional({
     example: { source: 'search', query: 'coffee shops' },

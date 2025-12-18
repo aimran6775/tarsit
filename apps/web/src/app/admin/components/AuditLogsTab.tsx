@@ -2,9 +2,9 @@
 
 import { 
   History, User, Building2, Shield, Settings, Trash2,
-  Search, ChevronLeft, ChevronRight, Filter, Download
+  Search, ChevronLeft, ChevronRight, Download
 } from 'lucide-react';
-import type { AuditLog, AuditLogsResponse } from '../types';
+import type { AuditLogsResponse } from '../types';
 
 interface AuditLogsTabProps {
   auditLogsData: AuditLogsResponse | null;

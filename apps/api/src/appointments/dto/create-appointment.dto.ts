@@ -4,7 +4,7 @@ import { IsString, IsDateString, IsOptional, MaxLength, IsInt, Min, IsEmail } fr
 export class CreateAppointmentDto {
   @ApiProperty({ example: 'cuid123', description: 'Business ID' })
   @IsString()
-  businessId: string;
+  businessId!: string;
 
   @ApiProperty({ example: 'cuid456', description: 'Service ID', required: false })
   @IsOptional()
@@ -16,7 +16,7 @@ export class CreateAppointmentDto {
     description: 'Appointment date and time',
   })
   @IsDateString()
-  date: string;
+  date!: string;
 
   @ApiPropertyOptional({
     example: 60,

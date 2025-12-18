@@ -84,7 +84,6 @@ function SearchContent() {
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'map'>('grid');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [mapCenter, setMapCenter] = useState<[number, number] | null>(null);
-  const [selectedBusinessId, setSelectedBusinessId] = useState<string | null>(null);
 
   // Geolocation
   const { latitude, longitude, loading: geoLoading, getCurrentPosition } = useGeolocation();
@@ -447,7 +446,6 @@ function SearchContent() {
               center={mapCenter || (latitude && longitude ? [longitude, latitude] : undefined)}
               height="600px"
               onMarkerClick={(business) => {
-                setSelectedBusinessId(business.id);
                 router.push(`/business/${business.slug}`);
               }}
             />

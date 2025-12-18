@@ -23,17 +23,24 @@ export interface BusinessDetail {
   verified: boolean;
   featured: boolean;
   appointmentsEnabled: boolean;
+  messagingEnabled?: boolean;
+  showReviews?: boolean;
+  showServices?: boolean;
+  showHours?: boolean;
+  showPhone?: boolean;
+  showEmail?: boolean;
+  showWebsite?: boolean;
   coverImage?: string;
   logoImage?: string;
   themeColor?: string;
   photos: Array<{ id: string; url: string; caption?: string; featured: boolean }>;
-  services: Array<{ 
-    id: string; 
-    name: string; 
-    description?: string; 
-    price?: number; 
-    duration?: number; 
-    bookable: boolean 
+  services: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    price?: number;
+    duration?: number;
+    bookable: boolean;
   }>;
   reviews: Array<{
     id: string;

@@ -53,16 +53,6 @@ export function BusinessMap({
   // Get Mapbox token from env
   const mapboxToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
 
-  // Calculate center from businesses if not provided
-  const mapCenter = useMemo(() => {
-    if (center) return center;
-    if (businesses.length === 0) return [-98.5795, 39.8283];
-
-    const avgLng = businesses.reduce((sum, b) => sum + b.longitude, 0) / businesses.length;
-    const avgLat = businesses.reduce((sum, b) => sum + b.latitude, 0) / businesses.length;
-    return [avgLng, avgLat] as [number, number];
-  }, [center, businesses]);
-
   // Update view state when center changes
   useMemo(() => {
     if (center) {

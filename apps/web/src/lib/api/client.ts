@@ -20,19 +20,20 @@ export function normalizeError(error: unknown): ApiError {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<{ message?: string; error?: string }>;
     return {
-      message: axiosError.response?.data?.message || axiosError.message || 'An unexpected error occurred',
+      message:
+        axiosError.response?.data?.message || axiosError.message || 'An unexpected error occurred',
       statusCode: axiosError.response?.status || 500,
       error: axiosError.response?.data?.error,
     };
   }
-  
+
   if (error instanceof Error) {
     return {
       message: error.message,
       statusCode: 500,
     };
   }
-  
+
   return {
     message: 'An unexpected error occurred',
     statusCode: 500,
@@ -73,58 +74,12 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh and error normalization
+// Response interceptor to handle error normalization
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as typeof error.config & { _retry?: boolean };
-
-    // Don't retry for certain endpoints
-    const noRetryEndpoints = ['/auth/login', '/auth/signup', '/auth/refresh'];
-    const isNoRetryEndpoint = noRetryEndpoints.some(ep => originalRequest?.url?.includes(ep));
-
-    // If error is 401 and we haven't tried to refresh yet
-    if (error.response?.status === 401 && !originalRequest?._retry && !isNoRetryEndpoint) {
-      originalRequest._retry = true;
-
-      if (typeof window !== 'undefined') {
-        const refreshToken = localStorage.getItem('refreshToken');
-        
-        if (refreshToken) {
-          try {
-            const response = await axios.post(`${API_URL}/auth/refresh`, {
-              refreshToken,
-            });
-
-            const { accessToken } = response.data;
-            localStorage.setItem('accessToken', accessToken);
-
-            // Retry original request with new token
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            }
-            return apiClient(originalRequest);
-          } catch (refreshError) {
-            // Refresh failed, clear tokens and redirect to login
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            
-            // Only redirect if not already on auth pages
-            if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-              window.location.href = '/auth/login?session=expired';
-            }
-            return Promise.reject(refreshError);
-          }
-        } else {
-          // No refresh token, redirect to login if not on auth pages
-          if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/auth')) {
-            window.location.href = '/auth/login';
-          }
-        }
-      }
-    }
-
+    // We rely on Supabase client to handle token refresh via onAuthStateChange
+    // which updates localStorage.
     return Promise.reject(error);
   }
 );

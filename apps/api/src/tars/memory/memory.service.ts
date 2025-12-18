@@ -31,8 +31,8 @@ export class TarsMemoryService {
             await this.prisma.tarsMemory.upsert({
                 where: {
                     userId_businessId_key: {
-                        userId: userId || null,
-                        businessId: businessId || null,
+                        userId: (userId || null) as any,
+                        businessId: (businessId || null) as any,
                         key,
                     },
                 },

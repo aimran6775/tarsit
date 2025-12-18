@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { 
-  Settings, Save, Bell, Mail, Shield, Database,
-  Toggle, AlertCircle, Check
+  Settings, Save, Shield, Database,
+  ToggleLeft, AlertCircle, Check
 } from 'lucide-react';
 import type { PlatformSettings } from '../types';
 
@@ -269,7 +269,7 @@ export function SettingsTab({ settings, onUpdateSettings }: SettingsTabProps) {
       <SettingsSection
         title="Platform Features"
         description="Enable or disable platform features"
-        icon={<Toggle className="h-5 w-5 text-purple-400" />}
+        icon={<ToggleLeft className="h-5 w-5 text-purple-400" />}
       >
         <div className="space-y-2">
           <ToggleSetting

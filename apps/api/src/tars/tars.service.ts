@@ -5,7 +5,7 @@ import { TarsMemoryService } from './memory/memory.service';
 import { TarsActionsService } from './actions/actions.service';
 import { TarsDatabaseQueryService } from './database/database-query.service';
 import { TarsUsageService } from './usage/usage.service';
-import { generatePersonalizedPrompt, TARS_ERROR_MESSAGES } from './prompts';
+import { generatePersonalizedPrompt, TARS_ERROR_MESSAGES } from './prompts/system-prompt';
 import OpenAI from 'openai';
 
 export interface ChatMessage {

@@ -15,7 +15,7 @@ export class CreateMessageDto {
   })
   @IsString()
   @IsNotEmpty()
-  chatId: string;
+  chatId!: string;
 
   @ApiProperty({
     description: 'Message content',
@@ -23,7 +23,7 @@ export class CreateMessageDto {
   })
   @IsString()
   @IsNotEmpty()
-  content: string;
+  content!: string;
 
   @ApiProperty({
     description: 'Message type',

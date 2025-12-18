@@ -1,11 +1,19 @@
 'use client';
 
-import Image from 'next/image';
-import { 
-  Search, Download, Eye, Ban, CheckCircle, Star, Trash2, 
-  Building2, ChevronLeft, ChevronRight, ExternalLink, Edit,
-  MapPin, Calendar, Sparkles
+import {
+  Ban,
+  Building2,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  ExternalLink,
+  MapPin,
+  Search,
+  Sparkles,
+  Star,
 } from 'lucide-react';
+import Image from 'next/image';
 import type { Business, BusinessesResponse } from '../types';
 import { getStatusColor } from '../types';
 
@@ -17,7 +25,10 @@ interface BusinessesTabProps {
   setBusinessStatusFilter: (status: string) => void;
   businessPage: number;
   setBusinessPage: (page: number) => void;
-  onBusinessAction: (businessId: string, action: 'verify' | 'suspend' | 'activate' | 'feature' | 'delete') => void;
+  onBusinessAction: (
+    businessId: string,
+    action: 'verify' | 'suspend' | 'activate' | 'feature' | 'delete'
+  ) => void;
   onViewBusiness: (business: Business) => void;
 }
 
@@ -30,7 +41,7 @@ export function BusinessesTab({
   businessPage,
   setBusinessPage,
   onBusinessAction,
-  onViewBusiness,
+  onViewBusiness: _onViewBusiness,
 }: BusinessesTabProps) {
   const businesses = businessesData?.businesses || [];
   const pagination = businessesData?.pagination;
@@ -45,19 +56,19 @@ export function BusinessesTab({
         </div>
         <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
           <p className="text-2xl font-bold text-emerald-400">
-            {businesses.filter(b => b.verified).length}
+            {businesses.filter((b) => b.verified).length}
           </p>
           <p className="text-sm text-white/50">Verified</p>
         </div>
         <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
           <p className="text-2xl font-bold text-amber-400">
-            {businesses.filter(b => !b.verified && b.active).length}
+            {businesses.filter((b) => !b.verified && b.active).length}
           </p>
           <p className="text-sm text-white/50">Pending Verification</p>
         </div>
         <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
           <p className="text-2xl font-bold text-purple-400">
-            {businesses.filter(b => b.featured).length}
+            {businesses.filter((b) => b.featured).length}
           </p>
           <p className="text-sm text-white/50">Featured</p>
         </div>
@@ -80,11 +91,21 @@ export function BusinessesTab({
           onChange={(e) => setBusinessStatusFilter(e.target.value)}
           className="h-12 px-4 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
         >
-          <option value="" className="bg-neutral-900">All Status</option>
-          <option value="active" className="bg-neutral-900">Active</option>
-          <option value="verified" className="bg-neutral-900">Verified</option>
-          <option value="featured" className="bg-neutral-900">Featured</option>
-          <option value="suspended" className="bg-neutral-900">Suspended</option>
+          <option value="" className="bg-neutral-900">
+            All Status
+          </option>
+          <option value="active" className="bg-neutral-900">
+            Active
+          </option>
+          <option value="verified" className="bg-neutral-900">
+            Verified
+          </option>
+          <option value="featured" className="bg-neutral-900">
+            Featured
+          </option>
+          <option value="suspended" className="bg-neutral-900">
+            Suspended
+          </option>
         </select>
         <button className="h-12 px-6 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-500 hover:to-indigo-500 transition-all shadow-lg shadow-purple-500/25 flex items-center gap-2">
           <Download className="h-5 w-5" />
@@ -94,15 +115,21 @@ export function BusinessesTab({
 
       {/* Businesses Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {businesses.map(business => (
-          <div 
-            key={business.id} 
+        {businesses.map((business) => (
+          <div
+            key={business.id}
             className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6 hover:border-white/20 transition-all group"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden">
                 {business.logoImage ? (
-                  <Image src={business.logoImage} alt={business.name} width={56} height={56} className="rounded-xl object-cover" />
+                  <Image
+                    src={business.logoImage}
+                    alt={business.name}
+                    width={56}
+                    height={56}
+                    className="rounded-xl object-cover"
+                  />
                 ) : (
                   <Building2 className="h-7 w-7 text-white/40" />
                 )}
@@ -118,30 +145,38 @@ export function BusinessesTab({
                     <CheckCircle className="h-4 w-4 text-emerald-400" />
                   </span>
                 )}
-                <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${
-                  business.active ? getStatusColor('ACTIVE') : getStatusColor('SUSPENDED')
-                }`}>
+                <span
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${
+                    business.active ? getStatusColor('ACTIVE') : getStatusColor('SUSPENDED')
+                  }`}
+                >
                   {business.active ? 'Active' : 'Suspended'}
                 </span>
               </div>
             </div>
 
             <h3 className="font-semibold text-lg text-white mb-1 truncate">{business.name}</h3>
-            <p className="text-sm text-white/50 mb-3">{business.category?.name || 'Uncategorized'}</p>
+            <p className="text-sm text-white/50 mb-3">
+              {(typeof business.category === 'string'
+                ? business.category
+                : business.category?.name) || 'Uncategorized'}
+            </p>
 
             <div className="flex items-center gap-4 mb-4 text-sm">
               <div className="flex items-center gap-1.5">
                 <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                <span className="font-medium text-white">{business.rating?.toFixed(1) || '0.0'}</span>
+                <span className="font-medium text-white">
+                  {business.rating?.toFixed(1) || '0.0'}
+                </span>
               </div>
-              <span className="text-white/40">
-                ({business.reviewCount || 0} reviews)
-              </span>
+              <span className="text-white/40">({business.reviewCount || 0} reviews)</span>
             </div>
 
             <div className="flex items-center gap-2 text-sm text-white/50 mb-4">
               <MapPin className="h-4 w-4" />
-              <span>{business.city}, {business.state}</span>
+              <span>
+                {business.city}, {business.state}
+              </span>
             </div>
 
             <div className="pt-4 border-t border-white/10 mb-4">
@@ -153,7 +188,7 @@ export function BusinessesTab({
             </div>
 
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={() => window.open(`/business/${business.slug}`, '_blank')}
                 className="flex-1 h-10 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-white/70 hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
               >
@@ -161,7 +196,7 @@ export function BusinessesTab({
                 View
               </button>
               {!business.verified && (
-                <button 
+                <button
                   onClick={() => onBusinessAction(business.id, 'verify')}
                   className="flex-1 h-10 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-500 transition-colors flex items-center justify-center gap-2"
                 >
@@ -170,7 +205,7 @@ export function BusinessesTab({
                 </button>
               )}
               {!business.featured && business.verified && (
-                <button 
+                <button
                   onClick={() => onBusinessAction(business.id, 'feature')}
                   className="h-10 w-10 rounded-lg bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 transition-colors flex items-center justify-center"
                   title="Feature Business"
@@ -179,7 +214,7 @@ export function BusinessesTab({
                 </button>
               )}
               {business.active ? (
-                <button 
+                <button
                   onClick={() => onBusinessAction(business.id, 'suspend')}
                   className="h-10 w-10 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors flex items-center justify-center"
                   title="Suspend"
@@ -187,7 +222,7 @@ export function BusinessesTab({
                   <Ban className="h-4 w-4" />
                 </button>
               ) : (
-                <button 
+                <button
                   onClick={() => onBusinessAction(business.id, 'activate')}
                   className="h-10 w-10 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors flex items-center justify-center"
                   title="Activate"

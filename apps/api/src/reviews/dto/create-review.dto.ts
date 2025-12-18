@@ -15,13 +15,13 @@ export class CreateReviewDto {
   @ApiProperty({ example: 'business-uuid-here' })
   @IsString()
   @IsNotEmpty()
-  businessId: string;
+  businessId!: string;
 
   @ApiProperty({ example: 5, minimum: 1, maximum: 5 })
   @IsNumber()
   @Min(1)
   @Max(5)
-  rating: number;
+  rating!: number;
 
   @ApiProperty({ example: 'Excellent service!', required: false })
   @IsOptional()

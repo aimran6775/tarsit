@@ -1,11 +1,21 @@
 'use client';
 
-import { useState } from 'react';
-import { 
-  X, Send, Megaphone, Users, Building2, Clock, Bell,
-  AlertCircle, CheckCircle, Mail, MessageSquare, Globe,
-  ChevronDown
+import {
+  AlertCircle,
+  Bell,
+  Building2,
+  CheckCircle,
+  ChevronDown,
+  Clock,
+  Globe,
+  Mail,
+  Megaphone,
+  MessageSquare,
+  Send,
+  Users,
+  X,
 } from 'lucide-react';
+import { useState } from 'react';
 import type { BroadcastMessage } from '../types';
 
 interface BroadcastModalProps {
@@ -17,9 +27,9 @@ interface BroadcastModalProps {
 export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps) {
   const [message, setMessage] = useState<Partial<BroadcastMessage>>({
     title: '',
-    message: '',
+    content: '',
     type: 'info',
-    audience: 'all',
+    recipients: 'all',
     channels: ['in_app'],
     scheduledAt: null,
   });
@@ -31,16 +41,16 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
   if (!isOpen) return null;
 
   const handleSend = async () => {
-    if (!message.title || !message.message) return;
+    if (!message.title || !message.content) return;
 
     setSending(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     onSend({
       id: Date.now().toString(),
       title: message.title,
-      message: message.message,
+      content: message.content!,
       type: message.type || 'info',
-      audience: message.audience || 'all',
+      recipients: message.recipients || 'all',
       channels: message.channels || ['in_app'],
       scheduledAt: showSchedule ? message.scheduledAt : null,
       sentAt: showSchedule ? null : new Date().toISOString(),
@@ -55,9 +65,9 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
       onClose();
       setMessage({
         title: '',
-        message: '',
+        content: '',
         type: 'info',
-        audience: 'all',
+        recipients: 'all',
         channels: ['in_app'],
         scheduledAt: null,
       });
@@ -67,7 +77,7 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
   const toggleChannel = (channel: string) => {
     const channels = message.channels || [];
     if (channels.includes(channel)) {
-      setMessage({ ...message, channels: channels.filter(c => c !== channel) });
+      setMessage({ ...message, channels: channels.filter((c) => c !== channel) });
     } else {
       setMessage({ ...message, channels: [...channels, channel] });
     }
@@ -78,14 +88,12 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
     warning: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
     success: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
     error: 'bg-red-500/20 text-red-400 border-red-500/30',
+    alert: 'bg-red-500/20 text-red-400 border-red-500/30',
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-neutral-900 rounded-2xl border border-white/10 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/10">
@@ -98,10 +106,7 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
               <p className="text-sm text-white/50">Send a message to all or selected users</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-lg hover:bg-white/10 text-white/50"
-          >
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/10 text-white/50">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -132,13 +137,13 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-2">Message</label>
                 <textarea
-                  value={message.message}
-                  onChange={(e) => setMessage({ ...message, message: e.target.value })}
+                  value={message.content}
+                  onChange={(e) => setMessage({ ...message, content: e.target.value })}
                   className="w-full h-32 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
                   placeholder="Enter your message here..."
                 />
                 <p className="text-xs text-white/40 mt-1">
-                  {message.message?.length || 0} / 500 characters
+                  {message.content?.length || 0} / 500 characters
                 </p>
               </div>
 
@@ -146,7 +151,7 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
               <div>
                 <label className="block text-sm font-medium text-white/70 mb-2">Message Type</label>
                 <div className="flex flex-wrap gap-2">
-                  {(['info', 'success', 'warning', 'error'] as const).map(type => (
+                  {(['info', 'success', 'warning', 'error'] as const).map((type) => (
                     <button
                       key={type}
                       onClick={() => setMessage({ ...message, type })}
@@ -164,12 +169,14 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
 
               {/* Audience */}
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Target Audience</label>
+                <label className="block text-sm font-medium text-white/70 mb-2">
+                  Target Audience
+                </label>
                 <div className="grid grid-cols-3 gap-3">
                   <button
-                    onClick={() => setMessage({ ...message, audience: 'all' })}
+                    onClick={() => setMessage({ ...message, recipients: 'all' })}
                     className={`p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
-                      message.audience === 'all'
+                      message.recipients === 'all'
                         ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
                         : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
                     }`}
@@ -178,9 +185,9 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
                     <span className="text-sm font-medium">All Users</span>
                   </button>
                   <button
-                    onClick={() => setMessage({ ...message, audience: 'users' })}
+                    onClick={() => setMessage({ ...message, recipients: 'users' })}
                     className={`p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
-                      message.audience === 'users'
+                      message.recipients === 'users'
                         ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
                         : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
                     }`}
@@ -189,9 +196,9 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
                     <span className="text-sm font-medium">Users Only</span>
                   </button>
                   <button
-                    onClick={() => setMessage({ ...message, audience: 'businesses' })}
+                    onClick={() => setMessage({ ...message, recipients: 'businesses' })}
                     className={`p-4 rounded-xl border transition-all flex flex-col items-center gap-2 ${
-                      message.audience === 'businesses'
+                      message.recipients === 'businesses'
                         ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
                         : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
                     }`}
@@ -204,7 +211,9 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
 
               {/* Channels */}
               <div>
-                <label className="block text-sm font-medium text-white/70 mb-2">Delivery Channels</label>
+                <label className="block text-sm font-medium text-white/70 mb-2">
+                  Delivery Channels
+                </label>
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={() => toggleChannel('in_app')}
@@ -250,12 +259,16 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
                 >
                   <Clock className="h-4 w-4" />
                   <span className="text-sm font-medium">Schedule for later</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${showSchedule ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform ${showSchedule ? 'rotate-180' : ''}`}
+                  />
                 </button>
-                
+
                 {showSchedule && (
                   <div className="mt-4 p-4 bg-white/5 rounded-xl">
-                    <label className="block text-sm font-medium text-white/70 mb-2">Schedule Date & Time</label>
+                    <label className="block text-sm font-medium text-white/70 mb-2">
+                      Schedule Date & Time
+                    </label>
                     <input
                       type="datetime-local"
                       value={message.scheduledAt || ''}
@@ -274,7 +287,9 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
                     <AlertCircle className="h-5 w-5 mt-0.5" />
                     <div>
                       <p className="font-semibold">{message.title || 'Message Title'}</p>
-                      <p className="text-sm opacity-80 mt-1">{message.message || 'Your message will appear here...'}</p>
+                      <p className="text-sm opacity-80 mt-1">
+                        {message.content || 'Your message will appear here...'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -291,7 +306,7 @@ export function BroadcastModal({ isOpen, onClose, onSend }: BroadcastModalProps)
               </button>
               <button
                 onClick={handleSend}
-                disabled={!message.title || !message.message || sending}
+                disabled={!message.title || !message.content || sending}
                 className="h-12 px-8 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium hover:from-purple-500 hover:to-indigo-500 transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {sending ? (

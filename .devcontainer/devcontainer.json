@@ -1,0 +1,39 @@
+{
+  "name": "Tarsit Monorepo",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "Prisma.prisma",
+        "bradlc.vscode-tailwindcss",
+        "rvest.vs-code-nestjs-snippets",
+        "firsttris.vscode-jest-runner",
+        "humao.rest-client"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      }
+    }
+  },
+  "postCreateCommand": "npm install -g pnpm && pnpm install",
+  "forwardPorts": [3000, 4000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend",
+      "onAutoForward": "notify"
+    },
+    "4000": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    }
+  }
+}

@@ -1,10 +1,10 @@
 'use client';
 
 import { 
-  Star, Trash2, Eye, Flag, MessageSquare, Search, 
+  Star, Trash2, Eye, Flag, Search, 
   ChevronLeft, ChevronRight, AlertTriangle
 } from 'lucide-react';
-import type { Review, ReviewsResponse } from '../types';
+import type { ReviewsResponse } from '../types';
 
 interface ReviewsTabProps {
   reviewsData: ReviewsResponse | null;
