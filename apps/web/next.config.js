@@ -189,7 +189,7 @@ const nextConfig = {
   },
 };
 
-// Wrap with Sentry
+// Wrap with Sentry - disabled for Vercel deployment due to build trace issues
 const { withSentryConfig } = require('@sentry/nextjs');
 
 const sentryWebpackPluginOptions = {
@@ -214,4 +214,7 @@ const sentryWebpackPluginOptions = {
   disableLogger: true,
 };
 
-module.exports = withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+// Skip Sentry wrapping on Vercel to avoid build trace stack overflow
+const isVercel = process.env.VERCEL === '1';
+
+module.exports = isVercel ? nextConfig : withSentryConfig(nextConfig, sentryWebpackPluginOptions);
