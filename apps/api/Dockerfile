@@ -14,7 +14,6 @@ RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY apps/api ./apps/api
-COPY prisma ./apps/api/prisma
 
 # Generate Prisma client
 WORKDIR /app/apps/api
