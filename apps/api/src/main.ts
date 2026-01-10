@@ -58,6 +58,9 @@ async function bootstrap() {
         process.env.FRONTEND_URL,
         'https://tarsit.com',
         'https://www.tarsit.com',
+        'https://tarsit-web.vercel.app',
+        // Allow all Vercel preview deployments
+        /^https:\/\/tarsit-.*\.vercel\.app$/,
         // Always allow localhost for development/testing
         'http://localhost:3000',
         'http://localhost:3001',
@@ -70,8 +73,16 @@ async function bootstrap() {
 
       // Allow GitHub Codespaces (both dev and production for testing)
       const isCodespaces = origin.endsWith('.app.github.dev');
+      
+      // Check if origin matches any allowed origin (including regex patterns)
+      const isAllowed = allowedOrigins.some(allowed => {
+        if (allowed instanceof RegExp) {
+          return allowed.test(origin);
+        }
+        return allowed === origin;
+      });
 
-      if (allowedOrigins.includes(origin) || isCodespaces) {
+      if (isAllowed || isCodespaces) {
         callback(null, true);
       } else {
         console.log('Blocked CORS origin:', origin);
