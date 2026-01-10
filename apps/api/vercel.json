@@ -1,16 +1,22 @@
 {
   "version": 2,
-  "buildCommand": "pnpm install && pnpm --filter @tarsit/api build && pnpm --filter @tarsit/api prisma:generate",
-  "outputDirectory": "apps/api/dist",
-  "installCommand": "npm install -g pnpm",
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "maxLambdaSize": "50mb"
+      }
+    }
+  ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/api/index.js"
+      "dest": "/api/index.ts"
     }
   ],
   "functions": {
-    "api/index.js": {
+    "api/index.ts": {
       "memory": 1024,
       "maxDuration": 30
     }
