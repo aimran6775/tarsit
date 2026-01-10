@@ -2,8 +2,11 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // Output standalone for Docker deployment
-  output: 'standalone',
+  // Output standalone for Docker deployment (disabled for Vercel)
+  // output: 'standalone',
+
+  // Disable output file tracing to prevent stack overflow in build
+  // outputFileTracingRoot: undefined,
 
   // Image optimization - Enhanced for Supabase
   images: {
