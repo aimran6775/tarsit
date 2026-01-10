@@ -1,25 +1,24 @@
 FROM node:20-alpine AS base
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm and openssl
+RUN npm install -g pnpm && apk add --no-cache openssl
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy all package files for monorepo
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
 
-# Install dependencies
+# Install all dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy API source code
 COPY apps/api ./apps/api
 
-# Generate Prisma client
+# Generate Prisma client and build
 WORKDIR /app/apps/api
-RUN npx prisma@5.22.0 generate
-
-# Build the application
+RUN pnpm prisma generate
 RUN pnpm build
 
 # Production stage
