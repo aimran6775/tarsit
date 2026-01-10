@@ -1,7 +1,10 @@
 {
   "framework": "nextjs",
-  "installCommand": "pnpm install",
+  "installCommand": "cd ../.. && pnpm install",
   "buildCommand": "pnpm build",
   "outputDirectory": ".next",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "git": {
+    "deploymentEnabled": true
+  }
 }
