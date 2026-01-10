@@ -17,7 +17,7 @@ COPY apps/api ./apps/api
 
 # Generate Prisma client
 WORKDIR /app/apps/api
-RUN npx prisma generate
+RUN npx prisma@5.22.0 generate
 
 # Build the application
 RUN pnpm build
