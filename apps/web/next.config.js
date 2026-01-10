@@ -85,6 +85,15 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    // Exclude paths from build tracing to prevent stack overflow on Vercel
+    outputFileTracingExcludes: {
+      '*': [
+        'node_modules/@swc/core-linux-x64-gnu',
+        'node_modules/@swc/core-linux-x64-musl',
+        'node_modules/@esbuild/linux-x64',
+        'node_modules/sharp',
+      ],
+    },
     // optimizeCss disabled - requires 'critters' package
     // optimizeCss: true,
   },
