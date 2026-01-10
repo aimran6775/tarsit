@@ -89,8 +89,13 @@ const nextConfig = {
     // optimizeCss: true,
   },
 
-  // Webpack optimizations
+  // Webpack optimizations - simplified for Vercel compatibility
   webpack: (config, { isServer }) => {
+    // Skip custom optimization on Vercel to avoid build trace issues
+    if (process.env.VERCEL === '1') {
+      return config;
+    }
+    
     // Optimize bundle size
     if (!isServer) {
       config.optimization = {
@@ -103,7 +108,7 @@ const nextConfig = {
             framework: {
               name: 'framework',
               chunks: 'all',
-              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
               priority: 40,
               enforce: true,
             },
