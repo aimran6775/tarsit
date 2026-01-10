@@ -11,7 +11,6 @@ RUN npm install
 
 COPY apps/api/src ./src
 COPY apps/api/tsconfig.json ./
-COPY apps/api/tsconfig.build.json ./
 COPY apps/api/nest-cli.json ./
 
 RUN npx prisma generate
