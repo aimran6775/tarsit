@@ -1,0 +1,1859 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tarsit UI/UX Analysis</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --bg-dark: #0a0a0a;
+        --bg-card: #141414;
+        --bg-hover: #1f1f1f;
+        --purple-400: #c084fc;
+        --purple-500: #a855f7;
+        --purple-600: #9333ea;
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-muted: rgba(255, 255, 255, 0.5);
+        --border: rgba(255, 255, 255, 0.1);
+      }
+
+      body {
+        font-family:
+          'Inter',
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        background: var(--bg-dark);
+        color: var(--text-primary);
+        line-height: 1.6;
+      }
+
+      /* Navigation */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 280px;
+        height: 100vh;
+        background: var(--bg-card);
+        border-right: 1px solid var(--border);
+        overflow-y: auto;
+        padding: 20px 0;
+        z-index: 100;
+      }
+
+      .sidebar-header {
+        padding: 0 20px 20px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+      }
+
+      .sidebar-header h1 {
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, var(--purple-400), var(--purple-600));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .sidebar-header p {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+      }
+
+      .nav-section {
+        margin-bottom: 24px;
+      }
+
+      .nav-section-title {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        padding: 0 20px;
+        margin-bottom: 8px;
+      }
+
+      .nav-link {
+        display: block;
+        padding: 10px 20px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+      }
+
+      .nav-link:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+
+      .nav-link.active {
+        background: rgba(168, 85, 247, 0.1);
+        color: var(--purple-400);
+        border-right: 2px solid var(--purple-500);
+      }
+
+      /* Main Content */
+      .main {
+        margin-left: 280px;
+        padding: 40px;
+        max-width: 1200px;
+      }
+
+      section {
+        margin-bottom: 60px;
+        scroll-margin-top: 20px;
+      }
+
+      h2 {
+        font-size: 2rem;
+        margin-bottom: 24px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      h3 {
+        font-size: 1.5rem;
+        margin: 32px 0 16px;
+        color: var(--purple-400);
+      }
+
+      h4 {
+        font-size: 1.1rem;
+        margin: 24px 0 12px;
+        color: var(--text-secondary);
+      }
+
+      p {
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+      }
+
+      /* Cards */
+      .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+      }
+
+      .card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.2s;
+      }
+
+      .card:hover {
+        border-color: var(--purple-500);
+        transform: translateY(-2px);
+      }
+
+      .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .card-route {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: var(--purple-400);
+        background: rgba(168, 85, 247, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+        display: inline-block;
+      }
+
+      .card-desc {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+      }
+
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 0.9rem;
+      }
+
+      th,
+      td {
+        padding: 12px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th {
+        background: var(--bg-card);
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      td {
+        color: var(--text-secondary);
+      }
+
+      tr:hover td {
+        background: var(--bg-hover);
+      }
+
+      code {
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 0.85rem;
+        background: rgba(168, 85, 247, 0.1);
+        color: var(--purple-400);
+        padding: 2px 6px;
+        border-radius: 4px;
+      }
+
+      /* Tags */
+      .tag {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-right: 6px;
+        margin-bottom: 6px;
+      }
+
+      .tag-purple {
+        background: rgba(168, 85, 247, 0.2);
+        color: var(--purple-400);
+      }
+      .tag-green {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+      }
+      .tag-blue {
+        background: rgba(59, 130, 246, 0.2);
+        color: #3b82f6;
+      }
+      .tag-orange {
+        background: rgba(249, 115, 22, 0.2);
+        color: #f97316;
+      }
+      .tag-red {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+      }
+
+      /* Color Swatches */
+      .color-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 16px;
+        margin: 20px 0;
+      }
+
+      .color-swatch {
+        text-align: center;
+      }
+
+      .color-box {
+        height: 80px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        border: 1px solid var(--border);
+      }
+
+      .color-name {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+
+      .color-value {
+        font-family: monospace;
+        font-size: 0.75rem;
+        color: var(--text-muted);
+      }
+
+      /* Flow Diagram */
+      .flow-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 30px;
+        margin: 20px 0;
+        overflow-x: auto;
+      }
+
+      .flow-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        margin: 20px 0;
+        flex-wrap: wrap;
+      }
+
+      .flow-box {
+        background: var(--bg-hover);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px 24px;
+        text-align: center;
+        min-width: 140px;
+      }
+
+      .flow-box.primary {
+        background: rgba(168, 85, 247, 0.1);
+        border-color: var(--purple-500);
+      }
+
+      .flow-arrow {
+        color: var(--text-muted);
+        font-size: 1.5rem;
+      }
+
+      /* Stats */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin: 20px 0;
+      }
+
+      .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--purple-400), var(--purple-600));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .stat-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-top: 4px;
+      }
+
+      /* List styles */
+      ul,
+      ol {
+        margin: 16px 0;
+        padding-left: 24px;
+        color: var(--text-secondary);
+      }
+
+      li {
+        margin-bottom: 8px;
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .sidebar {
+          width: 240px;
+        }
+        .main {
+          margin-left: 240px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          display: none;
+        }
+        .main {
+          margin-left: 0;
+          padding: 20px;
+        }
+        .stats-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="sidebar-header">
+        <h1>Tarsit</h1>
+        <p>UI/UX Documentation</p>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Overview</div>
+        <a href="#overview" class="nav-link active">App Overview</a>
+        <a href="#tech-stack" class="nav-link">Tech Stack</a>
+        <a href="#design-system" class="nav-link">Design System</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Public Pages</div>
+        <a href="#home" class="nav-link">Home</a>
+        <a href="#search" class="nav-link">Search</a>
+        <a href="#business-detail" class="nav-link">Business Detail</a>
+        <a href="#categories" class="nav-link">Categories</a>
+        <a href="#about" class="nav-link">About</a>
+        <a href="#contact" class="nav-link">Contact</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Authentication</div>
+        <a href="#auth-login" class="nav-link">Login</a>
+        <a href="#auth-signup" class="nav-link">Sign Up</a>
+        <a href="#auth-business" class="nav-link">Business Registration</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">User Dashboard</div>
+        <a href="#user-dashboard" class="nav-link">Dashboard Overview</a>
+        <a href="#user-appointments" class="nav-link">Appointments</a>
+        <a href="#user-favorites" class="nav-link">Favorites</a>
+        <a href="#user-messages" class="nav-link">Messages</a>
+        <a href="#user-settings" class="nav-link">Settings</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Business Dashboard</div>
+        <a href="#biz-dashboard" class="nav-link">Dashboard Overview</a>
+        <a href="#biz-profile" class="nav-link">Profile</a>
+        <a href="#biz-services" class="nav-link">Services</a>
+        <a href="#biz-appointments" class="nav-link">Appointments</a>
+        <a href="#biz-reviews" class="nav-link">Reviews</a>
+        <a href="#biz-analytics" class="nav-link">Analytics</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Admin</div>
+        <a href="#admin-dashboard" class="nav-link">Admin Panel</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Components</div>
+        <a href="#components-ui" class="nav-link">UI Components</a>
+        <a href="#components-features" class="nav-link">Feature Components</a>
+        <a href="#tars-ai" class="nav-link">TARS AI Assistant</a>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+      <!-- OVERVIEW SECTION -->
+      <section id="overview">
+        <h2>🚀 App Overview</h2>
+        <p>
+          Tarsit is a modern local business discovery platform that connects users with businesses
+          in their area. It features an AI assistant named "TARS" for enhanced user experience.
+        </p>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-number">15+</div>
+            <div class="stat-label">Main Pages</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">50+</div>
+            <div class="stat-label">Components</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">3</div>
+            <div class="stat-label">User Roles</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number">1</div>
+            <div class="stat-label">AI Assistant</div>
+          </div>
+        </div>
+
+        <h3>User Roles</h3>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">👤 Guest User</div>
+            <div class="card-desc">
+              Can browse businesses, search, view details, and access public pages. Prompted to sign
+              up for full features.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">👥 Registered Customer</div>
+            <div class="card-desc">
+              Can book appointments, save favorites, message businesses, leave reviews, and manage
+              their profile.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🏪 Business Owner</div>
+            <div class="card-desc">
+              Full business management: profile, services, appointments, team, analytics, photos,
+              hours, and settings.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🛡️ Admin</div>
+            <div class="card-desc">
+              Platform administration: user management, business verification, content moderation,
+              system health.
+            </div>
+          </div>
+        </div>
+
+        <h3>Main User Flows</h3>
+        <div class="flow-container">
+          <h4 style="text-align: center; margin-bottom: 20px">Customer Journey</h4>
+          <div class="flow-row">
+            <div class="flow-box">Home Page</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Search</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Business Detail</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box primary">Book / Message</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Review</div>
+          </div>
+        </div>
+
+        <div class="flow-container">
+          <h4 style="text-align: center; margin-bottom: 20px">Business Owner Journey</h4>
+          <div class="flow-row">
+            <div class="flow-box">Business Signup</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Complete Profile</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Add Services</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box primary">Receive Bookings</div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Grow Business</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TECH STACK -->
+      <section id="tech-stack">
+        <h2>⚙️ Tech Stack</h2>
+
+        <h3>Frontend</h3>
+        <table>
+          <tr>
+            <th>Technology</th>
+            <th>Purpose</th>
+            <th>Version</th>
+          </tr>
+          <tr>
+            <td>Next.js</td>
+            <td>React Framework (App Router)</td>
+            <td>14.x</td>
+          </tr>
+          <tr>
+            <td>React</td>
+            <td>UI Library</td>
+            <td>18.x</td>
+          </tr>
+          <tr>
+            <td>TypeScript</td>
+            <td>Type Safety</td>
+            <td>5.x</td>
+          </tr>
+          <tr>
+            <td>Tailwind CSS</td>
+            <td>Styling</td>
+            <td>3.x</td>
+          </tr>
+          <tr>
+            <td>Framer Motion</td>
+            <td>Animations</td>
+            <td>10.x</td>
+          </tr>
+          <tr>
+            <td>React Query</td>
+            <td>Data Fetching/Caching</td>
+            <td>5.x</td>
+          </tr>
+          <tr>
+            <td>Lucide React</td>
+            <td>Icons</td>
+            <td>Latest</td>
+          </tr>
+          <tr>
+            <td>Sonner</td>
+            <td>Toast Notifications</td>
+            <td>Latest</td>
+          </tr>
+        </table>
+
+        <h3>Backend</h3>
+        <table>
+          <tr>
+            <th>Technology</th>
+            <th>Purpose</th>
+          </tr>
+          <tr>
+            <td>NestJS</td>
+            <td>API Framework</td>
+          </tr>
+          <tr>
+            <td>Prisma</td>
+            <td>Database ORM</td>
+          </tr>
+          <tr>
+            <td>PostgreSQL</td>
+            <td>Database</td>
+          </tr>
+          <tr>
+            <td>Supabase</td>
+            <td>Auth, Storage, Realtime</td>
+          </tr>
+          <tr>
+            <td>OpenAI API</td>
+            <td>TARS AI Assistant</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- DESIGN SYSTEM -->
+      <section id="design-system">
+        <h2>🎨 Design System</h2>
+
+        <h3>Color Palette</h3>
+        <h4>Dark Mode (Default)</h4>
+        <div class="color-grid">
+          <div class="color-swatch">
+            <div class="color-box" style="background: #0a0a0a"></div>
+            <div class="color-name">Background</div>
+            <div class="color-value">#0a0a0a</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-box" style="background: #141414"></div>
+            <div class="color-name">Card/Surface</div>
+            <div class="color-value">#141414</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-box" style="background: #a855f7"></div>
+            <div class="color-name">Primary (Purple)</div>
+            <div class="color-value">#a855f7</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-box" style="background: #c084fc"></div>
+            <div class="color-name">Purple Light</div>
+            <div class="color-value">#c084fc</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-box" style="background: #9333ea"></div>
+            <div class="color-name">Purple Dark</div>
+            <div class="color-value">#9333ea</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-box" style="background: #22c55e"></div>
+            <div class="color-name">Success</div>
+            <div class="color-value">#22c55e</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-box" style="background: #f97316"></div>
+            <div class="color-name">Warning</div>
+            <div class="color-value">#f97316</div>
+          </div>
+          <div class="color-swatch">
+            <div class="color-box" style="background: #ef4444"></div>
+            <div class="color-name">Destructive</div>
+            <div class="color-value">#ef4444</div>
+          </div>
+        </div>
+
+        <h3>Typography</h3>
+        <table>
+          <tr>
+            <th>Element</th>
+            <th>Size</th>
+            <th>Weight</th>
+            <th>Usage</th>
+          </tr>
+          <tr>
+            <td>Hero Heading</td>
+            <td>text-5xl to text-7xl</td>
+            <td>font-semibold</td>
+            <td>Page heroes</td>
+          </tr>
+          <tr>
+            <td>Section Heading</td>
+            <td>text-2xl to text-3xl</td>
+            <td>font-semibold</td>
+            <td>Section titles</td>
+          </tr>
+          <tr>
+            <td>Card Title</td>
+            <td>text-lg to text-xl</td>
+            <td>font-semibold</td>
+            <td>Card headers</td>
+          </tr>
+          <tr>
+            <td>Body Text</td>
+            <td>text-base</td>
+            <td>font-normal</td>
+            <td>Paragraphs</td>
+          </tr>
+          <tr>
+            <td>Small Text</td>
+            <td>text-sm</td>
+            <td>font-normal</td>
+            <td>Captions, labels</td>
+          </tr>
+          <tr>
+            <td>Micro Text</td>
+            <td>text-xs</td>
+            <td>font-medium</td>
+            <td>Badges, timestamps</td>
+          </tr>
+        </table>
+
+        <h3>Spacing & Layout</h3>
+        <ul>
+          <li>
+            <strong>Container Max Width:</strong> max-w-6xl (1152px) for content, max-w-4xl for
+            forms
+          </li>
+          <li><strong>Section Padding:</strong> py-16 to py-24 for major sections</li>
+          <li><strong>Card Padding:</strong> p-4 to p-6</li>
+          <li><strong>Grid Gaps:</strong> gap-4 to gap-8</li>
+          <li>
+            <strong>Border Radius:</strong> rounded-lg (8px), rounded-xl (12px), rounded-2xl (16px)
+          </li>
+        </ul>
+
+        <h3>Responsive Breakpoints</h3>
+        <table>
+          <tr>
+            <th>Breakpoint</th>
+            <th>Width</th>
+            <th>Typical Changes</th>
+          </tr>
+          <tr>
+            <td>sm</td>
+            <td>640px</td>
+            <td>Two-column layouts begin</td>
+          </tr>
+          <tr>
+            <td>md</td>
+            <td>768px</td>
+            <td>Mobile nav hides, desktop nav shows</td>
+          </tr>
+          <tr>
+            <td>lg</td>
+            <td>1024px</td>
+            <td>Full sidebar layouts</td>
+          </tr>
+          <tr>
+            <td>xl</td>
+            <td>1280px</td>
+            <td>Wider content areas</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- HOME PAGE -->
+      <section id="home">
+        <h2>🏠 Home Page</h2>
+        <span class="card-route">/</span>
+
+        <p>
+          The landing page featuring a video background hero, search functionality, and value
+          propositions.
+        </p>
+
+        <h3>Page Structure</h3>
+        <ol>
+          <li>
+            <strong>Hero Section</strong> - Video background with overlay, main heading with
+            rotating text, HeroSearch component
+          </li>
+          <li>
+            <strong>Stats Bar</strong> - Dynamic platform statistics (businesses, reviews,
+            connections)
+          </li>
+          <li>
+            <strong>Categories Grid</strong> - 6 featured categories with icons, link to full
+            categories
+          </li>
+          <li><strong>How It Works</strong> - 3 feature sections with illustrations</li>
+          <li><strong>Trust Section</strong> - Verified business badges and trust indicators</li>
+          <li><strong>Business CTA</strong> - Call-to-action for business registration</li>
+        </ol>
+
+        <h3>Key Components</h3>
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>Location</th>
+            <th>Purpose</th>
+          </tr>
+          <tr>
+            <td><code>HeroSearch</code></td>
+            <td>components/features</td>
+            <td>Main search with query + location inputs</td>
+          </tr>
+          <tr>
+            <td><code>RotatingText</code></td>
+            <td>components/ui</td>
+            <td>Animated tagline rotation</td>
+          </tr>
+          <tr>
+            <td>Category Cards</td>
+            <td>Inline</td>
+            <td>Category navigation with icons</td>
+          </tr>
+        </table>
+
+        <h3>Current Hero Text</h3>
+        <div class="card">
+          <div class="card-title">Heading</div>
+          <p style="font-size: 1.5rem; color: var(--text-primary)">Discover local businesses</p>
+          <p style="color: var(--purple-400); font-size: 1.25rem">
+            <em
+              >Rotating: "that feel like home" → "you'll love" → "worth supporting" → "that care
+              about you"</em
+            >
+          </p>
+        </div>
+      </section>
+
+      <!-- SEARCH PAGE -->
+      <section id="search">
+        <h2>🔍 Search Page</h2>
+        <span class="card-route">/search</span>
+
+        <p>Full-featured business search with filters, map view, and results.</p>
+
+        <h3>Layout Options</h3>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">📋 List View</div>
+            <div class="card-desc">Vertical list of business cards with full details.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 Grid View</div>
+            <div class="card-desc">2-3 column grid for quick scanning.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">🗺️ Map View</div>
+            <div class="card-desc">Interactive map with business markers and preview popups.</div>
+          </div>
+        </div>
+
+        <h3>Filter Options</h3>
+        <table>
+          <tr>
+            <th>Filter</th>
+            <th>Type</th>
+            <th>Options</th>
+          </tr>
+          <tr>
+            <td>Category</td>
+            <td>Pills</td>
+            <td>All categories from database</td>
+          </tr>
+          <tr>
+            <td>Price Range</td>
+            <td>Multi-select</td>
+            <td>$, $$, $$$, $$$$</td>
+          </tr>
+          <tr>
+            <td>Rating</td>
+            <td>Slider</td>
+            <td>1-5 stars minimum</td>
+          </tr>
+          <tr>
+            <td>Distance</td>
+            <td>Radius</td>
+            <td>1mi, 5mi, 10mi, 25mi</td>
+          </tr>
+          <tr>
+            <td>Open Now</td>
+            <td>Toggle</td>
+            <td>Yes/No</td>
+          </tr>
+          <tr>
+            <td>Verified</td>
+            <td>Toggle</td>
+            <td>Yes/No</td>
+          </tr>
+        </table>
+
+        <h3>Components</h3>
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>Purpose</th>
+          </tr>
+          <tr>
+            <td><code>EnhancedSearchBar</code></td>
+            <td>Search input with suggestions</td>
+          </tr>
+          <tr>
+            <td><code>SearchFilters</code></td>
+            <td>Filter panel (collapsible on mobile)</td>
+          </tr>
+          <tr>
+            <td><code>SearchResultCard</code></td>
+            <td>Business result item</td>
+          </tr>
+          <tr>
+            <td><code>CategoryBrowser</code></td>
+            <td>Category quick filters</td>
+          </tr>
+          <tr>
+            <td><code>BusinessMap</code></td>
+            <td>Map with markers</td>
+          </tr>
+          <tr>
+            <td><code>BusinessPreview</code></td>
+            <td>Marker popup preview</td>
+          </tr>
+          <tr>
+            <td><code>SearchPagination</code></td>
+            <td>Results pagination</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- BUSINESS DETAIL -->
+      <section id="business-detail">
+        <h2>🏪 Business Detail Page</h2>
+        <span class="card-route">/business/[slug]</span>
+
+        <p>Comprehensive business profile with all information, booking, and messaging.</p>
+
+        <h3>Page Sections</h3>
+        <ol>
+          <li>
+            <strong>BusinessHeader</strong> - Cover image, logo, name, rating, verification badge,
+            action buttons
+          </li>
+          <li><strong>PhotoGallery</strong> - Scrollable image carousel</li>
+          <li><strong>ServicesList</strong> - Available services with pricing and duration</li>
+          <li><strong>ReviewsSection</strong> - Customer reviews with business responses</li>
+          <li><strong>BusinessHours</strong> - Weekly schedule with open/closed status</li>
+          <li><strong>ContactInfo</strong> - Phone, email, website links</li>
+          <li><strong>LocationMap</strong> - Address and map</li>
+        </ol>
+
+        <h3>Action Components</h3>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">📅 AppointmentModal</div>
+            <div class="card-desc">
+              Date/time picker, service selection, booking form with user details.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">💬 MessageModal</div>
+            <div class="card-desc">Direct message form to business, creates chat thread.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">❤️ Favorite Button</div>
+            <div class="card-desc">Toggle save/unsave business to favorites.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">📤 Share Button</div>
+            <div class="card-desc">Copy link, share to social media.</div>
+          </div>
+        </div>
+
+        <h3>Mobile Optimization</h3>
+        <ul>
+          <li><code>MobileActionBar</code> - Fixed bottom bar with Book/Message/Call buttons</li>
+          <li>Swipeable photo gallery</li>
+          <li>Collapsible sections</li>
+          <li>Click-to-call phone numbers</li>
+        </ul>
+      </section>
+
+      <!-- CATEGORIES -->
+      <section id="categories">
+        <h2>📂 Categories Page</h2>
+        <span class="card-route">/categories</span>
+
+        <p>Browse all business categories with search and business counts.</p>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Search filter for categories</li>
+          <li>"Top Categories" featured section</li>
+          <li>Full category grid with icons</li>
+          <li>Business count per category</li>
+          <li>Click navigates to search with category filter</li>
+        </ul>
+
+        <h3>Categories Available</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0">
+          <span class="tag tag-purple">Restaurants</span>
+          <span class="tag tag-purple">Coffee & Tea</span>
+          <span class="tag tag-purple">Shopping</span>
+          <span class="tag tag-purple">Health & Wellness</span>
+          <span class="tag tag-purple">Beauty & Spa</span>
+          <span class="tag tag-purple">Fitness</span>
+          <span class="tag tag-purple">Home Services</span>
+          <span class="tag tag-purple">Auto Services</span>
+          <span class="tag tag-purple">Professional Services</span>
+          <span class="tag tag-purple">Entertainment</span>
+          <span class="tag tag-purple">Pet Services</span>
+          <span class="tag tag-purple">Education</span>
+        </div>
+      </section>
+
+      <!-- ABOUT -->
+      <section id="about">
+        <h2>ℹ️ About Page</h2>
+        <span class="card-route">/about</span>
+
+        <p>Company story, mission statement, and values.</p>
+
+        <h3>Sections</h3>
+        <ul>
+          <li>Gradient hero with animated title</li>
+          <li>Platform statistics bar</li>
+          <li>Mission statement</li>
+          <li>Values cards (Local First, Built with Care, Real Connections)</li>
+          <li>Team section (optional)</li>
+        </ul>
+      </section>
+
+      <!-- CONTACT -->
+      <section id="contact">
+        <h2>📞 Contact Page</h2>
+        <span class="card-route">/contact</span>
+
+        <p>Contact form and company contact information.</p>
+
+        <h3>Form Fields</h3>
+        <table>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Required</th>
+          </tr>
+          <tr>
+            <td>Name</td>
+            <td>Text</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Email</td>
+            <td>Email</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Subject</td>
+            <td>Select</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td>Message</td>
+            <td>Textarea</td>
+            <td>Yes</td>
+          </tr>
+        </table>
+
+        <h3>Contact Info Cards</h3>
+        <ul>
+          <li>Email address</li>
+          <li>Phone number</li>
+          <li>Physical address</li>
+          <li>Business hours</li>
+        </ul>
+      </section>
+
+      <!-- AUTH PAGES -->
+      <section id="auth-login">
+        <h2>🔐 Login Page</h2>
+        <span class="card-route">/auth/login</span>
+
+        <h3>Layout</h3>
+        <p>
+          Split layout on desktop: Form on left, promotional panel on right. Single column on
+          mobile.
+        </p>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Email or Username login toggle</li>
+          <li>Password field with visibility toggle</li>
+          <li>Remember me checkbox</li>
+          <li>Forgot password link</li>
+          <li>Google OAuth button</li>
+          <li>Sign up link for new users</li>
+        </ul>
+      </section>
+
+      <section id="auth-signup">
+        <h2>📝 Sign Up Page</h2>
+        <span class="card-route">/auth/signup</span>
+
+        <h3>Form Fields</h3>
+        <table>
+          <tr>
+            <th>Field</th>
+            <th>Validation</th>
+          </tr>
+          <tr>
+            <td>Full Name</td>
+            <td>Required, min 2 characters</td>
+          </tr>
+          <tr>
+            <td>Username</td>
+            <td>Required, unique, 3-20 characters, alphanumeric</td>
+          </tr>
+          <tr>
+            <td>Email</td>
+            <td>Required, valid email format</td>
+          </tr>
+          <tr>
+            <td>Password</td>
+            <td>Min 8 chars, uppercase, lowercase, number</td>
+          </tr>
+          <tr>
+            <td>Confirm Password</td>
+            <td>Must match password</td>
+          </tr>
+        </table>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Real-time username availability check</li>
+          <li>Password strength indicator</li>
+          <li>Terms of service acceptance</li>
+          <li>Google OAuth option</li>
+        </ul>
+      </section>
+
+      <section id="auth-business">
+        <h2>🏢 Business Registration</h2>
+        <span class="card-route">/business/register</span>
+
+        <h3>Multi-Step Wizard</h3>
+        <div class="flow-container">
+          <div class="flow-row">
+            <div class="flow-box">Step 1<br /><small>Account</small></div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Step 2<br /><small>Business Info</small></div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box">Step 3<br /><small>Location</small></div>
+            <span class="flow-arrow">→</span>
+            <div class="flow-box primary">Step 4<br /><small>Review & Launch</small></div>
+          </div>
+        </div>
+
+        <h3>Step Details</h3>
+        <table>
+          <tr>
+            <th>Step</th>
+            <th>Fields</th>
+          </tr>
+          <tr>
+            <td>1. Account</td>
+            <td>Name, Email, Username, Password</td>
+          </tr>
+          <tr>
+            <td>2. Business</td>
+            <td>Business Name, Category, Description, Phone, Website</td>
+          </tr>
+          <tr>
+            <td>3. Location</td>
+            <td>Address, City, State, ZIP, Country</td>
+          </tr>
+          <tr>
+            <td>4. Review</td>
+            <td>Summary of all info, Terms acceptance</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- USER DASHBOARD -->
+      <section id="user-dashboard">
+        <h2>👤 User Dashboard</h2>
+        <span class="card-route">/dashboard</span>
+
+        <p>Customer account management hub with tabs for different functions.</p>
+
+        <h3>Dashboard Header</h3>
+        <ul>
+          <li>User avatar (uploadable)</li>
+          <li>Welcome message with name</li>
+          <li>Member since date</li>
+          <li>Quick stats row</li>
+        </ul>
+
+        <h3>Tabs</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0">
+          <span class="tag tag-purple">Overview</span>
+          <span class="tag tag-blue">Appointments</span>
+          <span class="tag tag-red">Favorites</span>
+          <span class="tag tag-green">Messages</span>
+        </div>
+      </section>
+
+      <section id="user-appointments">
+        <h2>📅 User Appointments</h2>
+        <span class="card-route">/dashboard (Appointments tab)</span>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Upcoming appointments list</li>
+          <li>Past appointments history</li>
+          <li>Appointment status badges (Pending, Confirmed, Completed, Cancelled)</li>
+          <li>Cancel/Reschedule actions</li>
+          <li>Leave review after completion</li>
+        </ul>
+      </section>
+
+      <section id="user-favorites">
+        <h2>❤️ User Favorites</h2>
+        <span class="card-route">/dashboard (Favorites tab)</span>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Grid of saved businesses</li>
+          <li>Quick actions (View, Book, Remove)</li>
+          <li>Empty state with discover CTA</li>
+        </ul>
+      </section>
+
+      <section id="user-messages">
+        <h2>💬 Messages</h2>
+        <span class="card-route">/messages</span>
+
+        <h3>Layout</h3>
+        <p>
+          Two-panel layout: Conversation list on left, active chat on right. Full-screen on mobile
+          with navigation.
+        </p>
+
+        <h3>Components</h3>
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>Purpose</th>
+          </tr>
+          <tr>
+            <td><code>ConversationList</code></td>
+            <td>List of chats with search</td>
+          </tr>
+          <tr>
+            <td><code>ChatWindow</code></td>
+            <td>Message thread display</td>
+          </tr>
+          <tr>
+            <td><code>ChatContext</code></td>
+            <td>Business info sidebar</td>
+          </tr>
+        </table>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Real-time messaging via WebSockets</li>
+          <li>Typing indicators</li>
+          <li>Read receipts</li>
+          <li>Unread count badges</li>
+          <li>Message search</li>
+        </ul>
+      </section>
+
+      <section id="user-settings">
+        <h2>⚙️ User Settings</h2>
+        <span class="card-route">/settings</span>
+
+        <h3>Tabs</h3>
+        <table>
+          <tr>
+            <th>Tab</th>
+            <th>Settings</th>
+          </tr>
+          <tr>
+            <td>Profile</td>
+            <td>Name, username, email, avatar</td>
+          </tr>
+          <tr>
+            <td>Password</td>
+            <td>Change password form</td>
+          </tr>
+          <tr>
+            <td>Notifications</td>
+            <td>Email preferences, push notifications</td>
+          </tr>
+          <tr>
+            <td>Privacy</td>
+            <td>Profile visibility, data sharing</td>
+          </tr>
+          <tr>
+            <td>Danger Zone</td>
+            <td>Delete account</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- BUSINESS DASHBOARD -->
+      <section id="biz-dashboard">
+        <h2>📊 Business Dashboard</h2>
+        <span class="card-route">/business/dashboard</span>
+
+        <p>Comprehensive business management console for owners.</p>
+
+        <h3>Dashboard Tabs</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0">
+          <span class="tag tag-purple">Overview</span>
+          <span class="tag tag-blue">Profile</span>
+          <span class="tag tag-green">Services</span>
+          <span class="tag tag-orange">Appointments</span>
+          <span class="tag tag-purple">Messages</span>
+          <span class="tag tag-blue">Reviews</span>
+          <span class="tag tag-green">Photos</span>
+          <span class="tag tag-orange">Team</span>
+          <span class="tag tag-purple">Hours</span>
+          <span class="tag tag-blue">Analytics</span>
+          <span class="tag tag-red">Settings</span>
+        </div>
+
+        <h3>Overview Components</h3>
+        <ul>
+          <li><code>BusinessHeader</code> - Business info, completion progress</li>
+          <li><code>SetupChecklist</code> - Profile completion steps</li>
+          <li><code>DashboardStats</code> - Key metrics cards</li>
+          <li><code>RecentAppointments</code> - Upcoming bookings</li>
+          <li><code>RecentReviews</code> - Latest customer reviews</li>
+        </ul>
+      </section>
+
+      <section id="biz-profile">
+        <h2>📝 Business Profile</h2>
+        <span class="card-route">/business/dashboard (Profile tab)</span>
+
+        <h3>Editable Fields</h3>
+        <table>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+          </tr>
+          <tr>
+            <td>Business Name</td>
+            <td>Text</td>
+          </tr>
+          <tr>
+            <td>Description</td>
+            <td>Rich text / Textarea</td>
+          </tr>
+          <tr>
+            <td>Category</td>
+            <td>Select</td>
+          </tr>
+          <tr>
+            <td>Phone</td>
+            <td>Phone input</td>
+          </tr>
+          <tr>
+            <td>Email</td>
+            <td>Email input</td>
+          </tr>
+          <tr>
+            <td>Website</td>
+            <td>URL input</td>
+          </tr>
+          <tr>
+            <td>Address</td>
+            <td>Address autocomplete</td>
+          </tr>
+          <tr>
+            <td>Logo</td>
+            <td>Image upload</td>
+          </tr>
+          <tr>
+            <td>Cover Image</td>
+            <td>Image upload</td>
+          </tr>
+        </table>
+      </section>
+
+      <section id="biz-services">
+        <h2>🛎️ Business Services</h2>
+        <span class="card-route">/business/dashboard (Services tab)</span>
+
+        <h3>Service Fields</h3>
+        <table>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+          </tr>
+          <tr>
+            <td>Service Name</td>
+            <td>Text</td>
+          </tr>
+          <tr>
+            <td>Description</td>
+            <td>Textarea</td>
+          </tr>
+          <tr>
+            <td>Price</td>
+            <td>Currency input</td>
+          </tr>
+          <tr>
+            <td>Duration</td>
+            <td>Minutes select</td>
+          </tr>
+          <tr>
+            <td>Category</td>
+            <td>Select (optional)</td>
+          </tr>
+          <tr>
+            <td>Active</td>
+            <td>Toggle</td>
+          </tr>
+        </table>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Add/Edit/Delete services</li>
+          <li>Drag to reorder</li>
+          <li>Toggle availability</li>
+          <li>Bulk actions</li>
+        </ul>
+      </section>
+
+      <section id="biz-appointments">
+        <h2>📅 Business Appointments</h2>
+        <span class="card-route">/business/dashboard (Appointments tab)</span>
+
+        <h3>Views</h3>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">📋 List View</div>
+            <div class="card-desc">Chronological list with filters for status and date range.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">📆 Calendar View</div>
+            <div class="card-desc">Day/Week/Month calendar with appointment blocks.</div>
+          </div>
+        </div>
+
+        <h3>Appointment Actions</h3>
+        <ul>
+          <li>Confirm pending appointments</li>
+          <li>Mark as completed</li>
+          <li>Mark as no-show</li>
+          <li>Cancel with reason</li>
+          <li>Reschedule</li>
+        </ul>
+      </section>
+
+      <section id="biz-reviews">
+        <h2>⭐ Business Reviews</h2>
+        <span class="card-route">/business/dashboard (Reviews tab)</span>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Review list with ratings</li>
+          <li>Average rating display</li>
+          <li>Rating distribution chart</li>
+          <li>Respond to reviews</li>
+          <li>Report inappropriate reviews</li>
+          <li>Filter by rating/date</li>
+        </ul>
+      </section>
+
+      <section id="biz-analytics">
+        <h2>📈 Business Analytics</h2>
+        <span class="card-route">/business/dashboard (Analytics tab)</span>
+
+        <h3>Metrics Available</h3>
+        <table>
+          <tr>
+            <th>Metric</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td>Profile Views</td>
+            <td>Total page visits</td>
+          </tr>
+          <tr>
+            <td>Search Impressions</td>
+            <td>Times shown in search results</td>
+          </tr>
+          <tr>
+            <td>Appointment Requests</td>
+            <td>Booking attempts</td>
+          </tr>
+          <tr>
+            <td>Messages Received</td>
+            <td>Customer inquiries</td>
+          </tr>
+          <tr>
+            <td>Review Score</td>
+            <td>Average rating trend</td>
+          </tr>
+          <tr>
+            <td>Conversion Rate</td>
+            <td>Views to bookings ratio</td>
+          </tr>
+        </table>
+
+        <h3>Time Ranges</h3>
+        <ul>
+          <li>Last 7 days</li>
+          <li>Last 30 days</li>
+          <li>Last 90 days</li>
+          <li>Custom range</li>
+        </ul>
+      </section>
+
+      <!-- ADMIN -->
+      <section id="admin-dashboard">
+        <h2>🛡️ Admin Dashboard</h2>
+        <span class="card-route">/admin</span>
+
+        <p>Platform administration panel for managing users, businesses, and system health.</p>
+
+        <h3>Admin Tabs</h3>
+        <table>
+          <tr>
+            <th>Tab</th>
+            <th>Purpose</th>
+          </tr>
+          <tr>
+            <td>Overview</td>
+            <td>Real-time stats, activity feed</td>
+          </tr>
+          <tr>
+            <td>Users</td>
+            <td>User management, roles, bans</td>
+          </tr>
+          <tr>
+            <td>Businesses</td>
+            <td>Business listing management</td>
+          </tr>
+          <tr>
+            <td>Categories</td>
+            <td>Category CRUD</td>
+          </tr>
+          <tr>
+            <td>Verifications</td>
+            <td>Business verification requests</td>
+          </tr>
+          <tr>
+            <td>Reviews</td>
+            <td>Review moderation</td>
+          </tr>
+          <tr>
+            <td>Reports</td>
+            <td>Platform reports/exports</td>
+          </tr>
+          <tr>
+            <td>Audit Logs</td>
+            <td>Admin action history</td>
+          </tr>
+          <tr>
+            <td>System</td>
+            <td>Health checks, API status</td>
+          </tr>
+          <tr>
+            <td>Settings</td>
+            <td>Platform configuration</td>
+          </tr>
+          <tr>
+            <td>TARS</td>
+            <td>AI assistant management</td>
+          </tr>
+        </table>
+
+        <h3>Key Features</h3>
+        <ul>
+          <li>Broadcast messaging to all users</li>
+          <li>AI-powered insights</li>
+          <li>Real-time metrics dashboard</li>
+          <li>Bulk actions on users/businesses</li>
+        </ul>
+      </section>
+
+      <!-- COMPONENTS -->
+      <section id="components-ui">
+        <h2>🧩 UI Components</h2>
+        <span class="card-route">components/ui/</span>
+
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>File</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td>Button</td>
+            <td><code>button.tsx</code></td>
+            <td>Primary, secondary, outline, ghost variants</td>
+          </tr>
+          <tr>
+            <td>Input</td>
+            <td><code>input.tsx</code></td>
+            <td>Text, email, password inputs with icons</td>
+          </tr>
+          <tr>
+            <td>Card</td>
+            <td><code>card.tsx</code></td>
+            <td>Container component with header/body/footer</td>
+          </tr>
+          <tr>
+            <td>Badge</td>
+            <td><code>badge.tsx</code></td>
+            <td>Status and category tags</td>
+          </tr>
+          <tr>
+            <td>LoadingSpinner</td>
+            <td><code>loading-spinner.tsx</code></td>
+            <td>Animated loading indicator</td>
+          </tr>
+          <tr>
+            <td>EmptyState</td>
+            <td><code>empty-state.tsx</code></td>
+            <td>No data placeholder with CTA</td>
+          </tr>
+          <tr>
+            <td>ErrorState</td>
+            <td><code>error-state.tsx</code></td>
+            <td>Error display with retry</td>
+          </tr>
+          <tr>
+            <td>RotatingText</td>
+            <td><code>rotating-text.tsx</code></td>
+            <td>Animated text cycler</td>
+          </tr>
+          <tr>
+            <td>ThemeToggle</td>
+            <td><code>theme-toggle.tsx</code></td>
+            <td>Dark/light mode switch</td>
+          </tr>
+          <tr>
+            <td>OptimizedImage</td>
+            <td><code>optimized-image.tsx</code></td>
+            <td>Next.js Image wrapper with loading state</td>
+          </tr>
+        </table>
+      </section>
+
+      <section id="components-features">
+        <h2>🎯 Feature Components</h2>
+        <span class="card-route">components/features/</span>
+
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>File</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td>HeroSearch</td>
+            <td><code>hero-search.tsx</code></td>
+            <td>Homepage search with location</td>
+          </tr>
+          <tr>
+            <td>SearchBar</td>
+            <td><code>search-bar.tsx</code></td>
+            <td>Standard search input</td>
+          </tr>
+          <tr>
+            <td>BusinessCard</td>
+            <td><code>business-card.tsx</code></td>
+            <td>Business listing preview</td>
+          </tr>
+          <tr>
+            <td>ReviewCard</td>
+            <td><code>review-card.tsx</code></td>
+            <td>Customer review display</td>
+          </tr>
+          <tr>
+            <td>AppointmentForm</td>
+            <td><code>appointment-form.tsx</code></td>
+            <td>Booking form component</td>
+          </tr>
+          <tr>
+            <td>ChatWidget</td>
+            <td><code>chat-widget.tsx</code></td>
+            <td>Embedded chat interface</td>
+          </tr>
+        </table>
+
+        <h3>Layout Components</h3>
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>Location</th>
+            <th>Description</th>
+          </tr>
+          <tr>
+            <td>Header</td>
+            <td><code>components/layout/</code></td>
+            <td>Main navigation with search, auth, menu</td>
+          </tr>
+          <tr>
+            <td>Footer</td>
+            <td><code>components/layout/</code></td>
+            <td>Site footer with links</td>
+          </tr>
+          <tr>
+            <td>MobileBottomNav</td>
+            <td><code>components/layout/</code></td>
+            <td>Fixed bottom mobile navigation</td>
+          </tr>
+          <tr>
+            <td>UserMenu</td>
+            <td><code>components/layout/</code></td>
+            <td>Dropdown user actions</td>
+          </tr>
+        </table>
+      </section>
+
+      <section id="tars-ai">
+        <h2>🤖 TARS AI Assistant</h2>
+        <span class="card-route">components/tars/</span>
+
+        <p>
+          TARS is the AI assistant that helps users navigate the platform, find businesses, and get
+          support.
+        </p>
+
+        <h3>Components</h3>
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>Purpose</th>
+          </tr>
+          <tr>
+            <td><code>TarsWidget</code></td>
+            <td>Floating chat button and panel</td>
+          </tr>
+          <tr>
+            <td><code>TarsChat</code></td>
+            <td>Chat interface with messages</td>
+          </tr>
+          <tr>
+            <td><code>TarsAvatar</code></td>
+            <td>Animated AI persona avatar</td>
+          </tr>
+          <tr>
+            <td><code>TarsTooltip</code></td>
+            <td>Contextual help tooltips</td>
+          </tr>
+          <tr>
+            <td><code>TarsOnboarding</code></td>
+            <td>First-time user walkthrough</td>
+          </tr>
+        </table>
+
+        <h3>Persona System</h3>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-title">👋 Guest Persona</div>
+            <div class="card-desc">
+              Discovery focused. Helps explore businesses, encourages signup. Friendly, informative
+              tone.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">👤 Customer Persona</div>
+            <div class="card-desc">
+              Personal concierge. Assists with bookings, favorites, reviews. Helpful, personalized
+              tone.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🏪 Business Persona</div>
+            <div class="card-desc">
+              Business advisor. Helps with dashboard, analytics, optimization. Professional,
+              supportive tone.
+            </div>
+          </div>
+        </div>
+
+        <h3>Context Modes</h3>
+        <ul>
+          <li><strong>general</strong> - Default help mode</li>
+          <li><strong>search</strong> - Business discovery assistance</li>
+          <li><strong>booking</strong> - Appointment booking help</li>
+          <li><strong>business</strong> - Business profile context</li>
+          <li><strong>analytics</strong> - Dashboard analytics help</li>
+          <li><strong>messages</strong> - Messaging assistance</li>
+          <li><strong>schedule</strong> - Calendar/hours help</li>
+        </ul>
+
+        <h3>Features</h3>
+        <ul>
+          <li>Keyboard shortcut: <code>Cmd/Ctrl + K</code></li>
+          <li>Quick action buttons with icons</li>
+          <li>Markdown link parsing</li>
+          <li>Session persistence</li>
+          <li>Context-aware responses</li>
+          <li>Real-time streaming</li>
+        </ul>
+      </section>
+
+      <!-- Footer -->
+      <footer
+        style="
+          margin-top: 60px;
+          padding: 40px 0;
+          border-top: 1px solid var(--border);
+          text-align: center;
+          color: var(--text-muted);
+        "
+      >
+        <p>Tarsit UI/UX Documentation</p>
+        <p style="font-size: 0.85rem; margin-top: 8px">Generated January 2026</p>
+      </footer>
+    </main>
+
+    <script>
+      // Simple navigation highlighting
+      document.querySelectorAll('.nav-link').forEach((link) => {
+        link.addEventListener('click', function () {
+          document.querySelectorAll('.nav-link').forEach((l) => l.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+
+      // Highlight on scroll
+      const sections = document.querySelectorAll('section');
+      const navLinks = document.querySelectorAll('.nav-link');
+
+      window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach((section) => {
+          const sectionTop = section.offsetTop;
+          if (scrollY >= sectionTop - 100) {
+            current = section.getAttribute('id');
+          }
+        });
+
+        navLinks.forEach((link) => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + current) {
+            link.classList.add('active');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "name": "tarsit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tarsit - Connecting Small Businesses to the World",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "prepare": "husky install",
+    "test:tarsit": "cd tarsit-testing && bash run-tests.sh",
+    "test:tarsit:backend": "cd tarsit-testing/backend && node test-backend.js",
+    "test:tarsit:frontend": "cd tarsit-testing/frontend && node test-frontend.js",
+    "test:tarsit:setup": "cd tarsit-testing && bash setup-test-db.sh"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.1",
+    "tsx": "^4.21.0",
+    "turbo": "^1.11.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.14.0",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "axios": "^1.6.2",
+    "dotenv": "^17.2.3",
+    "form-data": "^4.0.5",
+    "playwright": "^1.57.0"
+  }
+}

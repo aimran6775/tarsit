@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "pnpm install && pnpm --filter @tarsit/api build && pnpm --filter @tarsit/api prisma:generate",
+  "outputDirectory": "apps/api/dist",
+  "installCommand": "npm install -g pnpm",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
+    }
+  ],
+  "functions": {
+    "api/index.js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "regions": ["iad1"]
+}

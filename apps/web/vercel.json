@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd ../.. && pnpm install && pnpm --filter @tarsit/web build",
+  "outputDirectory": ".next",
+  "installCommand": "echo 'Install handled in buildCommand'",
+  "framework": "nextjs",
+  "regions": ["iad1"]
+}

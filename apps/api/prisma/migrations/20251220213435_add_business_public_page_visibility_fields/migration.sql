@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "businesses" ADD COLUMN     "showAbout" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showAddress" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showEmail" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showMap" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "showPhotos" BOOLEAN NOT NULL DEFAULT true;

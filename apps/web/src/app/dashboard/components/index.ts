@@ -1,0 +1,9 @@
+export { AppointmentsTab } from './AppointmentsTab';
+export { AvatarSelectionModal } from './AvatarSelectionModal';
+export { DashboardHeader } from './DashboardHeader';
+export { DashboardTabs } from './DashboardTabs';
+export { FavoritesTab } from './FavoritesTab';
+export { LoadingState } from './LoadingState';
+export { MessagesTab } from './MessagesTab';
+export { OverviewTab } from './OverviewTab';
+export { QuickStats } from './QuickStats';
