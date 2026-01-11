@@ -95,6 +95,7 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 export default function AdminReportsPage() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const [reports, setReports] = useState<Report[]>([]);
   const [stats, setStats] = useState<ReportStats | null>(null);

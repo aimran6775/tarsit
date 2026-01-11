@@ -154,6 +154,7 @@ export default function BusinessRegisterPage() {
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [checkingUsername, setCheckingUsername] = useState(false);
   // Logo upload (for future implementation - logo is uploaded separately after registration)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [categorySearch, setCategorySearch] = useState('');
