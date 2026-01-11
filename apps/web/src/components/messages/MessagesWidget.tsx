@@ -317,11 +317,15 @@ export function MessagesWidget() {
       <AnimatePresence>
         {view === 'closed' && (
           <motion.button
+            drag
+            dragConstraints={{ top: -200, bottom: 100, left: -200, right: 50 }}
+            dragElastic={0.1}
+            whileDrag={{ scale: 1.1 }}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
             onClick={handleOpen}
-            className="fixed bottom-24 right-6 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-blue-500/40 transition-all hover:scale-105 active:scale-95"
+            className="fixed bottom-36 right-6 md:bottom-24 z-40 w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-blue-500/40 transition-all hover:scale-105 active:scale-95 cursor-grab active:cursor-grabbing"
           >
             <MessageCircle className="h-6 w-6 text-white" />
             {unreadTotal > 0 && (

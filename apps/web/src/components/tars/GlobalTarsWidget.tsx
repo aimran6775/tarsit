@@ -4,6 +4,7 @@ import { useTars } from '@/contexts/TarsContext';
 import { useAuth } from '@/contexts/auth-context';
 import { TarsPersona } from '@/lib/tars/personas';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 import {
     BarChart3,
     Calendar,
@@ -371,11 +372,15 @@ export function GlobalTarsWidget() {
   // Floating button when closed
   if (!isOpen) {
     return (
-      <button
+      <motion.button
+        drag
+        dragConstraints={{ top: -200, bottom: 100, left: -200, right: 50 }}
+        dragElastic={0.1}
+        whileDrag={{ scale: 1.1 }}
         onClick={toggleTars}
         className={cn(
-          'fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center',
-          'hover:scale-110 transition-all z-50 group'
+          'fixed bottom-20 right-6 md:bottom-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center',
+          'hover:scale-110 transition-all z-50 group cursor-grab active:cursor-grabbing'
         )}
         style={{
           background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
@@ -399,7 +404,7 @@ export function GlobalTarsWidget() {
 
         {/* Status dot */}
         <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-neutral-950 animate-pulse" />
-      </button>
+      </motion.button>
     );
   }
 
@@ -408,7 +413,7 @@ export function GlobalTarsWidget() {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 ${chatWidth} ${chatHeight} bg-neutral-900 rounded-2xl border border-white/10 shadow-2xl shadow-black/50 flex flex-col overflow-hidden z-50 transition-all duration-200`}
+      className={`fixed bottom-20 right-6 md:bottom-6 ${chatWidth} ${chatHeight} bg-neutral-900 rounded-2xl border border-white/10 shadow-2xl shadow-black/50 flex flex-col overflow-hidden z-50 transition-all duration-200`}
     >
       {/* Header - Persona-styled */}
       <div
