@@ -1,15 +1,15 @@
 import {
-  Body,
-  Controller,
-  Get,
-  HttpCode,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Query,
-  Req,
-  UseGuards,
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Param,
+    Post,
+    Put,
+    Query,
+    Req,
+    UseGuards,
 } from '@nestjs/common';
 import { IsArray, IsBoolean, IsIn, IsOptional, IsString } from 'class-validator';
 import { v4 as uuidv4 } from 'uuid';
@@ -52,6 +52,14 @@ class ChatDto {
   @IsOptional()
   @IsString()
   userName?: string;
+
+  @IsOptional()
+  @IsString()
+  language?: string; // User's preferred language (e.g., 'en', 'ar', 'ur')
+
+  @IsOptional()
+  @IsString()
+  regionCode?: string; // User's region code (e.g., 'AE', 'US')
 }
 
 class ReviewActionDto {
@@ -140,6 +148,10 @@ export class TarsController {
       body.userName ||
       (req.user ? `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() : undefined);
 
+    // Get language from body or request headers
+    const language = body.language || req.headers['x-language-code'] as string || 'en';
+    const regionCode = body.regionCode || req.headers['x-region-code'] as string;
+
     const context: TarsContext = {
       userId: req.user?.id,
       businessId: body.businessId,
@@ -147,6 +159,8 @@ export class TarsController {
       context: body.context || 'general',
       persona,
       userName,
+      language,
+      regionCode,
     };
 
     const response = await this.tarsService.chat(body.message, context);

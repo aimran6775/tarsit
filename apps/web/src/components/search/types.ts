@@ -1,5 +1,14 @@
 // Search Component Types
 
+export interface Region {
+  id: string;
+  code: string;
+  name: string;
+  flag: string;
+  defaultLanguage: string;
+  defaultCurrency: string;
+}
+
 export interface Business {
   id: string;
   name: string;
@@ -22,6 +31,8 @@ export interface Business {
   website?: string;
   amenities?: string[];
   hours?: BusinessHours;
+  region?: Region | null;
+  defaultLanguage?: string;
 }
 
 export interface BusinessHours {

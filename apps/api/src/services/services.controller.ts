@@ -1,19 +1,19 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  Query,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Query,
+    UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { ServicesService } from './services.service';
-import { CreateServiceDto, UpdateServiceDto, ServiceQueryDto } from './dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { GetUser } from '../auth/decorators/get-user.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CreateServiceDto, ServiceQueryDto, UpdateServiceDto } from './dto';
+import { ServicesService } from './services.service';
 
 @ApiTags('services')
 @Controller('services')
@@ -35,6 +35,17 @@ export class ServicesController {
   @ApiResponse({ status: 200, description: 'Services retrieved successfully' })
   findAll(@Query() query: ServiceQueryDto) {
     return this.servicesService.findAll(query);
+  }
+
+  @Get('business/:businessId')
+  @ApiOperation({ summary: 'Get services for a business with optional price conversion' })
+  @ApiQuery({ name: 'currency', required: false, description: 'Target currency code for price conversion (e.g., USD, AED, EUR)' })
+  @ApiResponse({ status: 200, description: 'Services retrieved with converted prices' })
+  findByBusiness(
+    @Param('businessId') businessId: string,
+    @Query('currency') currencyCode?: string,
+  ) {
+    return this.servicesService.findByBusinessWithConversion(businessId, currencyCode);
   }
 
   @Get(':id')

@@ -16,6 +16,29 @@ export interface ApiResponse<T = unknown> {
 }
 
 /**
+ * Get region preferences from localStorage
+ */
+function getRegionPreferences(): { regionCode?: string; languageCode?: string; currencyCode?: string } {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+  
+  try {
+    const regionCode = localStorage.getItem('tarsit-region');
+    const languageCode = localStorage.getItem('tarsit-language');
+    const currencyCode = localStorage.getItem('tarsit-currency');
+    
+    return {
+      regionCode: regionCode || undefined,
+      languageCode: languageCode || undefined,
+      currencyCode: currencyCode || undefined,
+    };
+  } catch {
+    return {};
+  }
+}
+
+/**
  * Normalize API error into a consistent format
  */
 export function normalizeError(error: unknown): ApiError {
@@ -60,7 +83,7 @@ export const apiClient = axios.create({
   timeout: 30000, // 30 second timeout
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token and region headers
 apiClient.interceptors.request.use(
   (config) => {
     // Don't attach token for auth endpoints to avoid issues with stale tokens
@@ -69,9 +92,28 @@ apiClient.interceptors.request.use(
     }
 
     if (typeof window !== 'undefined') {
+      // Add auth token
       const token = localStorage.getItem('accessToken');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+      }
+      
+      // Add region/language/currency headers
+      const { regionCode, languageCode, currencyCode } = getRegionPreferences();
+      
+      if (regionCode) {
+        config.headers['X-Region-Code'] = regionCode;
+      }
+      if (languageCode) {
+        config.headers['X-Language-Code'] = languageCode;
+      }
+      if (currencyCode) {
+        config.headers['X-Currency-Code'] = currencyCode;
+      }
+      
+      // Also set Accept-Language for standard HTTP behavior
+      if (languageCode) {
+        config.headers['Accept-Language'] = languageCode;
       }
     }
     return config;

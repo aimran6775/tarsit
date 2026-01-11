@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Req } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query, Req } from '@nestjs/common';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request } from 'express';
 import { RegionListResponseDto, RegionWithBusinessCountDto } from './dto/region.dto';
 import { RegionsService } from './regions.service';
@@ -8,6 +8,62 @@ import { RegionsService } from './regions.service';
 @Controller('regions')
 export class RegionsController {
   constructor(private readonly regionsService: RegionsService) {}
+
+  @Get(':code/featured')
+  @ApiOperation({ summary: 'Get featured businesses for a region' })
+  @ApiParam({ name: 'code', description: 'Region code (e.g., AE, US, GB)', example: 'AE' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of businesses to return', example: 6 })
+  @ApiResponse({
+    status: 200,
+    description: 'Featured businesses in the region',
+  })
+  async getFeaturedBusinesses(
+    @Param('code') code: string,
+    @Query('limit') limit?: number,
+  ) {
+    return this.regionsService.getFeaturedBusinesses(code, limit || 6);
+  }
+
+  @Get(':code/popular-categories')
+  @ApiOperation({ summary: 'Get popular categories for a region' })
+  @ApiParam({ name: 'code', description: 'Region code', example: 'AE' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of categories to return', example: 8 })
+  @ApiResponse({
+    status: 200,
+    description: 'Popular categories in the region with business counts',
+  })
+  async getPopularCategories(
+    @Param('code') code: string,
+    @Query('limit') limit?: number,
+  ) {
+    return this.regionsService.getPopularCategories(code, limit || 8);
+  }
+
+  @Get(':code/stats')
+  @ApiOperation({ summary: 'Get regional statistics' })
+  @ApiParam({ name: 'code', description: 'Region code', example: 'AE' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics for the region',
+  })
+  async getRegionStats(@Param('code') code: string) {
+    return this.regionsService.getRegionStats(code);
+  }
+
+  @Get(':code/recent')
+  @ApiOperation({ summary: 'Get recently added businesses in a region' })
+  @ApiParam({ name: 'code', description: 'Region code', example: 'AE' })
+  @ApiQuery({ name: 'limit', required: false, description: 'Number of businesses to return', example: 10 })
+  @ApiResponse({
+    status: 200,
+    description: 'Recently added businesses in the region',
+  })
+  async getRecentBusinesses(
+    @Param('code') code: string,
+    @Query('limit') limit?: number,
+  ) {
+    return this.regionsService.getRecentBusinesses(code, limit || 10);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Get all active regions' })

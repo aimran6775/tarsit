@@ -318,6 +318,61 @@ export const PERSONA_ERROR_MESSAGES = {
 };
 
 // ============================================
+// LANGUAGE CONFIGURATION
+// ============================================
+
+export const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  ar: 'Arabic',
+  ur: 'Urdu',
+  hi: 'Hindi',
+  es: 'Spanish',
+  fr: 'French',
+  de: 'German',
+};
+
+export const LANGUAGE_INSTRUCTIONS: Record<string, string> = {
+  en: '', // Default, no special instructions needed
+  ar: `
+## LANGUAGE: ARABIC (العربية)
+- Respond ENTIRELY in Arabic (Modern Standard Arabic or Gulf dialect)
+- Use Arabic numerals and formatting
+- Be culturally appropriate for Arab audiences
+- Use proper Arabic greetings (مرحبا، أهلاً)
+- Maintain your helpful personality in Arabic`,
+  ur: `
+## LANGUAGE: URDU (اردو)
+- Respond ENTIRELY in Urdu
+- Use proper Urdu greetings (السلام علیکم، خوش آمدید)
+- Be culturally appropriate for Pakistani/Indian audiences
+- Maintain your helpful personality in Urdu`,
+  hi: `
+## LANGUAGE: HINDI (हिन्दी)
+- Respond ENTIRELY in Hindi (Devanagari script)
+- Use proper Hindi greetings (नमस्ते, स्वागत है)
+- Be culturally appropriate for Indian audiences
+- Maintain your helpful personality in Hindi`,
+  es: `
+## LANGUAGE: SPANISH (Español)
+- Respond ENTIRELY in Spanish
+- Use proper Spanish greetings (Hola, Bienvenido)
+- Be culturally appropriate for Spanish-speaking audiences
+- Maintain your helpful personality in Spanish`,
+  fr: `
+## LANGUAGE: FRENCH (Français)
+- Respond ENTIRELY in French
+- Use proper French greetings (Bonjour, Bienvenue)
+- Be culturally appropriate for French-speaking audiences
+- Maintain your helpful personality in French`,
+  de: `
+## LANGUAGE: GERMAN (Deutsch)
+- Respond ENTIRELY in German
+- Use proper German greetings (Hallo, Willkommen)
+- Be culturally appropriate for German-speaking audiences
+- Maintain your helpful personality in German`,
+};
+
+// ============================================
 // PROMPT GENERATOR
 // ============================================
 
@@ -330,6 +385,8 @@ export function generatePersonaPrompt(options: {
   bookingHistory?: string;
   userPreferences?: string;
   todayStats?: string;
+  language?: string;
+  regionCode?: string;
 }): string {
   const {
     persona,
@@ -340,6 +397,8 @@ export function generatePersonaPrompt(options: {
     bookingHistory,
     userPreferences,
     todayStats,
+    language = 'en',
+    regionCode,
   } = options;
 
   // Get base prompt for persona
@@ -386,6 +445,16 @@ export function generatePersonaPrompt(options: {
   // Add custom instructions
   if (customInstructions) {
     prompt += `\n\n## ADDITIONAL INSTRUCTIONS\n${customInstructions}`;
+  }
+
+  // Add language instructions (IMPORTANT - this should be near the end to emphasize)
+  if (language && language !== 'en' && LANGUAGE_INSTRUCTIONS[language]) {
+    prompt += LANGUAGE_INSTRUCTIONS[language];
+  }
+
+  // Add region context if available
+  if (regionCode) {
+    prompt += `\n\n## REGION CONTEXT\nThe user is browsing from region: ${regionCode}. Prioritize local businesses and culturally relevant suggestions when applicable.`;
   }
 
   return prompt;

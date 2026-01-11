@@ -1,18 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsArray,
-  IsBoolean,
-  IsEnum,
-  IsIn,
-  IsNotEmpty,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  IsString,
-  Max,
-  MaxLength,
-  Min,
-  MinLength,
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsIn,
+    IsNotEmpty,
+    IsNumber,
+    IsObject,
+    IsOptional,
+    IsString,
+    Max,
+    MaxLength,
+    Min,
+    MinLength,
 } from 'class-validator';
 
 class BusinessHours {
@@ -82,6 +82,25 @@ export class CreateBusinessDto {
   @IsString()
   @IsNotEmpty()
   country!: string;
+
+  @ApiProperty({ 
+    example: 'region-uuid', 
+    description: 'Region ID for the business. If not provided, will be auto-detected from country.',
+    required: false 
+  })
+  @IsOptional()
+  @IsString()
+  regionId?: string;
+
+  @ApiProperty({ 
+    example: 'en', 
+    description: 'Default language for business content',
+    required: false,
+    default: 'en'
+  })
+  @IsOptional()
+  @IsString()
+  defaultLanguage?: string;
 
   @ApiProperty({ example: 37.7749, description: 'Latitude' })
   @IsNumber()

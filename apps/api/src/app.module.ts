@@ -15,6 +15,7 @@ import { ChatsModule } from './chats/chats.module';
 import { CommonModule } from './common/common.module';
 import { CacheInterceptor } from './common/interceptors/cache.interceptor';
 import { SecurityInterceptor } from './common/interceptors/security.interceptor';
+import { RegionMiddleware } from './common/middleware/region.middleware';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 import { SecurityMiddleware } from './common/middleware/security.middleware';
 import { CurrenciesModule } from './currencies/currencies.module';
@@ -38,6 +39,7 @@ import { ServicesModule } from './services/services.module';
 import { StatsModule } from './stats/stats.module';
 import { TarsModule } from './tars/tars.module';
 import { TeamModule } from './team/team.module';
+import { TranslationsModule } from './translations/translations.module';
 import { TwoFactorModule } from './two-factor/two-factor.module';
 import { UploadsModule } from './uploads/uploads.module';
 import { VerificationRequestsModule } from './verification-requests/verification-requests.module';
@@ -95,6 +97,7 @@ import { VerificationRequestsModule } from './verification-requests/verification
     // Internationalization
     RegionsModule,
     CurrenciesModule,
+    TranslationsModule,
   ],
   controllers: [],
   providers: [
@@ -114,6 +117,6 @@ import { VerificationRequestsModule } from './verification-requests/verification
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SecurityMiddleware, RequestLoggerMiddleware).forRoutes('*');
+    consumer.apply(SecurityMiddleware, RequestLoggerMiddleware, RegionMiddleware).forRoutes('*');
   }
 }

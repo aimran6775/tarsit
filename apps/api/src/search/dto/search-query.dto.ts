@@ -1,16 +1,16 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { PriceRange } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
-  IsOptional,
-  IsString,
-  IsNumber,
-  Min,
-  Max,
-  IsInt,
-  IsEnum,
-  IsBoolean,
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsNumber,
+    IsOptional,
+    IsString,
+    Max,
+    Min,
 } from 'class-validator';
-import { PriceRange } from '@prisma/client';
 
 export class SearchQueryDto {
   @ApiPropertyOptional({
@@ -129,6 +129,22 @@ export class SearchQueryDto {
   @IsString()
   @IsOptional()
   state?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by region code (e.g., US, UAE, UK)',
+    example: 'US',
+  })
+  @IsString()
+  @IsOptional()
+  regionCode?: string;
+
+  @ApiPropertyOptional({
+    description: 'Filter by region ID',
+    example: 'region-uuid',
+  })
+  @IsString()
+  @IsOptional()
+  regionId?: string;
 
   @ApiPropertyOptional({
     description: 'Sort by field',

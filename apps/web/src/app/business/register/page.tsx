@@ -2,6 +2,7 @@
 
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { useAuth } from '@/contexts/auth-context';
+import { useRegion } from '@/contexts/region-context';
 import { useCategories } from '@/hooks';
 import confetti from 'canvas-confetti';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -139,11 +140,14 @@ interface FormData {
   state: string;
   zipCode: string;
   country: string;
+  // Region
+  regionId: string;
 }
 
 export default function BusinessRegisterPage() {
   const router = useRouter();
   const { signupBusiness } = useAuth();
+  const { region: userRegion, regions: availableRegions } = useRegion();
   const { data: categories = [], isLoading: categoriesLoading } = useCategories();
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -178,7 +182,15 @@ export default function BusinessRegisterPage() {
     state: '',
     zipCode: '',
     country: 'USA',
+    regionId: '',
   });
+
+  // Initialize regionId from detected user region
+  useEffect(() => {
+    if (userRegion && !formData.regionId) {
+      setFormData(prev => ({ ...prev, regionId: userRegion.id }));
+    }
+  }, [userRegion, formData.regionId]);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -310,6 +322,7 @@ export default function BusinessRegisterPage() {
           state: formData.state,
           zipCode: formData.zipCode,
           country: formData.country || 'USA',
+          regionId: formData.regionId || undefined,
           phone: formData.phone,
           email: formData.businessEmail || undefined,
           website: formData.website || undefined,
@@ -835,10 +848,46 @@ export default function BusinessRegisterPage() {
                 className="w-full h-12 px-4 bg-neutral-900/50 border border-neutral-800 rounded-xl text-white text-sm focus:outline-none focus:border-teal-500/50 focus:ring-2 focus:ring-teal-500/20 transition-all"
               >
                 <option value="USA">United States</option>
-                <option value="CAN">Canada</option>
-                <option value="GBR">United Kingdom</option>
-                <option value="AUS">Australia</option>
+                <option value="United Arab Emirates">United Arab Emirates</option>
+                <option value="Saudi Arabia">Saudi Arabia</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Canada">Canada</option>
+                <option value="Australia">Australia</option>
+                <option value="Germany">Germany</option>
+                <option value="France">France</option>
+                <option value="Spain">Spain</option>
+                <option value="Pakistan">Pakistan</option>
+                <option value="India">India</option>
               </select>
+            </div>
+
+            {/* Business Region */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-300 mb-2">
+                <span className="flex items-center gap-2">
+                  <Globe className="h-4 w-4 text-teal-400" />
+                  Business Region
+                </span>
+              </label>
+              <p className="text-xs text-neutral-500 mb-2">This determines where your business appears in search results</p>
+              <select
+                value={formData.regionId}
+                onChange={(e) => handleChange('regionId', e.target.value)}
+                className={`w-full h-12 px-4 bg-neutral-900/50 border ${errors.regionId ? 'border-red-500' : 'border-neutral-800'} rounded-xl text-white text-sm focus:outline-none focus:border-teal-500/50 focus:ring-2 focus:ring-teal-500/20 transition-all`}
+              >
+                <option value="">Select a region</option>
+                {availableRegions.map((region) => (
+                  <option key={region.id} value={region.id}>
+                    {region.flag} {region.name}
+                  </option>
+                ))}
+              </select>
+              {errors.regionId && <p className="mt-1 text-xs text-red-400">{errors.regionId}</p>}
+              {formData.regionId && (
+                <p className="mt-2 text-xs text-teal-400">
+                  ✓ Your business will appear in {availableRegions.find(r => r.id === formData.regionId)?.name || 'selected region'} searches
+                </p>
+              )}
             </div>
           </motion.div>
         );

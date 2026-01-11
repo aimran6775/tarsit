@@ -8,6 +8,27 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { BusinessQueryDto, CreateBusinessDto, UpdateBusinessDto } from './dto';
 
+// Country to region code mapping
+const COUNTRY_TO_REGION: Record<string, string> = {
+  'USA': 'US',
+  'United States': 'US',
+  'US': 'US',
+  'UAE': 'UAE',
+  'United Arab Emirates': 'UAE',
+  'Saudi Arabia': 'SAU',
+  'KSA': 'SAU',
+  'United Kingdom': 'UK',
+  'UK': 'UK',
+  'GB': 'UK',
+  'Canada': 'CA',
+  'Australia': 'AU',
+  'Germany': 'DE',
+  'France': 'FR',
+  'Spain': 'ES',
+  'Pakistan': 'PK',
+  'India': 'IN',
+};
+
 @Injectable()
 export class BusinessesService {
   constructor(private prisma: PrismaService) {}
@@ -31,6 +52,20 @@ export class BusinessesService {
       throw new BadRequestException('Category not found');
     }
 
+    // Auto-detect region from country if not provided
+    let regionId = dto.regionId;
+    if (!regionId && dto.country) {
+      const regionCode = COUNTRY_TO_REGION[dto.country] || COUNTRY_TO_REGION[dto.country.toUpperCase()];
+      if (regionCode) {
+        const region = await this.prisma.region.findUnique({
+          where: { code: regionCode },
+        });
+        if (region) {
+          regionId = region.id;
+        }
+      }
+    }
+
     // Generate slug from name
     const slug = this.generateSlug(dto.name);
 
@@ -42,14 +77,14 @@ export class BusinessesService {
     if (existingBusiness) {
       // Add random suffix to make it unique
       const uniqueSlug = `${slug}-${Date.now().toString(36)}`;
-      return this.createBusiness(userId, dto, uniqueSlug);
+      return this.createBusiness(userId, dto, uniqueSlug, regionId);
     }
 
-    return this.createBusiness(userId, dto, slug);
+    return this.createBusiness(userId, dto, slug, regionId);
   }
 
-  private async createBusiness(userId: string, dto: CreateBusinessDto, slug: string) {
-    const { categoryId, hours, amenities, ...businessData } = dto;
+  private async createBusiness(userId: string, dto: CreateBusinessDto, slug: string, regionId?: string) {
+    const { categoryId, hours, amenities, regionId: _dtoRegionId, defaultLanguage, ...businessData } = dto;
 
     return this.prisma.business.create({
       data: {
@@ -57,6 +92,8 @@ export class BusinessesService {
         slug,
         ...(hours && { hours: hours as Prisma.InputJsonValue }),
         ...(amenities && { amenities: amenities as Prisma.InputJsonValue }),
+        ...(regionId && { region: { connect: { id: regionId } } }),
+        ...(defaultLanguage && { defaultLanguage }),
         owner: {
           connect: { id: userId },
         },
@@ -66,6 +103,7 @@ export class BusinessesService {
       },
       include: {
         category: true,
+        region: true,
         owner: {
           select: {
             id: true,
@@ -82,6 +120,8 @@ export class BusinessesService {
     const {
       search,
       categoryId,
+      regionCode,
+      regionId,
       city,
       state,
       priceRange,
@@ -109,6 +149,18 @@ export class BusinessesService {
 
     if (categoryId) {
       where.categoryId = categoryId;
+    }
+
+    // Region filtering - by ID or by code
+    if (regionId) {
+      where.regionId = regionId;
+    } else if (regionCode) {
+      const region = await this.prisma.region.findUnique({
+        where: { code: regionCode },
+      });
+      if (region) {
+        where.regionId = region.id;
+      }
     }
 
     if (city) {
@@ -154,6 +206,7 @@ export class BusinessesService {
       orderBy: { [sortBy]: sortOrder },
       include: {
         category: true,
+        region: true,
         owner: {
           select: {
             id: true,
@@ -187,6 +240,7 @@ export class BusinessesService {
       where: { id },
       include: {
         category: true,
+        region: true,
         owner: {
           select: {
             id: true,
@@ -239,6 +293,7 @@ export class BusinessesService {
       where: { slug },
       include: {
         category: true,
+        region: true,
         owner: {
           select: {
             id: true,

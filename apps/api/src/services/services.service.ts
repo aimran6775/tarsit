@@ -14,6 +14,13 @@ export class ServicesService {
     // Verify business exists and user is the owner
     const business = await this.prisma.business.findUnique({
       where: { id: dto.businessId },
+      include: {
+        region: {
+          include: {
+            currency: true,
+          },
+        },
+      },
     });
 
     if (!business) {
@@ -25,10 +32,14 @@ export class ServicesService {
     }
 
     const { businessId, ...serviceData } = dto;
+    
+    // Auto-assign currency from business region if not provided
+    const currencyCode = dto.currencyCode || business.region?.currency?.code || 'USD';
 
     return this.prisma.service.create({
       data: {
         ...serviceData,
+        currencyCode,
         business: {
           connect: { id: businessId },
         },
@@ -170,5 +181,87 @@ export class ServicesService {
     await this.prisma.service.delete({ where: { id } });
 
     return { message: 'Service deleted successfully' };
+  }
+
+  /**
+   * Get services for a business with prices converted to the target currency
+   */
+  async findByBusinessWithConversion(businessId: string, targetCurrencyCode?: string) {
+    const services = await this.prisma.service.findMany({
+      where: { businessId, active: true },
+      orderBy: { order: 'asc' },
+    });
+
+    if (!targetCurrencyCode) {
+      return services;
+    }
+
+    // Get all unique currency codes from services
+    const currencyCodes = [...new Set(services.map(s => s.currencyCode || 'USD'))];
+    currencyCodes.push(targetCurrencyCode);
+
+    // Fetch all needed currencies
+    const currencies = await this.prisma.currency.findMany({
+      where: { code: { in: currencyCodes } },
+    });
+
+    const currencyMap = new Map(currencies.map(c => [c.code, c]));
+    const targetCurrency = currencyMap.get(targetCurrencyCode);
+
+    if (!targetCurrency) {
+      return services;
+    }
+
+    // Convert prices
+    return services.map(service => {
+      const fromCurrency = currencyMap.get(service.currencyCode || 'USD');
+      
+      if (!service.price || !fromCurrency) {
+        return {
+          ...service,
+          convertedPrice: null,
+          targetCurrencyCode,
+        };
+      }
+
+      // Convert through USD as base
+      const amountInUSD = service.price * fromCurrency.exchangeRateToUSD;
+      const convertedAmount = amountInUSD / targetCurrency.exchangeRateToUSD;
+
+      return {
+        ...service,
+        originalPrice: service.price,
+        originalCurrency: service.currencyCode,
+        convertedPrice: Number(convertedAmount.toFixed(targetCurrency.decimalPlaces)),
+        targetCurrencyCode,
+        targetCurrencySymbol: targetCurrency.symbol,
+        formattedPrice: this.formatPrice(service.price, fromCurrency),
+        formattedConvertedPrice: this.formatPrice(convertedAmount, targetCurrency),
+      };
+    });
+  }
+
+  /**
+   * Format price with currency symbol
+   */
+  private formatPrice(
+    amount: number,
+    currency: {
+      symbol: string;
+      symbolPosition: string;
+      decimalPlaces: number;
+      thousandSeparator: string;
+      decimalSeparator: string;
+    },
+  ): string {
+    const parts = amount.toFixed(currency.decimalPlaces).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, currency.thousandSeparator);
+    const formattedNumber = parts.join(currency.decimalSeparator);
+
+    if (currency.symbolPosition === 'before') {
+      return `${currency.symbol}${formattedNumber}`;
+    } else {
+      return `${formattedNumber} ${currency.symbol}`;
+    }
   }
 }

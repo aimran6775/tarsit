@@ -306,3 +306,102 @@ html {
 ::selection {
   @apply bg-primary/20 text-foreground;
 }
+
+/* ==========================================
+   RTL (Right-to-Left) Support
+   ========================================== */
+
+/* RTL Font Families */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap');
+
+.font-arabic {
+  font-family: 'Noto Sans Arabic', 'Geeza Pro', 'Traditional Arabic', sans-serif;
+}
+
+.font-urdu {
+  font-family: 'Noto Nastaliq Urdu', 'Jameel Noori Nastaleeq', sans-serif;
+}
+
+.font-hindi {
+  font-family: 'Noto Sans Devanagari', 'Mangal', sans-serif;
+}
+
+/* RTL Direction Variables */
+:root {
+  --direction: ltr;
+  --text-align: left;
+  --text-align-opposite: right;
+}
+
+[dir="rtl"] {
+  --direction: rtl;
+  --text-align: right;
+  --text-align-opposite: left;
+}
+
+/* RTL-aware text alignment */
+.text-start {
+  text-align: start;
+}
+
+.text-end {
+  text-align: end;
+}
+
+/* RTL Logical Properties */
+.ps-0 { padding-inline-start: 0; }
+.ps-1 { padding-inline-start: 0.25rem; }
+.ps-2 { padding-inline-start: 0.5rem; }
+.ps-3 { padding-inline-start: 0.75rem; }
+.ps-4 { padding-inline-start: 1rem; }
+.ps-6 { padding-inline-start: 1.5rem; }
+.ps-8 { padding-inline-start: 2rem; }
+
+.pe-0 { padding-inline-end: 0; }
+.pe-1 { padding-inline-end: 0.25rem; }
+.pe-2 { padding-inline-end: 0.5rem; }
+.pe-3 { padding-inline-end: 0.75rem; }
+.pe-4 { padding-inline-end: 1rem; }
+.pe-6 { padding-inline-end: 1.5rem; }
+.pe-8 { padding-inline-end: 2rem; }
+
+.ms-0 { margin-inline-start: 0; }
+.ms-1 { margin-inline-start: 0.25rem; }
+.ms-2 { margin-inline-start: 0.5rem; }
+.ms-3 { margin-inline-start: 0.75rem; }
+.ms-4 { margin-inline-start: 1rem; }
+.ms-auto { margin-inline-start: auto; }
+
+.me-0 { margin-inline-end: 0; }
+.me-1 { margin-inline-end: 0.25rem; }
+.me-2 { margin-inline-end: 0.5rem; }
+.me-3 { margin-inline-end: 0.75rem; }
+.me-4 { margin-inline-end: 1rem; }
+.me-auto { margin-inline-end: auto; }
+
+.start-0 { inset-inline-start: 0; }
+.end-0 { inset-inline-end: 0; }
+
+.border-s { border-inline-start-width: 1px; }
+.border-e { border-inline-end-width: 1px; }
+
+/* RTL Flip for directional icons */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+/* RTL-specific adjustments */
+[dir="rtl"] {
+  /* Ensure proper text rendering */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* RTL Line height adjustments for Arabic/Urdu */
+[dir="rtl"] p,
+[dir="rtl"] li,
+[dir="rtl"] span {
+  line-height: 1.8;
+}
+

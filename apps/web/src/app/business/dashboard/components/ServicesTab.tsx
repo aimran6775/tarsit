@@ -1,27 +1,43 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useRegion } from '@/contexts/region-context';
+import { apiClient } from '@/lib/api/client';
 import {
-    Plus,
-    Trash2,
-    Edit2,
-    Save,
+    AlertCircle,
+    CheckCircle,
     Clock,
     DollarSign,
+    Edit2,
+    Globe,
     GripVertical,
     Loader2,
     Package,
-    CheckCircle,
-    AlertCircle,
+    Plus,
+    Save,
+    Trash2,
 } from 'lucide-react';
-import { apiClient } from '@/lib/api/client';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+
+// Currency options
+const CURRENCY_OPTIONS = [
+    { code: 'USD', symbol: '$', name: 'US Dollar' },
+    { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' },
+    { code: 'SAR', symbol: '﷼', name: 'Saudi Riyal' },
+    { code: 'GBP', symbol: '£', name: 'British Pound' },
+    { code: 'EUR', symbol: '€', name: 'Euro' },
+    { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+    { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+    { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee' },
+    { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+];
 
 interface Service {
     id: string;
     name: string;
     description?: string;
     price: number;
+    currencyCode?: string;
     duration: number;
     bookable: boolean;
     order: number;
@@ -34,17 +50,22 @@ interface ServicesTabProps {
 }
 
 export function ServicesTab({ businessId, services: initialServices, onServicesUpdated }: ServicesTabProps) {
+    const { region } = useRegion();
     const [services, setServices] = useState<Service[]>(initialServices);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [isAdding, setIsAdding] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
+    // Get default currency from region
+    const defaultCurrency = region?.defaultCurrency || 'USD';
+
     // New service form state
     const [newService, setNewService] = useState({
         name: '',
         description: '',
         price: '',
+        currencyCode: defaultCurrency,
         duration: '30',
         bookable: true,
     });
@@ -54,6 +75,7 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
         name: '',
         description: '',
         price: '',
+        currencyCode: defaultCurrency,
         duration: '',
         bookable: true,
     });
@@ -61,6 +83,13 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
     useEffect(() => {
         setServices(initialServices);
     }, [initialServices]);
+
+    // Update default currency when region changes
+    useEffect(() => {
+        if (region?.defaultCurrency) {
+            setNewService(prev => ({ ...prev, currencyCode: region.defaultCurrency }));
+        }
+    }, [region?.defaultCurrency]);
 
     // Add new service
     const handleAddService = async () => {
@@ -79,13 +108,14 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
                 name: newService.name.trim(),
                 description: newService.description.trim() || null,
                 price,
+                currencyCode: newService.currencyCode,
                 duration,
                 bookable: newService.bookable,
                 order: services.length,
             });
 
             setServices([...services, res.data]);
-            setNewService({ name: '', description: '', price: '', duration: '30', bookable: true });
+            setNewService({ name: '', description: '', price: '', currencyCode: defaultCurrency, duration: '30', bookable: true });
             setIsAdding(false);
             toast.success('Service added');
             onServicesUpdated();
@@ -104,6 +134,7 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
             name: service.name,
             description: service.description || '',
             price: service.price.toString(),
+            currencyCode: service.currencyCode || 'USD',
             duration: service.duration.toString(),
             bookable: service.bookable,
         });
@@ -125,13 +156,14 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
                 name: editForm.name.trim(),
                 description: editForm.description.trim() || null,
                 price,
+                currencyCode: editForm.currencyCode,
                 duration,
                 bookable: editForm.bookable,
             });
 
             setServices(services.map(s =>
                 s.id === editingId
-                    ? { ...s, name: editForm.name, description: editForm.description, price, duration, bookable: editForm.bookable }
+                    ? { ...s, name: editForm.name, description: editForm.description, price, currencyCode: editForm.currencyCode, duration, bookable: editForm.bookable }
                     : s
             ));
             setEditingId(null);
@@ -231,19 +263,33 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
 
                         <div>
                             <label className="block text-sm font-medium text-white/70 mb-2">
-                                Price ($)
+                                Price
                             </label>
-                            <div className="relative">
-                                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                                <input
-                                    type="number"
-                                    value={newService.price}
-                                    onChange={(e) => setNewService({ ...newService, price: e.target.value })}
-                                    placeholder="0.00"
-                                    min="0"
-                                    step="0.01"
-                                    className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                />
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                                    <input
+                                        type="number"
+                                        value={newService.price}
+                                        onChange={(e) => setNewService({ ...newService, price: e.target.value })}
+                                        placeholder="0.00"
+                                        min="0"
+                                        step="0.01"
+                                        className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                    />
+                                </div>
+                                <div className="relative w-28">
+                                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                                    <select
+                                        value={newService.currencyCode}
+                                        onChange={(e) => setNewService({ ...newService, currencyCode: e.target.value })}
+                                        className="w-full pl-9 pr-2 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 appearance-none"
+                                    >
+                                        {CURRENCY_OPTIONS.map(c => (
+                                            <option key={c.code} value={c.code} className="bg-neutral-900">{c.code}</option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
@@ -354,17 +400,28 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
                                             </div>
 
                                             <div>
-                                                <div className="relative">
-                                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
-                                                    <input
-                                                        type="number"
-                                                        value={editForm.price}
-                                                        onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
-                                                        placeholder="Price"
-                                                        min="0"
-                                                        step="0.01"
-                                                        className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                                    />
+                                                <div className="flex gap-2">
+                                                    <div className="relative flex-1">
+                                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                                                        <input
+                                                            type="number"
+                                                            value={editForm.price}
+                                                            onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
+                                                            placeholder="Price"
+                                                            min="0"
+                                                            step="0.01"
+                                                            className="w-full pl-9 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                                        />
+                                                    </div>
+                                                    <select
+                                                        value={editForm.currencyCode}
+                                                        onChange={(e) => setEditForm({ ...editForm, currencyCode: e.target.value })}
+                                                        className="w-24 px-2 py-2 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                                    >
+                                                        {CURRENCY_OPTIONS.map(c => (
+                                                            <option key={c.code} value={c.code} className="bg-neutral-900">{c.code}</option>
+                                                        ))}
+                                                    </select>
                                                 </div>
                                             </div>
 
@@ -448,7 +505,9 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
                                                     <div className="flex items-center gap-4 mt-2">
                                                         <span className="inline-flex items-center gap-1 text-sm text-white/70">
                                                             <DollarSign className="h-4 w-4" />
-                                                            ${service.price.toFixed(2)}
+                                                            {service.currencyCode && service.currencyCode !== 'USD'
+                                                                ? `${service.price.toFixed(2)} ${service.currencyCode}`
+                                                                : `$${service.price.toFixed(2)}`}
                                                         </span>
                                                         <span className="inline-flex items-center gap-1 text-sm text-white/70">
                                                             <Clock className="h-4 w-4" />

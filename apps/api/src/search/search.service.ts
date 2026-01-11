@@ -26,6 +26,8 @@ export class SearchService {
       openNow,
       city,
       state,
+      regionCode,
+      regionId,
       sortBy = 'relevance',
       page = 1,
       limit = 20,
@@ -45,10 +47,23 @@ export class SearchService {
       }
     }
 
+    // Resolve regionCode to regionId if provided
+    let resolvedRegionId = regionId;
+    if (!regionId && regionCode) {
+      const region = await this.prisma.region.findUnique({
+        where: { code: regionCode },
+        select: { id: true },
+      });
+      if (region) {
+        resolvedRegionId = region.id;
+      }
+    }
+
     // Build where clause
     const where: Record<string, unknown> = {
       active: true,
       ...(resolvedCategoryId && { categoryId: resolvedCategoryId }),
+      ...(resolvedRegionId && { regionId: resolvedRegionId }),
       ...(minRating && { rating: { gte: minRating } }),
       ...(priceRange && { priceRange }),
       ...(verified !== undefined && { verified }),
@@ -82,6 +97,18 @@ export class SearchService {
             id: true,
             name: true,
             slug: true,
+          },
+        },
+        region: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            flagEmoji: true,
+            defaultLanguage: true,
+            currency: {
+              select: { code: true },
+            },
           },
         },
         photos: {
@@ -147,6 +174,7 @@ export class SearchService {
         slug: business.slug,
         description: business.description,
         category: business.category,
+        region: business.region,
         city: business.city,
         state: business.state,
         latitude: business.latitude,
@@ -257,11 +285,12 @@ export class SearchService {
     };
   }
 
-  async getTrending() {
+  async getTrending(regionId?: string) {
     // Get trending businesses (most viewed in last 7 days)
     const businesses = await this.prisma.business.findMany({
       where: {
         active: true,
+        ...(regionId && { regionId }),
       },
       orderBy: [
         { viewCount: 'desc' },
@@ -274,6 +303,13 @@ export class SearchService {
             id: true,
             name: true,
             slug: true,
+          },
+        },
+        region: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
           },
         },
         photos: {
@@ -293,6 +329,7 @@ export class SearchService {
         name: b.name,
         slug: b.slug,
         category: b.category,
+        region: b.region,
         rating: b.rating,
         reviewCount: b.reviewCount,
         viewCount: b.viewCount,
@@ -301,10 +338,11 @@ export class SearchService {
     };
   }
 
-  async getPopularNearby(latitude: number, longitude: number, radius: number = 10) {
+  async getPopularNearby(latitude: number, longitude: number, radius: number = 10, regionId?: string) {
     const businesses = await this.prisma.business.findMany({
       where: {
         active: true,
+        ...(regionId && { regionId }),
       },
       include: {
         category: {

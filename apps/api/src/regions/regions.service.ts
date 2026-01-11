@@ -182,4 +182,251 @@ export class RegionsService {
       })),
     };
   }
+
+  /**
+   * Get featured businesses for a region
+   */
+  async getFeaturedBusinesses(regionCode: string, limit: number = 6) {
+    const region = await this.prisma.region.findUnique({
+      where: { code: regionCode.toUpperCase() },
+      select: { id: true, code: true, name: true },
+    });
+
+    if (!region) {
+      throw new NotFoundException(`Region "${regionCode}" not found`);
+    }
+
+    const businesses = await this.prisma.business.findMany({
+      where: {
+        regionId: region.id,
+        active: true,
+        verified: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        categoryId: true,
+        category: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        coverImage: true,
+        logoImage: true,
+        rating: true,
+        reviewCount: true,
+        city: true,
+        addressLine1: true,
+      },
+      orderBy: [
+        { rating: 'desc' },
+        { reviewCount: 'desc' },
+      ],
+      take: limit,
+    });
+
+    return {
+      regionCode: region.code,
+      regionName: region.name,
+      businesses,
+      total: businesses.length,
+    };
+  }
+
+  /**
+   * Get popular categories for a region with business counts
+   */
+  async getPopularCategories(regionCode: string, limit: number = 8) {
+    const region = await this.prisma.region.findUnique({
+      where: { code: regionCode.toUpperCase() },
+      select: { id: true, code: true, name: true },
+    });
+
+    if (!region) {
+      throw new NotFoundException(`Region "${regionCode}" not found`);
+    }
+
+    // Get category counts for this region by joining with categories
+    const categories = await this.prisma.category.findMany({
+      where: {
+        businesses: {
+          some: {
+            regionId: region.id,
+            active: true,
+          },
+        },
+      },
+      include: {
+        _count: {
+          select: {
+            businesses: true,
+          },
+        },
+      },
+    });
+
+    // Filter and sort by businesses in this region - we need to re-count per region
+    const categoryWithRegionalCounts = await Promise.all(
+      categories.map(async (cat) => {
+        const count = await this.prisma.business.count({
+          where: {
+            categoryId: cat.id,
+            regionId: region.id,
+            active: true,
+          },
+        });
+        return {
+          id: cat.id,
+          slug: cat.slug,
+          name: cat.name,
+          icon: cat.icon || 'grid',
+          businessCount: count,
+        };
+      })
+    );
+
+    // Sort by count and take top limit
+    const sortedCategories = categoryWithRegionalCounts
+      .sort((a, b) => b.businessCount - a.businessCount)
+      .slice(0, limit);
+
+    return {
+      regionCode: region.code,
+      regionName: region.name,
+      categories: sortedCategories,
+      total: sortedCategories.length,
+    };
+  }
+
+  /**
+   * Get statistics for a region
+   */
+  async getRegionStats(regionCode: string) {
+    const region = await this.prisma.region.findUnique({
+      where: { code: regionCode.toUpperCase() },
+      include: { currency: true },
+    });
+
+    if (!region) {
+      throw new NotFoundException(`Region "${regionCode}" not found`);
+    }
+
+    // Get various counts
+    const [
+      totalBusinesses,
+      verifiedBusinesses,
+      totalReviews,
+      totalServices,
+      categoryBreakdown,
+    ] = await Promise.all([
+      this.prisma.business.count({
+        where: { regionId: region.id, active: true },
+      }),
+      this.prisma.business.count({
+        where: { regionId: region.id, active: true, verified: true },
+      }),
+      this.prisma.review.count({
+        where: {
+          business: { regionId: region.id },
+        },
+      }),
+      this.prisma.service.count({
+        where: {
+          business: { regionId: region.id, active: true },
+        },
+      }),
+      this.prisma.category.findMany({
+        where: {
+          businesses: {
+            some: { regionId: region.id, active: true },
+          },
+        },
+        select: {
+          name: true,
+          slug: true,
+          _count: {
+            select: {
+              businesses: {
+                where: { regionId: region.id, active: true },
+              },
+            },
+          },
+        },
+      }),
+    ]);
+
+    // Calculate average rating
+    const avgRating = await this.prisma.business.aggregate({
+      where: { regionId: region.id, active: true, reviewCount: { gt: 0 } },
+      _avg: { rating: true },
+    });
+
+    return {
+      regionCode: region.code,
+      regionName: region.name,
+      currency: region.currency,
+      stats: {
+        totalBusinesses,
+        verifiedBusinesses,
+        totalReviews,
+        totalServices,
+        averageRating: avgRating._avg?.rating ? Number(avgRating._avg.rating.toFixed(1)) : 0,
+        categoryBreakdown: categoryBreakdown.map((c) => ({
+          category: c.slug,
+          name: c.name,
+          count: c._count.businesses,
+        })),
+      },
+    };
+  }
+
+  /**
+   * Get recently added businesses in a region
+   */
+  async getRecentBusinesses(regionCode: string, limit: number = 10) {
+    const region = await this.prisma.region.findUnique({
+      where: { code: regionCode.toUpperCase() },
+      select: { id: true, code: true, name: true },
+    });
+
+    if (!region) {
+      throw new NotFoundException(`Region "${regionCode}" not found`);
+    }
+
+    const businesses = await this.prisma.business.findMany({
+      where: {
+        regionId: region.id,
+        active: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        categoryId: true,
+        category: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        coverImage: true,
+        logoImage: true,
+        city: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return {
+      regionCode: region.code,
+      regionName: region.name,
+      businesses,
+      total: businesses.length,
+    };
+  }
 }

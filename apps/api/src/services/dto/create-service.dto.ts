@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNumber, IsOptional, Min, MaxLength } from 'class-validator';
+import { IsIn, IsNumber, IsOptional, IsString, MaxLength, Min } from 'class-validator';
+
+// Supported currency codes
+const SUPPORTED_CURRENCIES = ['USD', 'AED', 'SAR', 'GBP', 'EUR', 'CAD', 'AUD', 'PKR', 'INR'] as const;
 
 export class CreateServiceDto {
   @ApiProperty({ example: 'cuid123', description: 'Business ID' })
@@ -23,6 +26,18 @@ export class CreateServiceDto {
   @IsNumber()
   @Min(0)
   price!: number;
+
+  @ApiProperty({ 
+    example: 'USD', 
+    description: 'Currency code for the price',
+    enum: SUPPORTED_CURRENCIES,
+    default: 'USD',
+    required: false
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(SUPPORTED_CURRENCIES)
+  currencyCode?: string;
 
   @ApiProperty({ example: 60, description: 'Duration in minutes', required: false })
   @IsOptional()

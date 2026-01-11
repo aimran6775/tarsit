@@ -6,11 +6,11 @@ import { TarsActionsService } from './actions/actions.service';
 import { TarsDatabaseQueryService } from './database/database-query.service';
 import { TarsMemoryService } from './memory/memory.service';
 import {
-  generatePersonaPrompt,
-  getQuickResponse,
-  PERSONA_CAPABILITIES,
-  PERSONA_ERROR_MESSAGES,
-  TarsPersonaType,
+    generatePersonaPrompt,
+    getQuickResponse,
+    PERSONA_CAPABILITIES,
+    PERSONA_ERROR_MESSAGES,
+    TarsPersonaType,
 } from './prompts/persona-prompts';
 import { TARS_ERROR_MESSAGES } from './prompts/system-prompt';
 import { TarsUsageService } from './usage/usage.service';
@@ -49,6 +49,8 @@ export interface TarsContext {
   userName?: string;
   businessName?: string;
   persona?: TarsPersonaType;
+  language?: string; // User's preferred language code (e.g., 'en', 'ar', 'ur')
+  regionCode?: string; // User's region code (e.g., 'AE', 'US')
 }
 
 @Injectable()
@@ -180,7 +182,7 @@ export class TarsService {
           ? await this.getBusinessTodayStats(businessId)
           : undefined;
 
-      // Generate persona-specific system prompt
+      // Generate persona-specific system prompt with language support
       const systemPrompt =
         generatePersonaPrompt({
           persona,
@@ -189,6 +191,8 @@ export class TarsService {
           context: chatContext,
           bookingHistory,
           todayStats,
+          language: context.language,
+          regionCode: context.regionCode,
         }) +
         memoryContext +
         databaseContext;

@@ -2,18 +2,18 @@
 
 import { getOptimizedImageUrl, isSupabaseStorageUrl } from '@/lib/image-optimization';
 import {
-  Award,
-  Building2,
-  Check,
-  ChevronRight,
-  Eye,
-  Heart,
-  MapPin,
-  Navigation,
-  Share2,
-  Star,
-  TrendingUp,
-  Zap,
+    Award,
+    Building2,
+    Check,
+    ChevronRight,
+    Eye,
+    Heart,
+    MapPin,
+    Navigation,
+    Share2,
+    Star,
+    TrendingUp,
+    Zap,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -120,6 +120,12 @@ export function BusinessCard({
           </h3>
           <div className="flex items-center gap-2 text-xs text-white/50">
             <span className={categoryStyle.text}>{business.category.name}</span>
+            {business.region && (
+              <>
+                <span>•</span>
+                <span title={business.region.name}>{business.region.flag}</span>
+              </>
+            )}
             <span>•</span>
             <span className="flex items-center gap-0.5">
               <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
@@ -216,13 +222,20 @@ export function BusinessCard({
           <div className="flex-1 p-5 flex flex-col">
             <div className="flex items-start justify-between mb-2">
               <div>
-                <span
-                  className={`text-xs font-medium uppercase tracking-wide ${categoryStyle.text}`}
-                >
-                  {business.category.name}
-                </span>
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className={`text-xs font-medium uppercase tracking-wide ${categoryStyle.text}`}
+                  >
+                    {business.category.name}
+                  </span>
+                  {business.region && (
+                    <span className="text-xs text-white/60 flex items-center gap-1" title={business.region.name}>
+                      {business.region.flag}
+                    </span>
+                  )}
+                </div>
                 {business.distance && (
-                  <span className="text-xs text-white/40 ml-2 flex items-center gap-1 inline-flex">
+                  <span className="text-xs text-white/40 flex items-center gap-1 inline-flex">
                     <Navigation className="h-3 w-3" />
                     {business.distance.toFixed(1)} mi
                   </span>
@@ -365,11 +378,18 @@ export function BusinessCard({
         {/* Content Section - Compact on mobile */}
         <div className="p-3.5 sm:p-5 flex flex-col flex-1">
           <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <span
-              className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide px-1.5 sm:px-2 py-0.5 rounded-md ${categoryStyle.bg} ${categoryStyle.text}`}
-            >
-              {business.category.name}
-            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className={`text-[10px] sm:text-xs font-medium uppercase tracking-wide px-1.5 sm:px-2 py-0.5 rounded-md ${categoryStyle.bg} ${categoryStyle.text}`}
+              >
+                {business.category.name}
+              </span>
+              {business.region && (
+                <span className="text-[10px] sm:text-xs text-white/60 flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-white/5" title={business.region.name}>
+                  {business.region.flag}
+                </span>
+              )}
+            </div>
             {business.distance && (
               <span className="text-[10px] sm:text-xs text-white/40 flex items-center gap-1">
                 <Navigation className="h-3 w-3" />

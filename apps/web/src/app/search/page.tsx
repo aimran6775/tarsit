@@ -19,6 +19,7 @@ import {
     SmartSearchBar,
     ViewMode,
 } from '@/components/search';
+import { useRegion } from '@/contexts/region-context';
 import { useGeolocation } from '@/hooks/use-geolocation';
 import { Bot } from 'lucide-react';
 import Link from 'next/link';
@@ -28,6 +29,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { region } = useRegion();
 
   // Search State
   const [searchResults, setSearchResults] = useState<SearchResponse | null>(null);
@@ -122,6 +124,10 @@ function SearchContent() {
       if (rating) params.set('minRating', rating);
       if (page) params.set('page', page);
       if (sort) params.set('sort', sort);
+      // Add region filter for regional search
+      if (region?.code) {
+        params.set('regionCode', region.code);
+      }
       params.set('limit', '12');
 
       const apiUrl =
@@ -138,7 +144,7 @@ function SearchContent() {
     } finally {
       setLoading(false);
     }
-  }, [searchParams, latitude, longitude]);
+  }, [searchParams, latitude, longitude, region?.code]);
 
   useEffect(() => {
     fetchResults();

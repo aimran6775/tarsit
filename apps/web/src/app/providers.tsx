@@ -3,6 +3,7 @@
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { GlobalTarsWidget } from '@/components/tars/GlobalTarsWidget';
 import { AuthProvider } from '@/contexts/auth-context';
+import { LanguageProvider } from '@/contexts/language-context';
 import { MessagesProvider } from '@/contexts/messages-context';
 import { RegionProvider } from '@/contexts/region-context';
 import { TarsProvider } from '@/contexts/TarsContext';
@@ -56,17 +57,19 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <RegionProvider>
-          <AuthProvider>
-            <MessagesProvider>
-              <TarsProvider>
-                <ErrorBoundary>{children}</ErrorBoundary>
-                <GlobalTarsWidget />
-                <ThemedToaster />
-              </TarsProvider>
-            </MessagesProvider>
-          </AuthProvider>
-        </RegionProvider>
+        <LanguageProvider>
+          <RegionProvider>
+            <AuthProvider>
+              <MessagesProvider>
+                <TarsProvider>
+                  <ErrorBoundary>{children}</ErrorBoundary>
+                  <GlobalTarsWidget />
+                  <ThemedToaster />
+                </TarsProvider>
+              </MessagesProvider>
+            </AuthProvider>
+          </RegionProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

@@ -1,8 +1,10 @@
 'use client';
 
+import { TranslateButton } from '@/components/features/translate-button';
 import { DynamicSimpleMap } from '@/components/map';
 import { useAuth } from '@/contexts/auth-context';
 import { useMessages } from '@/contexts/messages-context';
+import { useRegion } from '@/contexts/region-context';
 import { apiClient } from '@/lib/api/client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
@@ -22,6 +24,14 @@ import {
 } from './components';
 import { BusinessDetail, BusinessHours, TimeSlot } from './types';
 
+// Translation state type
+interface TranslationState {
+  name: string;
+  description: string;
+  tagline?: string;
+  services: Array<{ name: string; description?: string }>;
+}
+
 type Props = {
   slug: string;
   initialBusiness?: BusinessDetail | null;
@@ -36,9 +46,11 @@ export default function BusinessDetailClient({
   const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { openChat } = useMessages();
+  const { region } = useRegion();
 
   const [business, setBusiness] = useState<BusinessDetail | null>(initialBusiness ?? null);
   const [businessHours, setBusinessHours] = useState<BusinessHours[]>(initialBusinessHours ?? []);
+  const [convertedServices, setConvertedServices] = useState<BusinessDetail['services'] | null>(null);
   const [loading, setLoading] = useState<boolean>(!initialBusiness);
   const [error, setError] = useState<string | null>(null);
   const [isFavorited, setIsFavorited] = useState(false);
@@ -58,6 +70,9 @@ export default function BusinessDetailClient({
   const [showChatModal, setShowChatModal] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+
+  // Translation state
+  const [translations, setTranslations] = useState<TranslationState | null>(null);
 
   // Fetch business data (client refresh / navigation)
   useEffect(() => {
@@ -123,6 +138,30 @@ export default function BusinessDetailClient({
       cancelled = true;
     };
   }, [slug, isAuthenticated]);
+
+  // Fetch services with converted prices when region changes
+  useEffect(() => {
+    const fetchConvertedServices = async () => {
+      if (!business?.id || !region?.defaultCurrency) {
+        setConvertedServices(null);
+        return;
+      }
+
+      try {
+        const response = await apiClient.get(
+          `/services/business/${business.id}?currency=${region.defaultCurrency}`
+        );
+        setConvertedServices(response.data);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to fetch converted services:', err);
+        // Fall back to original services
+        setConvertedServices(null);
+      }
+    };
+
+    fetchConvertedServices();
+  }, [business?.id, region?.defaultCurrency]);
 
   // Fetch available slots when date changes
   useEffect(() => {
@@ -262,15 +301,51 @@ export default function BusinessDetailClient({
     return <ErrorState />;
   }
 
+  // Create display data with translations applied
+  const displayBusiness = translations
+    ? {
+        ...business,
+        name: translations.name,
+        description: translations.description,
+        tagline: translations.tagline || business.tagline,
+      }
+    : business;
+
+  // Apply translations to services
+  const displayServices = useMemo(() => {
+    const baseServices = convertedServices || business.services || [];
+    if (!translations?.services?.length) return baseServices;
+
+    return baseServices.map((service, index) => {
+      const translation = translations.services[index];
+      if (!translation) return service;
+      return {
+        ...service,
+        name: translation.name || service.name,
+        description: translation.description || service.description,
+      };
+    });
+  }, [convertedServices, business.services, translations]);
+
   return (
     <div className="min-h-screen bg-neutral-950">
       <BusinessHero
-        business={business}
+        business={displayBusiness}
         isFavorited={isFavorited}
         onToggleFavorite={handleToggleFavorite}
       />
 
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
+        {/* Translation Button */}
+        <div className="flex justify-end mb-4">
+          <TranslateButton
+            businessId={business.id}
+            originalLang={business.defaultLanguage || 'en'}
+            onTranslate={setTranslations}
+            onReset={() => setTranslations(null)}
+          />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
             <MobileActions
@@ -293,7 +368,7 @@ export default function BusinessDetailClient({
                       className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6"
                     >
                       <h2 className="text-lg font-semibold text-white mb-4">About</h2>
-                      <p className="text-white/70 leading-relaxed">{business.description}</p>
+                      <p className="text-white/70 leading-relaxed">{displayBusiness.description}</p>
                     </div>
                   ) : null;
 
@@ -310,7 +385,7 @@ export default function BusinessDetailClient({
                   return business.showServices !== false ? (
                     <ServicesList
                       key="services"
-                      services={business.services || []}
+                      services={displayServices}
                       appointmentsEnabled={business.appointmentsEnabled}
                       onBookService={handleBookService}
                     />

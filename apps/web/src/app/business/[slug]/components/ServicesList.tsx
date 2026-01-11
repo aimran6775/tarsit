@@ -1,14 +1,24 @@
 'use client';
 
-import { Clock } from 'lucide-react';
+import { useRegion } from '@/contexts/region-context';
+import { Clock, RefreshCw } from 'lucide-react';
 
 interface Service {
   id: string;
   name: string;
   description?: string;
   price?: number;
+  currencyCode?: string;
   duration?: number;
   bookable: boolean;
+  // Price conversion fields
+  originalPrice?: number;
+  originalCurrency?: string;
+  convertedPrice?: number;
+  targetCurrencyCode?: string;
+  targetCurrencySymbol?: string;
+  formattedPrice?: string;
+  formattedConvertedPrice?: string;
 }
 
 interface ServicesListProps {
@@ -18,11 +28,24 @@ interface ServicesListProps {
 }
 
 export function ServicesList({ services, appointmentsEnabled, onBookService }: ServicesListProps) {
+  const { formatPrice, region } = useRegion();
+  
   if (!services || services.length === 0) return null;
+
+  // Check if any service has a different currency than user's region
+  const hasConvertedPrices = services.some(s => s.formattedConvertedPrice);
 
   return (
     <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
-      <h2 className="text-lg font-semibold text-white mb-4">Services</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-white">Services</h2>
+        {hasConvertedPrices && region && (
+          <span className="text-xs text-white/40 flex items-center gap-1">
+            <RefreshCw className="h-3 w-3" />
+            Prices converted to {region.defaultCurrency}
+          </span>
+        )}
+      </div>
       <div className="space-y-3">
         {services.map((service) => (
           <div 
@@ -50,9 +73,23 @@ export function ServicesList({ services, appointmentsEnabled, onBookService }: S
             </div>
             <div className="text-right ml-4">
               {service.price !== undefined && service.price !== null && (
-                <span className="font-semibold text-emerald-400">
-                  ${service.price}
-                </span>
+                <div className="space-y-1">
+                  {/* Show converted price if available */}
+                  {service.formattedConvertedPrice ? (
+                    <>
+                      <span className="font-semibold text-emerald-400">
+                        {service.formattedConvertedPrice}
+                      </span>
+                      <span className="block text-xs text-white/40">
+                        ({service.formattedPrice || `${service.currencyCode || 'USD'} ${service.price}`})
+                      </span>
+                    </>
+                  ) : (
+                    <span className="font-semibold text-emerald-400">
+                      {service.formattedPrice || formatPrice(service.price, service.currencyCode)}
+                    </span>
+                  )}
+                </div>
               )}
               {service.bookable && appointmentsEnabled && (
                 <button

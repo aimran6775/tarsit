@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsNumber, Min, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsEnum, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class BusinessQueryDto {
   @ApiProperty({ required: false, description: 'Search by business name' })
@@ -12,6 +12,16 @@ export class BusinessQueryDto {
   @IsOptional()
   @IsString()
   categoryId?: string;
+
+  @ApiProperty({ required: false, description: 'Filter by region code (e.g., US, UAE, UK)' })
+  @IsOptional()
+  @IsString()
+  regionCode?: string;
+
+  @ApiProperty({ required: false, description: 'Filter by region ID' })
+  @IsOptional()
+  @IsString()
+  regionId?: string;
 
   @ApiProperty({ required: false, description: 'Filter by city' })
   @IsOptional()

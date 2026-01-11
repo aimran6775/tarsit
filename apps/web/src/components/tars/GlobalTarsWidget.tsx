@@ -2,6 +2,7 @@
 
 import { useTars } from '@/contexts/TarsContext';
 import { useAuth } from '@/contexts/auth-context';
+import { useLanguage } from '@/contexts/language-context';
 import { TarsPersona } from '@/lib/tars/personas';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
@@ -168,6 +169,7 @@ function parseMessageWithLinks(
 export function GlobalTarsWidget() {
   const router = useRouter();
   const { user } = useAuth();
+  const { language } = useLanguage();
   const {
     isOpen,
     closeTars,
@@ -181,6 +183,14 @@ export function GlobalTarsWidget() {
     greeting,
     refreshGreeting,
   } = useTars();
+
+  // Get region from localStorage
+  const getRegion = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('tarsit-region') || undefined;
+    }
+    return undefined;
+  };
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -286,11 +296,15 @@ export function GlobalTarsWidget() {
 
       try {
         const token = getToken();
+        const regionCode = getRegion();
+        
         const response = await fetch(`${API_URL}/api/tars/chat`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...(token && { Authorization: `Bearer ${token}` }),
+            ...(language && { 'X-Language-Code': language }),
+            ...(regionCode && { 'X-Region-Code': regionCode }),
           },
           body: JSON.stringify({
             message: messageText,
@@ -300,6 +314,8 @@ export function GlobalTarsWidget() {
             pageContext,
             persona, // Include persona in request
             userName: user?.firstName || user?.username,
+            language, // Include language for AI responses
+            regionCode, // Include region for local context
           }),
         });
 
@@ -336,7 +352,7 @@ export function GlobalTarsWidget() {
         setIsLoading(false);
       }
     },
-    [sessionId, context, businessId, pageContext, isLoading, persona, user, personaConfig]
+    [sessionId, context, businessId, pageContext, isLoading, persona, user, personaConfig, language]
   );
 
   const handleSubmit = (e: React.FormEvent) => {

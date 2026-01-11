@@ -45,8 +45,17 @@ export interface BusinessDetail {
     name: string;
     description?: string;
     price?: number;
+    currencyCode?: string;
     duration?: number;
     bookable: boolean;
+    // Price conversion fields (when converted)
+    originalPrice?: number;
+    originalCurrency?: string;
+    convertedPrice?: number;
+    targetCurrencyCode?: string;
+    targetCurrencySymbol?: string;
+    formattedPrice?: string;
+    formattedConvertedPrice?: string;
   }>;
   reviews: Array<{
     id: string;
