@@ -338,7 +338,7 @@ export function Header() {
                 ) : (
                   <>
                     <Link
-                      href="/login"
+                      href="/auth/login"
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center justify-center py-4 px-4 rounded-xl font-medium transition-all active:scale-[0.98] ${
                         isDark

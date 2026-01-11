@@ -57,11 +57,17 @@ export class SearchService {
       ...(state && { state: { contains: state, mode: 'insensitive' } }),
     };
 
-    // Full-text search on name and description
+    // Enhanced full-text search: search in name, description, category name, and services
     if (q && q.trim()) {
       where.OR = [
         { name: { contains: q, mode: 'insensitive' } },
         { description: { contains: q, mode: 'insensitive' } },
+        { tagline: { contains: q, mode: 'insensitive' } },
+        // Search in category name (e.g., "barber" finds businesses in "Barber Shop" category)
+        { category: { name: { contains: q, mode: 'insensitive' } } },
+        // Search in services (e.g., "haircut" finds businesses offering haircut services)
+        { services: { some: { name: { contains: q, mode: 'insensitive' } } } },
+        { services: { some: { description: { contains: q, mode: 'insensitive' } } } },
       ];
     }
 
@@ -180,10 +186,10 @@ export class SearchService {
     const businessSuggestions = await this.prisma.business.findMany({
       where: {
         active: true,
-        name: {
-          contains: query,
-          mode: 'insensitive',
-        },
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { description: { contains: query, mode: 'insensitive' } },
+        ],
       },
       take: 5,
       select: {
@@ -207,6 +213,28 @@ export class SearchService {
       },
     });
 
+    // Get service-based suggestions (businesses that offer matching services)
+    const serviceMatches = await this.prisma.service.findMany({
+      where: {
+        OR: [
+          { name: { contains: query, mode: 'insensitive' } },
+          { description: { contains: query, mode: 'insensitive' } },
+        ],
+        business: { active: true },
+      },
+      take: 3,
+      distinct: ['name'],
+      select: {
+        name: true,
+        business: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
     return {
       suggestions: [
         ...businessSuggestions.map((b) => ({
@@ -218,6 +246,12 @@ export class SearchService {
           type: 'category',
           text: c.name,
           slug: c.slug,
+        })),
+        ...serviceMatches.map((s) => ({
+          type: 'service',
+          text: s.name,
+          businessName: s.business.name,
+          slug: s.business.slug,
         })),
       ],
     };

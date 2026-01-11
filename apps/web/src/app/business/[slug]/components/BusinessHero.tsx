@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Building2, Check, Heart, MapPin, Share2, Star } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { BusinessDetail } from '../types';
 
 interface BusinessHeroProps {
@@ -12,6 +12,7 @@ interface BusinessHeroProps {
 }
 
 export function BusinessHero({ business, isFavorited, onToggleFavorite }: BusinessHeroProps) {
+  const router = useRouter();
   const primaryPhoto =
     business.coverImage ||
     business.photos?.find((p) => p.featured)?.url ||
@@ -51,12 +52,12 @@ export function BusinessHero({ business, isFavorited, onToggleFavorite }: Busine
 
       {/* Navigation - Larger touch targets on mobile */}
       <div className="absolute top-0 left-0 right-0 p-3 sm:p-4 flex justify-between items-center safe-area-top">
-        <Link
-          href="/search"
+        <button
+          onClick={() => router.back()}
           className="h-11 w-11 sm:h-10 sm:w-10 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/60 active:bg-black/70 transition-colors active:scale-95"
         >
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+        </button>
 
         <div className="flex gap-2">
           <button
