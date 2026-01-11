@@ -458,9 +458,6 @@ export class AuthService {
 
     if (error || !data.session) {
       console.error('Supabase login failed for user:', user.email, error);
-      // If Supabase login fails but local succeeded, it means passwords might be out of sync
-      // or user missing in Supabase.
-      // For now, we throw to enforce Supabase usage.
       throw new UnauthorizedException('Authentication provider login failed');
     }
 
