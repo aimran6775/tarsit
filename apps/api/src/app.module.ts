@@ -2,6 +2,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AdminModule } from './admin/admin.module';
 import { AnalyticsModule } from './analytics/analytics.module';
@@ -16,6 +17,7 @@ import { CacheInterceptor } from './common/interceptors/cache.interceptor';
 import { SecurityInterceptor } from './common/interceptors/security.interceptor';
 import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware';
 import { SecurityMiddleware } from './common/middleware/security.middleware';
+import { CurrenciesModule } from './currencies/currencies.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { HealthModule } from './health/health.module';
 import { MessagesModule } from './messages/messages.module';
@@ -26,6 +28,7 @@ import { PromotionsModule } from './promotions/promotions.module';
 import { PushModule } from './push/push.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { RecentlyViewedModule } from './recently-viewed/recently-viewed.module';
+import { RegionsModule } from './regions/regions.module';
 import { ReportsModule } from './reports/reports.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { SavedSearchesModule } from './saved-searches/saved-searches.module';
@@ -45,6 +48,7 @@ import { VerificationRequestsModule } from './verification-requests/verification
       isGlobal: true,
       envFilePath: '.env',
     }),
+    ScheduleModule.forRoot(), // For cron jobs (exchange rate updates)
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 60 seconds
@@ -88,6 +92,9 @@ import { VerificationRequestsModule } from './verification-requests/verification
     StatsModule,
     TwoFactorModule,
     SeederModule,
+    // Internationalization
+    RegionsModule,
+    CurrenciesModule,
   ],
   controllers: [],
   providers: [
