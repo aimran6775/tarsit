@@ -5,14 +5,14 @@ import { useMessages } from '@/contexts/messages-context';
 import { apiClient } from '@/lib/api/client';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
-  ArrowLeft,
-  Building2,
-  Check,
-  CheckCheck,
-  MessageCircle,
-  Search,
-  Send,
-  X,
+    ArrowLeft,
+    Building2,
+    Check,
+    CheckCheck,
+    MessageCircle,
+    Search,
+    Send,
+    X,
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';

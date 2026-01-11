@@ -7,6 +7,86 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// GLOBAL/INTERNATIONALIZATION MODELS
+// ==========================================
+
+model Region {
+  id              String     @id @default(uuid())
+  code            String     @unique // e.g., "AE", "US", "GB", "PK"
+  name            String     // e.g., "United Arab Emirates"
+  nativeName      String?    // e.g., "الإمارات العربية المتحدة"
+  defaultLanguage String     @default("en") // Default language code
+  supportedLangs  String[]   @default(["en"]) // Array of supported language codes
+  currencyId      String
+  timezone        String     @default("UTC") // e.g., "Asia/Dubai"
+  isRTL           Boolean    @default(false) // Right-to-left support
+  flagEmoji       String?    // e.g., "🇦🇪"
+  phoneCode       String?    // e.g., "+971"
+  active          Boolean    @default(true)
+  order           Int        @default(0) // For display ordering
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  
+  currency        Currency   @relation(fields: [currencyId], references: [id])
+  businesses      Business[]
+  users           User[]     @relation("UserPreferredRegion")
+
+  @@index([code])
+  @@index([active])
+  @@index([order])
+  @@map("regions")
+}
+
+model Currency {
+  id                String    @id @default(uuid())
+  code              String    @unique // e.g., "USD", "AED", "GBP"
+  name              String    // e.g., "US Dollar"
+  symbol            String    // e.g., "$", "د.إ", "£"
+  symbolPosition    String    @default("before") // "before" or "after" the amount
+  decimalPlaces     Int       @default(2)
+  thousandSeparator String    @default(",")
+  decimalSeparator  String    @default(".")
+  exchangeRateToUSD Float     @default(1.0) // Rate to convert TO USD (for conversions)
+  lastRateUpdate    DateTime? // When exchange rate was last updated
+  active            Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  regions           Region[]
+
+  @@index([code])
+  @@index([active])
+  @@map("currencies")
+}
+
+model TranslationCache {
+  id             String   @id @default(uuid())
+  sourceHash     String   // MD5 hash of sourceText for quick lookup
+  sourceText     String   // Original text
+  sourceLang     String   @default("en") // Source language code
+  targetLang     String   // Target language code (e.g., "ar", "ur")
+  translatedText String   // Translated text
+  entityType     String?  // Optional: "business_description", "service_name", "review", etc.
+  entityId       String?  // Optional: ID of the entity being translated
+  quality        Float?   // Optional: quality score from AI
+  hitCount       Int      @default(0) // How many times this translation was used
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  expiresAt      DateTime? // Optional: when to refresh translation
+
+  @@unique([sourceHash, targetLang])
+  @@index([sourceHash])
+  @@index([sourceLang, targetLang])
+  @@index([entityType, entityId])
+  @@index([hitCount])
+  @@map("translation_cache")
+}
+
+// ==========================================
+// USER MODEL
+// ==========================================
+
 model User {
   id                      String                @id @default(uuid())
   email                   String                @unique
@@ -28,6 +108,12 @@ model User {
   provider                String?
   providerId              String?
   username                String?               @unique
+  // Internationalization preferences
+  preferredRegionId       String?               // User's preferred region
+  preferredLanguage       String?               @default("en") // User's preferred language code
+  detectedRegionId        String?               // Auto-detected region from IP
+  // Relations
+  preferredRegion         Region?               @relation("UserPreferredRegion", fields: [preferredRegionId], references: [id])
   adminAuditLogs          AdminAuditLog[]
   appointments            Appointment[]
   businesses              Business[]
@@ -48,6 +134,7 @@ model User {
   @@index([createdAt])
   @@index([role])
   @@index([active])
+  @@index([preferredRegionId])
   @@map("users")
 }
 
@@ -75,6 +162,10 @@ model Business {
   slug                String               @unique
   description         String?
   categoryId          String
+  // Region/Internationalization
+  regionId            String?              // Business's operating region
+  defaultLanguage     String?              @default("en") // Language of original content
+  // Address
   addressLine1        String
   addressLine2        String?
   city                String
@@ -118,6 +209,8 @@ model Business {
   logoImage           String?
   tagline             String?
   themeColor          String?              @default("#000000")
+  // Relations
+  region              Region?              @relation(fields: [regionId], references: [id])
   analytics           Analytics[]
   appointments        Appointment[]
   businessHours       BusinessHours[]
@@ -134,6 +227,7 @@ model Business {
 
   @@index([ownerId])
   @@index([categoryId])
+  @@index([regionId])
   @@index([latitude, longitude])
   @@index([slug])
   @@index([verified, active])
@@ -144,6 +238,7 @@ model Business {
   @@index([name])
   @@index([createdAt])
   @@index([active, createdAt])
+  @@index([regionId, active])
   @@map("businesses")
 }
 
@@ -174,6 +269,7 @@ model Service {
   name         String
   description  String?
   price        Float?
+  currencyCode String?       @default("USD") // Currency code for the price
   duration     Int?
   active       Boolean       @default(true)
   order        Int           @default(0)
