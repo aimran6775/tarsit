@@ -32,6 +32,7 @@ import { SavedSearchesModule } from './saved-searches/saved-searches.module';
 import { SearchModule } from './search/search.module';
 import { SeederModule } from './seeder/seeder.module';
 import { ServicesModule } from './services/services.module';
+import { StatsModule } from './stats/stats.module';
 import { TarsModule } from './tars/tars.module';
 import { TeamModule } from './team/team.module';
 import { TwoFactorModule } from './two-factor/two-factor.module';
@@ -84,6 +85,7 @@ import { VerificationRequestsModule } from './verification-requests/verification
     RecentlyViewedModule,
     ReportsModule,
     SavedSearchesModule,
+    StatsModule,
     TwoFactorModule,
     SeederModule,
   ],
