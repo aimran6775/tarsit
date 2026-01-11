@@ -16,7 +16,8 @@ export interface Region {
   id: string;
   code: string;
   name: string;
-  flag: string;
+  flagEmoji?: string;
+  flag?: string; // Alias for flagEmoji for backwards compatibility
   defaultLanguage: string;
   supportedLangs: string[];
   timezone: string;
@@ -24,6 +25,8 @@ export interface Region {
   active: boolean;
   currency: Currency;
   businessCount?: number;
+  // Computed helpers
+  defaultCurrency?: string;
 }
 
 export interface RegionLanguage {

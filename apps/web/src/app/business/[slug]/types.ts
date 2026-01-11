@@ -12,6 +12,8 @@ export interface BusinessDetail {
   state: string;
   zipCode: string;
   country: string;
+  regionId?: string;
+  defaultLanguage?: string;
   latitude: number;
   longitude: number;
   phone: string;

@@ -44,6 +44,7 @@ export interface BusinessData {
   state: string;
   zipCode: string;
   country?: string;
+  regionId?: string;
   phone: string;
   email?: string;
   website?: string;

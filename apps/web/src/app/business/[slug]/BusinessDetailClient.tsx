@@ -142,14 +142,15 @@ export default function BusinessDetailClient({
   // Fetch services with converted prices when region changes
   useEffect(() => {
     const fetchConvertedServices = async () => {
-      if (!business?.id || !region?.defaultCurrency) {
+      const currencyCode = region?.currency?.code;
+      if (!business?.id || !currencyCode) {
         setConvertedServices(null);
         return;
       }
 
       try {
         const response = await apiClient.get(
-          `/services/business/${business.id}?currency=${region.defaultCurrency}`
+          `/services/business/${business.id}?currency=${currencyCode}`
         );
         setConvertedServices(response.data);
       } catch (err) {
@@ -161,7 +162,7 @@ export default function BusinessDetailClient({
     };
 
     fetchConvertedServices();
-  }, [business?.id, region?.defaultCurrency]);
+  }, [business?.id, region?.currency?.code]);
 
   // Fetch available slots when date changes
   useEffect(() => {

@@ -58,7 +58,7 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
     // Get default currency from region
-    const defaultCurrency = region?.defaultCurrency || 'USD';
+    const defaultCurrency = region?.currency?.code || 'USD';
 
     // New service form state
     const [newService, setNewService] = useState({
@@ -86,10 +86,10 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
 
     // Update default currency when region changes
     useEffect(() => {
-        if (region?.defaultCurrency) {
-            setNewService(prev => ({ ...prev, currencyCode: region.defaultCurrency }));
+        if (region?.currency?.code) {
+            setNewService(prev => ({ ...prev, currencyCode: region.currency.code }));
         }
-    }, [region?.defaultCurrency]);
+    }, [region?.currency?.code]);
 
     // Add new service
     const handleAddService = async () => {
@@ -332,7 +332,7 @@ export function ServicesTab({ businessId, services: initialServices, onServicesU
                         <button
                             onClick={() => {
                                 setIsAdding(false);
-                                setNewService({ name: '', description: '', price: '', duration: '30', bookable: true });
+                                setNewService({ name: '', description: '', price: '', currencyCode: defaultCurrency, duration: '30', bookable: true });
                             }}
                             className="px-4 py-2 text-white/70 hover:text-white transition"
                         >

@@ -5,7 +5,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/contexts/auth-context';
 import { useRegion } from '@/contexts/region-context';
 import { useTheme } from '@/contexts/theme-context';
-import { Check, ChevronDown, Globe, Languages, Loader2, Menu, Search, Sparkles, X } from 'lucide-react';
+import { Check, ChevronDown, Globe, Info, Languages, Loader2, Menu, Search, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';

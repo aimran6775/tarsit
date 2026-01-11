@@ -878,7 +878,7 @@ export default function BusinessRegisterPage() {
                 <option value="">Select a region</option>
                 {availableRegions.map((region) => (
                   <option key={region.id} value={region.id}>
-                    {region.flag} {region.name}
+                    {region.flagEmoji} {region.name}
                   </option>
                 ))}
               </select>

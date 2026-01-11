@@ -39,10 +39,10 @@ export function ServicesList({ services, appointmentsEnabled, onBookService }: S
     <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold text-white">Services</h2>
-        {hasConvertedPrices && region && (
+        {hasConvertedPrices && region?.currency && (
           <span className="text-xs text-white/40 flex items-center gap-1">
             <RefreshCw className="h-3 w-3" />
-            Prices converted to {region.defaultCurrency}
+            Prices converted to {region.currency.code}
           </span>
         )}
       </div>
