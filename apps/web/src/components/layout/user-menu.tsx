@@ -2,15 +2,16 @@
 
 import { useAuth } from '@/contexts/auth-context';
 import {
-  Building2,
-  HelpCircle,
-  LogIn,
-  LogOut,
-  Menu,
-  Settings,
-  User,
-  UserPlus,
-  Users,
+    Building2,
+    HelpCircle,
+    LogIn,
+    LogOut,
+    Menu,
+    Settings,
+    Shield,
+    User,
+    UserPlus,
+    Users,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -76,9 +77,16 @@ export function UserMenu() {
 
               {/* Authenticated Links */}
               <div className="py-2">
-                <MenuLink href="/dashboard" icon={User} onClick={() => setIsOpen(false)}>
-                  Dashboard
-                </MenuLink>
+                {/* Show Admin Dashboard for admin users, regular dashboard for others */}
+                {user?.role === 'ADMIN' ? (
+                  <MenuLink href="/admin" icon={Shield} onClick={() => setIsOpen(false)}>
+                    Admin Dashboard
+                  </MenuLink>
+                ) : (
+                  <MenuLink href="/dashboard" icon={User} onClick={() => setIsOpen(false)}>
+                    Dashboard
+                  </MenuLink>
+                )}
               </div>
 
               <div className="border-t py-2 border-white/10">

@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/auth-context';
 import { useTheme } from '@/contexts/theme-context';
-import { Home, LayoutDashboard, MessageCircle, Search, User } from 'lucide-react';
+import { Home, LayoutDashboard, MessageCircle, Search, Shield, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -11,6 +11,7 @@ interface NavItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   requiresAuth?: boolean;
+  adminOnly?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -22,12 +23,21 @@ const navItems: NavItem[] = [
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const isAdmin = user?.role === 'ADMIN';
 
-  // Filter nav items based on auth status
-  const visibleItems = navItems.filter((item) => !item.requiresAuth || isAuthenticated);
+  // Filter nav items based on auth status and replace dashboard for admins
+  const visibleItems = navItems
+    .filter((item) => !item.requiresAuth || isAuthenticated)
+    .map((item) => {
+      // Replace dashboard with admin dashboard for admin users
+      if (item.href === '/dashboard' && isAdmin) {
+        return { ...item, href: '/admin', label: 'Admin', icon: Shield };
+      }
+      return item;
+    });
 
   // Don't show on certain pages
   const hiddenPaths = ['/auth/', '/business/register', '/business/login'];

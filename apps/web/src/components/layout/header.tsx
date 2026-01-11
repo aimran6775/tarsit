@@ -111,7 +111,7 @@ function LanguageSelector({ isDark = true }: { isDark?: boolean }) {
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -308,11 +308,12 @@ export function Header() {
 
                 {isAuthenticated ? (
                   <>
+                    {/* Show Admin Dashboard for admin users, regular dashboard for others */}
                     <Link
-                      href="/dashboard"
+                      href={user?.role === 'ADMIN' ? '/admin' : '/dashboard'}
                       onClick={() => setMobileMenuOpen(false)}
                       className={`flex items-center gap-4 py-4 px-4 rounded-xl transition-all active:scale-[0.98] ${
-                        pathname === '/dashboard'
+                        pathname === '/dashboard' || pathname === '/admin'
                           ? isDark
                             ? 'bg-purple-500/20 text-white'
                             : 'bg-purple-500/10 text-purple-700'
@@ -321,7 +322,7 @@ export function Header() {
                             : 'text-slate-700 hover:bg-slate-50 active:bg-slate-100'
                       }`}
                     >
-                      <span className="font-medium">Dashboard</span>
+                      <span className="font-medium">{user?.role === 'ADMIN' ? 'Admin Dashboard' : 'Dashboard'}</span>
                     </Link>
                     <Link
                       href="/messages"
