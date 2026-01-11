@@ -1,7 +1,7 @@
 import {
-  registerDecorator,
-  ValidationOptions,
-  ValidationArguments,
+    registerDecorator,
+    ValidationArguments,
+    ValidationOptions,
 } from 'class-validator';
 
 /**
@@ -14,14 +14,14 @@ import {
  * - At least one special character
  */
 export function IsStrongPassword(validationOptions?: ValidationOptions) {
-  return function (object: Object, propertyName: string) {
+  return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isStrongPassword',
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
       validator: {
-        validate(value: any, args: ValidationArguments) {
+        validate(value: any, _args: ValidationArguments) {
           if (typeof value !== 'string') {
             return false;
           }
@@ -47,7 +47,7 @@ export function IsStrongPassword(validationOptions?: ValidationOptions) {
           }
 
           // At least one special character
-          if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value)) {
+          if (!/[!@#$%^&*()_+={}[\];':"\\|,.<>/?-]/.test(value)) {
             return false;
           }
 
@@ -68,7 +68,7 @@ export function IsStrongPassword(validationOptions?: ValidationOptions) {
 
           return true;
         },
-        defaultMessage(args: ValidationArguments) {
+        defaultMessage(_args: ValidationArguments) {
           return 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character';
         },
       },
@@ -101,7 +101,7 @@ export function validatePasswordStrength(password: string): {
     errors.push('Password must contain at least one number');
   }
 
-  if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+  if (!/[!@#$%^&*()_+={}[\];':"\\|,.<>/?-]/.test(password)) {
     errors.push('Password must contain at least one special character');
   }
 

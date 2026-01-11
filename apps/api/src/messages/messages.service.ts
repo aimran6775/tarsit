@@ -130,7 +130,8 @@ export class MessagesService {
     }
 
     // Remove chat from response to keep it clean
-    const { chat, ...messageData } = message;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { chat: _, ...messageData } = message;
     return messageData;
   }
 

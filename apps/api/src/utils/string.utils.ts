@@ -12,8 +12,8 @@ export class StringUtils {
       .toLowerCase()
       .trim()
       .replace(/\s+/g, '-')
-      .replace(/[^\w\-]+/g, '')
-      .replace(/\-\-+/g, '-');
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-');
   }
 
   /**

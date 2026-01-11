@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
+import { PrismaService } from '../../prisma/prisma.service';
 
 /**
  * API Key Management Service
@@ -13,13 +13,13 @@ export class ApiKeyService {
   /**
    * Generate a new API key
    */
-  async generateApiKey(userId: string, name: string): Promise<{
+  async generateApiKey(_userId: string, _name: string): Promise<{
     key: string;
     keyId: string;
   }> {
     // Generate a secure API key
     const apiKey = `tarsit_${crypto.randomBytes(32).toString('hex')}`;
-    const keyHash = this.hashKey(apiKey);
+    // Hash would be stored in database: this.hashKey(apiKey)
 
     // Store hashed key in database
     // Note: You'll need to add an ApiKey model to Prisma schema
@@ -58,7 +58,7 @@ export class ApiKeyService {
       return { valid: false };
     }
 
-    const keyHash = this.hashKey(apiKey);
+    // Hash would be used for lookup: this.hashKey(apiKey)
 
     // In a real implementation, you would:
     // const apiKeyRecord = await this.prisma.apiKey.findFirst({
@@ -95,7 +95,7 @@ export class ApiKeyService {
   /**
    * Revoke an API key
    */
-  async revokeApiKey(keyId: string, userId: string): Promise<void> {
+  async revokeApiKey(_keyId: string, _userId: string): Promise<void> {
     // In a real implementation:
     // await this.prisma.apiKey.updateMany({
     //   where: {
@@ -111,7 +111,7 @@ export class ApiKeyService {
   /**
    * List API keys for a user
    */
-  async listApiKeys(userId: string): Promise<any[]> {
+  async listApiKeys(_userId: string): Promise<any[]> {
     // In a real implementation:
     // return this.prisma.apiKey.findMany({
     //   where: { userId, active: true },

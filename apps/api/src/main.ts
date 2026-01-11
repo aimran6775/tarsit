@@ -51,7 +51,6 @@ async function bootstrap() {
   app.use(compression());
 
   // CORS configuration
-  const isProduction = process.env.NODE_ENV === 'production';
   app.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = [

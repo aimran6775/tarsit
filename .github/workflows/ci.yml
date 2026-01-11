@@ -39,7 +39,6 @@ jobs:
 
       - name: Lint
         run: pnpm lint
-        continue-on-error: true
 
       - name: Type check API
         run: cd apps/api && pnpm exec tsc --noEmit

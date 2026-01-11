@@ -190,33 +190,37 @@ export class ReportsService {
     let exists = false;
 
     switch (targetType) {
-      case ReportTarget.BUSINESS:
+      case ReportTarget.BUSINESS: {
         const business = await this.prisma.business.findUnique({
           where: { id: targetId },
         });
         exists = !!business;
         break;
+      }
 
-      case ReportTarget.REVIEW:
+      case ReportTarget.REVIEW: {
         const review = await this.prisma.review.findUnique({
           where: { id: targetId },
         });
         exists = !!review;
         break;
+      }
 
-      case ReportTarget.USER:
+      case ReportTarget.USER: {
         const user = await this.prisma.user.findUnique({
           where: { id: targetId },
         });
         exists = !!user;
         break;
+      }
 
-      case ReportTarget.MESSAGE:
+      case ReportTarget.MESSAGE: {
         const message = await this.prisma.message.findUnique({
           where: { id: targetId },
         });
         exists = !!message;
         break;
+      }
     }
 
     if (!exists) {

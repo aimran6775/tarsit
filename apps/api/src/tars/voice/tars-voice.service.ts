@@ -130,7 +130,7 @@ export class TarsVoiceService {
   /**
    * Get follow-up suggestions based on persona
    */
-  private getFollowUpSuggestions(persona: string, context?: string): string[] {
+  private getFollowUpSuggestions(persona: string, _context?: string): string[] {
     const suggestions: Record<string, string[]> = {
       guest: [
         'Want me to show you some options? 🔍',
@@ -160,7 +160,8 @@ export class TarsVoiceService {
    */
   generateTimeBasedGreeting(persona: string, userName?: string, timeOfDay?: string): string {
     const time = timeOfDay || this.getCurrentTimeOfDay();
-    const personality = this.getPersonality(persona);
+    // Personality could be used for more customization in the future
+    void this.getPersonality(persona);
 
     const greetings: Record<string, Record<string, string[]>> = {
       guest: {

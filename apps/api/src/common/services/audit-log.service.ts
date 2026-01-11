@@ -65,8 +65,10 @@ export class AuditLogService {
     startDate?: Date;
     endDate?: Date;
   }) {
-    const { page = 1, limit = 20, adminId, action, entity, startDate, endDate } = params;
-    const skip = (page - 1) * limit;
+    const { page = 1, limit = 20 } = params;
+    // Variables adminId, action, entity, startDate, endDate are available on params when model is implemented
+    void params; // Placeholder until AuditLog model exists
+    void limit; // Placeholder until AuditLog model exists
 
     // Placeholder implementation - requires AuditLog model
     // const where: any = {};

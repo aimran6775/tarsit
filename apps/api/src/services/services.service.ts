@@ -1,11 +1,10 @@
 import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  BadRequestException,
+    ForbiddenException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateServiceDto, UpdateServiceDto, ServiceQueryDto } from './dto';
+import { CreateServiceDto, ServiceQueryDto, UpdateServiceDto } from './dto';
 
 @Injectable()
 export class ServicesService {
