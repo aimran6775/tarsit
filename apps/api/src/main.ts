@@ -90,7 +90,13 @@ async function bootstrap() {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Region-Code',
+      'X-Language-Code',
+      'X-Currency-Code',
+    ],
   });
 
   // Global validation pipe
