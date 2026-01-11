@@ -294,6 +294,22 @@ export default function BusinessDetailClient({
     return [...unique, ...missing];
   }, [business?.publicPageSectionOrder]);
 
+  // Apply translations to services - must be before any conditional returns
+  const displayServices = useMemo(() => {
+    const baseServices = convertedServices || business?.services || [];
+    if (!translations?.services?.length) return baseServices;
+
+    return baseServices.map((service, index) => {
+      const translation = translations.services[index];
+      if (!translation) return service;
+      return {
+        ...service,
+        name: translation.name || service.name,
+        description: translation.description || service.description,
+      };
+    });
+  }, [convertedServices, business?.services, translations]);
+
   if (loading) {
     return <LoadingState />;
   }
@@ -311,22 +327,6 @@ export default function BusinessDetailClient({
         tagline: translations.tagline || business.tagline,
       }
     : business;
-
-  // Apply translations to services
-  const displayServices = useMemo(() => {
-    const baseServices = convertedServices || business.services || [];
-    if (!translations?.services?.length) return baseServices;
-
-    return baseServices.map((service, index) => {
-      const translation = translations.services[index];
-      if (!translation) return service;
-      return {
-        ...service,
-        name: translation.name || service.name,
-        description: translation.description || service.description,
-      };
-    });
-  }, [convertedServices, business.services, translations]);
 
   return (
     <div className="min-h-screen bg-neutral-950">
