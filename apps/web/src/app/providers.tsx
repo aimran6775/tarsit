@@ -4,6 +4,7 @@ import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { GlobalTarsWidget } from '@/components/tars/GlobalTarsWidget';
 import { AuthProvider } from '@/contexts/auth-context';
 import { MessagesProvider } from '@/contexts/messages-context';
+import { RegionProvider } from '@/contexts/region-context';
 import { TarsProvider } from '@/contexts/TarsContext';
 import { ThemeProvider, useTheme } from '@/contexts/theme-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -55,15 +56,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <MessagesProvider>
-            <TarsProvider>
-              <ErrorBoundary>{children}</ErrorBoundary>
-              <GlobalTarsWidget />
-              <ThemedToaster />
-            </TarsProvider>
-          </MessagesProvider>
-        </AuthProvider>
+        <RegionProvider>
+          <AuthProvider>
+            <MessagesProvider>
+              <TarsProvider>
+                <ErrorBoundary>{children}</ErrorBoundary>
+                <GlobalTarsWidget />
+                <ThemedToaster />
+              </TarsProvider>
+            </MessagesProvider>
+          </AuthProvider>
+        </RegionProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

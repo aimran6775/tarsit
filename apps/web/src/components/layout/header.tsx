@@ -3,104 +3,206 @@
 import { Logo } from '@/components/shared';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useAuth } from '@/contexts/auth-context';
+import { useRegion } from '@/contexts/region-context';
 import { useTheme } from '@/contexts/theme-context';
-import { Check, Info, Menu, Search, Sparkles, X } from 'lucide-react';
+import { Check, ChevronDown, Globe, Languages, Loader2, Menu, Search, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { UserMenu } from './user-menu';
 
-// Language/Region data
-const regions = [
-  { code: 'US', name: 'United States', flag: '🇺🇸', language: 'English' },
-  { code: 'GB', name: 'United Kingdom', flag: '🇬🇧', language: 'English' },
-  { code: 'CA', name: 'Canada', flag: '🇨🇦', language: 'English' },
-  { code: 'AU', name: 'Australia', flag: '🇦🇺', language: 'English' },
-  { code: 'DE', name: 'Germany', flag: '🇩🇪', language: 'Deutsch' },
-  { code: 'FR', name: 'France', flag: '🇫🇷', language: 'Français' },
-  { code: 'ES', name: 'Spain', flag: '🇪🇸', language: 'Español' },
-  { code: 'IT', name: 'Italy', flag: '🇮🇹', language: 'Italiano' },
-  { code: 'JP', name: 'Japan', flag: '🇯🇵', language: '日本語' },
-  { code: 'KR', name: 'South Korea', flag: '🇰🇷', language: '한국어' },
-  { code: 'CN', name: 'China', flag: '🇨🇳', language: '中文' },
-  { code: 'IN', name: 'India', flag: '🇮🇳', language: 'English' },
-  { code: 'BR', name: 'Brazil', flag: '🇧🇷', language: 'Português' },
-  { code: 'MX', name: 'Mexico', flag: '🇲🇽', language: 'Español' },
-  { code: 'AE', name: 'UAE', flag: '🇦🇪', language: 'العربية' },
-  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', language: 'العربية' },
-];
-
 function LanguageSelector({ isDark = true }: { isDark?: boolean }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedRegion, setSelectedRegion] = useState(regions[0]);
+  const [view, setView] = useState<'regions' | 'languages'>('regions');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  const { 
+    region, 
+    language, 
+    languages, 
+    regions, 
+    isLoading, 
+    setRegion, 
+    setLanguage 
+  } = useRegion();
 
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setView('regions');
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Handle region selection
+  const handleRegionSelect = async (regionCode: string) => {
+    await setRegion(regionCode);
+    setView('languages');
+  };
+
+  // Handle language selection
+  const handleLanguageSelect = (langCode: string) => {
+    setLanguage(langCode);
+    setIsOpen(false);
+    setView('regions');
+  };
+
+  // Get current language name
+  const currentLangName = languages.find(l => l.code === language)?.nativeName || 'English';
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 p-2 rounded-full transition-colors ${
+        className={`flex items-center gap-2 px-3 py-2 rounded-full transition-colors ${
           isDark ? 'hover:bg-white/10' : 'hover:bg-slate-100'
         }`}
         aria-label="Choose language and region"
+        disabled={isLoading}
       >
-        <span className="text-xl">{selectedRegion.flag}</span>
+        {isLoading ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : (
+          <>
+            <span className="text-xl">{region?.flagEmoji || '🌍'}</span>
+            <span className={`text-xs hidden sm:block ${isDark ? 'text-white/70' : 'text-slate-600'}`}>
+              {currentLangName}
+            </span>
+            <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''} ${isDark ? 'text-white/50' : 'text-slate-400'}`} />
+          </>
+        )}
       </button>
 
       {isOpen && (
         <div
-          className={`absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto rounded-2xl shadow-2xl animate-fade-in z-50 ${
+          className={`absolute right-0 mt-2 w-80 max-h-[28rem] overflow-hidden rounded-2xl shadow-2xl animate-fade-in z-50 ${
             isDark
               ? 'bg-neutral-900 border border-white/10 shadow-black/50'
               : 'bg-white border border-slate-200 shadow-slate-200/50'
           }`}
         >
-          <div className={`p-4 border-b ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
-            <h3 className={`font-semibold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-              Choose a language and region
-            </h3>
+          {/* Tab Header */}
+          <div className={`flex border-b ${isDark ? 'border-white/10' : 'border-slate-200'}`}>
+            <button
+              onClick={() => setView('regions')}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                view === 'regions'
+                  ? isDark ? 'text-white bg-white/5 border-b-2 border-purple-500' : 'text-slate-900 bg-slate-50 border-b-2 border-purple-500'
+                  : isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Globe className="w-4 h-4" />
+              Region
+            </button>
+            <button
+              onClick={() => setView('languages')}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium transition-colors ${
+                view === 'languages'
+                  ? isDark ? 'text-white bg-white/5 border-b-2 border-purple-500' : 'text-slate-900 bg-slate-50 border-b-2 border-purple-500'
+                  : isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              <Languages className="w-4 h-4" />
+              Language
+            </button>
           </div>
-          <div className="p-2">
-            {regions.map((region) => (
-              <button
-                key={region.code}
-                onClick={() => {
-                  setSelectedRegion(region);
-                  setIsOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
-                  selectedRegion.code === region.code
-                    ? isDark
-                      ? 'bg-purple-500/20 text-white'
-                      : 'bg-purple-500/20 text-purple-700'
-                    : isDark
-                      ? 'text-white/70 hover:bg-white/5 hover:text-white'
-                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                }`}
-              >
-                <span className="text-2xl">{region.flag}</span>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium">{region.name}</p>
-                  <p className={`text-xs ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
-                    {region.language}
-                  </p>
+
+          {/* Region List */}
+          {view === 'regions' && (
+            <div className="p-2 max-h-80 overflow-y-auto">
+              {regions.length === 0 ? (
+                <div className={`text-center py-8 ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+                  <Globe className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Loading regions...</p>
                 </div>
-                {selectedRegion.code === region.code && (
-                  <Check className="w-4 h-4 text-purple-400" />
-                )}
-              </button>
-            ))}
+              ) : (
+                regions.map((r) => (
+                  <button
+                    key={r.code}
+                    onClick={() => handleRegionSelect(r.code)}
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
+                      region?.code === r.code
+                        ? isDark
+                          ? 'bg-purple-500/20 text-white'
+                          : 'bg-purple-500/20 text-purple-700'
+                        : isDark
+                          ? 'text-white/70 hover:bg-white/5 hover:text-white'
+                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    }`}
+                  >
+                    <span className="text-2xl">{r.flagEmoji}</span>
+                    <div className="flex-1 text-left">
+                      <p className="text-sm font-medium">{r.name}</p>
+                      <p className={`text-xs ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+                        {r.currency.symbol} {r.currency.code}
+                      </p>
+                    </div>
+                    {region?.code === r.code && (
+                      <Check className="w-4 h-4 text-purple-400" />
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Language List */}
+          {view === 'languages' && (
+            <div className="p-2 max-h-80 overflow-y-auto">
+              {languages.length === 0 ? (
+                <div className={`text-center py-8 ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+                  <Languages className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">Select a region first</p>
+                </div>
+              ) : (
+                <>
+                  <div className={`px-3 py-2 text-xs ${isDark ? 'text-white/40' : 'text-slate-400'}`}>
+                    Languages available in {region?.name}
+                  </div>
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => handleLanguageSelect(lang.code)}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
+                        language === lang.code
+                          ? isDark
+                            ? 'bg-purple-500/20 text-white'
+                            : 'bg-purple-500/20 text-purple-700'
+                          : isDark
+                            ? 'text-white/70 hover:bg-white/5 hover:text-white'
+                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                        isDark ? 'bg-white/10' : 'bg-slate-100'
+                      }`}>
+                        {lang.code.toUpperCase()}
+                      </div>
+                      <div className="flex-1 text-left">
+                        <p className="text-sm font-medium">{lang.nativeName}</p>
+                        <p className={`text-xs ${isDark ? 'text-white/50' : 'text-slate-400'}`}>
+                          {lang.name} {lang.isRTL && '• RTL'}
+                        </p>
+                      </div>
+                      {language === lang.code && (
+                        <Check className="w-4 h-4 text-purple-400" />
+                      )}
+                    </button>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Current Selection Footer */}
+          <div className={`p-3 border-t ${isDark ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+            <div className={`text-xs ${isDark ? 'text-white/50' : 'text-slate-500'}`}>
+              Currently: <span className="font-medium">{region?.flagEmoji} {region?.name}</span> • <span className="font-medium">{currentLangName}</span>
+            </div>
           </div>
         </div>
       )}
