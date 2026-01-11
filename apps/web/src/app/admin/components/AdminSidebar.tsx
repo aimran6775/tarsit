@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import {
   Shield, BarChart3, Users, Building2, CheckCircle, Star,
-  Grid, Server, FileText, History, Settings, Bell, LogOut, X, Bot
+  Grid, Server, FileText, History, Settings, Bell, LogOut, X, Bot,
+  Globe, DollarSign
 } from 'lucide-react';
 import type { TabType } from '../types';
 
@@ -23,6 +24,8 @@ const tabs: Array<{ id: TabType; label: string; icon: typeof BarChart3; badge?: 
   { id: 'verifications', label: 'Verifications', icon: CheckCircle, badge: true },
   { id: 'reviews', label: 'Reviews', icon: Star },
   { id: 'categories', label: 'Categories', icon: Grid },
+  { id: 'regions', label: 'Regions', icon: Globe },
+  { id: 'currencies', label: 'Currencies', icon: DollarSign },
   { id: 'tars', label: 'TARS AI', icon: Bot, badge: true },
   { id: 'system', label: 'System', icon: Server },
   { id: 'reports', label: 'Reports', icon: FileText },
@@ -76,7 +79,7 @@ export function AdminSidebar({
               Main Menu
             </div>
 
-            {tabs.slice(0, 5).map(tab => (
+            {tabs.slice(0, 6).map(tab => (
               <button
                 key={tab.id}
                 onClick={() => {
@@ -102,10 +105,33 @@ export function AdminSidebar({
             ))}
 
             <div className="text-xs font-semibold text-white/30 uppercase tracking-wider px-4 mb-3 mt-6">
-              Management
+              Global Settings
             </div>
 
-            {tabs.slice(5).map(tab => (
+            {tabs.slice(6, 8).map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === tab.id
+                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-500/25'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white'
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <tab.icon className="h-5 w-5" />
+                  {tab.label}
+                </div>
+              </button>
+            ))}
+
+            <div className="text-xs font-semibold text-white/30 uppercase tracking-wider px-4 mb-3 mt-6">
+              System
+            </div>
+
+            {tabs.slice(8).map(tab => (
               <button
                 key={tab.id}
                 onClick={() => {

@@ -10,8 +10,10 @@ import {
   BusinessDetailModal,
   BusinessesTab,
   CategoriesTab,
+  CurrenciesTab,
   LoadingState,
   OverviewTab,
+  RegionsTab,
   ReportsTab,
   ReviewsTab,
   SettingsTab,
@@ -28,18 +30,24 @@ import type {
   BroadcastMessage,
   Business,
   BusinessesResponse,
-  PlatformSettings,
-  RealTimeStats,
-  ReviewsResponse,
-  SystemHealth,
-  TabType,
-  User,
-  UsersResponse,
-  VerificationRequest,
+    Category,
+    Currency,
+    PlatformSettings,
+    RealTimeStats,
+    Region,
+    ReviewsResponse,
+    SystemHealth,
+    TabType,
+    User,
+    UsersResponse,
+    VerificationRequest,
 } from './types';
 
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'https://improved-memory-p6vxppj655p37pgw-4001.app.github.dev';
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api';
+
+// Normalize: ensure we have the base URL without trailing /api
+const API_BASE = API_URL.replace(/\/api\/?$/, '');
 
 export default function AdminDashboardPage() {
   const { user, isLoading: authLoading, logout } = useAuth();
@@ -97,10 +105,24 @@ export default function AdminDashboardPage() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
 
-  // API Helper
+  // Categories State
+  const [categories, setCategories] = useState<Category[]>([]);
+  
+  // Regions State
+  const [regions, setRegions] = useState<Region[]>([]);
+  
+  // Currencies State  
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+
+  // API Helper - Uses API_BASE to construct full URLs
   const fetchAPI = useCallback(async (endpoint: string, options?: RequestInit) => {
     const token = getToken();
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    // Ensure endpoint starts with /api
+    const url = endpoint.startsWith('/api') 
+      ? `${API_BASE}${endpoint}` 
+      : `${API_BASE}/api${endpoint}`;
+    
+    const response = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -110,7 +132,8 @@ export default function AdminDashboardPage() {
     });
 
     if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `API Error: ${response.statusText}`);
     }
 
     return response.json();
@@ -119,39 +142,11 @@ export default function AdminDashboardPage() {
   // Fetch Data Functions
   const fetchStats = useCallback(async () => {
     try {
-      const data = await fetchAPI('/api/admin/stats/realtime');
+      const data = await fetchAPI('/api/admin/dashboard/real-time');
       setStats(data);
-    } catch {
-      // Use mock data for demo
-      setStats({
-        overview: {
-          totalUsers: 12453,
-          totalBusinesses: 3847,
-          totalReviews: 45678,
-          totalAppointments: 8934,
-        },
-        realTime: {
-          activeUsers24h: 8934,
-          newBusinesses24h: 34,
-          newUsers24h: 147,
-          activeChats: 89,
-          pendingVerifications: 23,
-          onlineUsers: 456,
-        },
-        recentActivities: {
-          newUsers: [],
-          newBusinesses: [],
-          recentReviews: [],
-          recentAppointments: [],
-        },
-        growth: {
-          userGrowth: 12.5,
-          businessGrowth: 8.3,
-          revenueGrowth: 15.2,
-          reviewGrowth: 22.1,
-        },
-        timestamp: new Date().toISOString(),
-      });
+    } catch (error) {
+      console.error('Failed to fetch stats:', error);
+      // Keep existing data or set empty
     }
   }, [fetchAPI]);
 
@@ -165,40 +160,8 @@ export default function AdminDashboardPage() {
       });
       const data = await fetchAPI(`/api/admin/users?${params}`);
       setUsersData(data);
-    } catch {
-      // Mock data
-      setUsersData({
-        users: [
-          {
-            id: '1',
-            email: 'john@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
-            role: 'USER',
-            status: 'active',
-            isVerified: true,
-            verified: true,
-            active: true,
-            createdAt: '2024-01-15',
-            lastLoginAt: '2024-12-08',
-          },
-          {
-            id: '2',
-            email: 'jane@business.com',
-            firstName: 'Jane',
-            lastName: 'Smith',
-            role: 'BUSINESS_OWNER',
-            status: 'active',
-            isVerified: true,
-            verified: true,
-            active: true,
-            businessCount: 2,
-            createdAt: '2024-02-20',
-            lastLoginAt: '2024-12-07',
-          },
-        ],
-        pagination: { page: 1, limit: 10, total: 2, totalPages: 1 },
-      });
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
     }
   }, [fetchAPI, userPage, userSearch, userRoleFilter]);
 
@@ -212,49 +175,44 @@ export default function AdminDashboardPage() {
       });
       const data = await fetchAPI(`/api/admin/businesses?${params}`);
       setBusinessesData(data);
-    } catch {
-      // Mock data
-      setBusinessesData({
-        businesses: [
-          {
-            id: '1',
-            name: 'Tech Solutions Inc',
-            category: { id: '1', name: 'Technology' },
-            status: 'active',
-            isVerified: true,
-            verified: true,
-            active: true,
-            rating: 4.8,
-            reviewCount: 124,
-            city: 'San Francisco',
-            state: 'CA',
-            createdAt: '2024-01-10',
-          },
-          {
-            id: '2',
-            name: 'Green Gardens',
-            category: { id: '2', name: 'Home Services' },
-            status: 'pending',
-            isVerified: false,
-            verified: false,
-            active: true,
-            rating: 4.5,
-            reviewCount: 45,
-            city: 'Los Angeles',
-            state: 'CA',
-            createdAt: '2024-03-15',
-          },
-        ],
-        pagination: { page: 1, limit: 10, total: 2, totalPages: 1 },
-      });
+    } catch (error) {
+      console.error('Failed to fetch businesses:', error);
     }
   }, [fetchAPI, businessPage, businessSearch, businessStatusFilter]);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const data = await fetchAPI('/api/admin/categories?includeInactive=true');
+      setCategories(data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  }, [fetchAPI]);
+
+  const fetchRegions = useCallback(async () => {
+    try {
+      const data = await fetchAPI('/api/regions');
+      setRegions(data.regions || data);
+    } catch (error) {
+      console.error('Failed to fetch regions:', error);
+    }
+  }, [fetchAPI]);
+
+  const fetchCurrencies = useCallback(async () => {
+    try {
+      const data = await fetchAPI('/api/currencies');
+      setCurrencies(data.currencies || data);
+    } catch (error) {
+      console.error('Failed to fetch currencies:', error);
+    }
+  }, [fetchAPI]);
 
   const fetchVerifications = useCallback(async () => {
     try {
       const data = await fetchAPI('/api/admin/verifications');
-      setVerifications(data.requests || []);
-    } catch {
+      setVerifications(data.requests || data || []);
+    } catch (error) {
+      console.error('Failed to fetch verifications:', error);
       setVerifications([]);
     }
   }, [fetchAPI]);
@@ -269,11 +227,8 @@ export default function AdminDashboardPage() {
       });
       const data = await fetchAPI(`/api/admin/reviews?${params}`);
       setReviewsData(data);
-    } catch {
-      setReviewsData({
-        reviews: [],
-        pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
-      });
+    } catch (error) {
+      console.error('Failed to fetch reviews:', error);
     }
   }, [fetchAPI, reviewPage, reviewSearch, reviewRatingFilter]);
 
@@ -287,11 +242,8 @@ export default function AdminDashboardPage() {
       });
       const data = await fetchAPI(`/api/admin/audit-logs?${params}`);
       setAuditLogsData(data);
-    } catch {
-      setAuditLogsData({
-        logs: [],
-        pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
-      });
+    } catch (error) {
+      console.error('Failed to fetch audit logs:', error);
     }
   }, [fetchAPI, auditPage, auditSearch, auditActionFilter]);
 
@@ -299,48 +251,17 @@ export default function AdminDashboardPage() {
     try {
       const data = await fetchAPI('/api/admin/system/health');
       setSystemHealth(data);
-    } catch {
-      // Mock system health
-      setSystemHealth({
-        status: 'healthy',
-        database: {
-          status: 'connected',
-          responseTime: 12,
-        },
-        memory: {
-          used: 2147483648, // 2GB
-          total: 4294967296, // 4GB
-          percentage: 50,
-        },
-        uptime: 864000, // 10 days
-        nodeVersion: '20.10.0',
-        environment: 'production',
-        timestamp: new Date().toISOString(),
-      });
+    } catch (error) {
+      console.error('Failed to fetch system health:', error);
     }
   }, [fetchAPI]);
 
   const fetchAiInsights = useCallback(async () => {
     try {
-      const data = await fetchAPI('/api/admin/ai-insights');
+      const data = await fetchAPI('/api/admin/insights/ai');
       setAiInsights(data);
-    } catch {
-      setAiInsights({
-        businessTrends: {
-          growing: ['Health & Wellness', 'Technology', 'Food & Dining'],
-          declining: ['Traditional Retail'],
-        },
-        customerSentiment: {
-          overall: 'positive',
-          score: 0.78,
-        },
-        recommendations: [
-          'Consider promoting businesses in the Health & Wellness category',
-          'Users are requesting more filter options for search',
-          'Peak usage hours are between 6-9 PM',
-        ],
-        growthPrediction: 15.2,
-      });
+    } catch (error) {
+      console.error('Failed to fetch AI insights:', error);
     }
   }, [fetchAPI]);
 
@@ -348,8 +269,8 @@ export default function AdminDashboardPage() {
     try {
       const data = await fetchAPI('/api/admin/settings');
       setSettings(data);
-    } catch {
-      // Settings not found, use defaults
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
     }
   }, [fetchAPI]);
 
@@ -358,32 +279,10 @@ export default function AdminDashboardPage() {
     setTarsLoading(true);
     try {
       const data = await fetchAPI('/api/tars/admin/actions/pending');
-      setTarsActions(data.actions || []);
-    } catch {
-      // Mock TARS actions for demo
-      setTarsActions([
-        {
-          id: '1',
-          actionType: 'create_appointment',
-          description: 'User requested to book an appointment at Tech Spa for December 20th at 2pm',
-          status: 'PENDING',
-          priority: 0,
-          createdAt: new Date().toISOString(),
-          actionData: { service: 'Deep Tissue Massage', date: '2024-12-20', time: '14:00' },
-          user: { firstName: 'John', lastName: 'Doe', email: 'john@example.com' },
-          business: { name: 'Tech Spa & Wellness' },
-        },
-        {
-          id: '2',
-          actionType: 'update_business_info',
-          description: 'Business owner wants to change operating hours to 24/7',
-          status: 'PENDING',
-          priority: 1,
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-          actionData: { hours: '24/7', reason: 'Holiday season demand' },
-          business: { name: 'Quick Mart Express' },
-        },
-      ]);
+      setTarsActions(data.actions || data || []);
+    } catch (error) {
+      console.error('Failed to fetch TARS actions:', error);
+      setTarsActions([]);
     } finally {
       setTarsLoading(false);
     }
@@ -466,6 +365,16 @@ export default function AdminDashboardPage() {
       case 'businesses':
         fetchBusinesses();
         break;
+      case 'categories':
+        fetchCategories();
+        break;
+      case 'regions':
+        fetchRegions();
+        fetchCurrencies();
+        break;
+      case 'currencies':
+        fetchCurrencies();
+        break;
       case 'verifications':
         fetchVerifications();
         break;
@@ -491,6 +400,9 @@ export default function AdminDashboardPage() {
     user,
     fetchUsers,
     fetchBusinesses,
+    fetchCategories,
+    fetchRegions,
+    fetchCurrencies,
     fetchVerifications,
     fetchReviews,
     fetchAuditLogs,
@@ -645,6 +557,85 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Category Handlers
+  const handleAddCategory = async (data: any) => {
+    await fetchAPI('/api/admin/categories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    await fetchCategories();
+  };
+
+  const handleEditCategory = async (id: string, data: any) => {
+    await fetchAPI(`/api/admin/categories/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    await fetchCategories();
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    await fetchAPI(`/api/admin/categories/${id}`, { method: 'DELETE' });
+    await fetchCategories();
+  };
+
+  const handleReorderCategory = async (id: string, newOrder: number) => {
+    await fetchAPI(`/api/admin/categories/${id}/reorder`, {
+      method: 'PATCH',
+      body: JSON.stringify({ order: newOrder }),
+    });
+    await fetchCategories();
+  };
+
+  // Region Handlers
+  const handleAddRegion = async (data: any) => {
+    await fetchAPI('/api/regions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    await fetchRegions();
+  };
+
+  const handleEditRegion = async (id: string, data: any) => {
+    await fetchAPI(`/api/regions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    await fetchRegions();
+  };
+
+  const handleDeleteRegion = async (id: string) => {
+    await fetchAPI(`/api/regions/${id}`, { method: 'DELETE' });
+    await fetchRegions();
+  };
+
+  // Currency Handlers
+  const handleAddCurrency = async (data: any) => {
+    await fetchAPI('/api/currencies', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    await fetchCurrencies();
+  };
+
+  const handleEditCurrency = async (id: string, data: any) => {
+    await fetchAPI(`/api/currencies/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+    await fetchCurrencies();
+  };
+
+  const handleDeleteCurrency = async (id: string) => {
+    await fetchAPI(`/api/currencies/${id}`, { method: 'DELETE' });
+    await fetchCurrencies();
+  };
+
+  const handleUpdateCurrencyRates = async () => {
+    await fetchAPI('/api/currencies/update-rates', { method: 'POST' });
+    await fetchCurrencies();
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -740,11 +731,33 @@ export default function AdminDashboardPage() {
 
           {activeTab === 'categories' && (
             <CategoriesTab
-              categories={[]}
-              onAddCategory={() => {}}
-              onEditCategory={() => {}}
-              onDeleteCategory={() => {}}
-              onReorderCategory={() => {}}
+              categories={categories}
+              onAddCategory={handleAddCategory}
+              onEditCategory={handleEditCategory}
+              onDeleteCategory={handleDeleteCategory}
+              onReorderCategory={handleReorderCategory}
+            />
+          )}
+
+          {activeTab === 'regions' && (
+            <RegionsTab
+              regions={regions}
+              currencies={currencies}
+              onAddRegion={handleAddRegion}
+              onEditRegion={handleEditRegion}
+              onDeleteRegion={handleDeleteRegion}
+              onRefresh={fetchRegions}
+            />
+          )}
+
+          {activeTab === 'currencies' && (
+            <CurrenciesTab
+              currencies={currencies}
+              onAddCurrency={handleAddCurrency}
+              onEditCurrency={handleEditCurrency}
+              onDeleteCurrency={handleDeleteCurrency}
+              onUpdateRates={handleUpdateCurrencyRates}
+              onRefresh={fetchCurrencies}
             />
           )}
 

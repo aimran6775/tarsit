@@ -11,6 +11,9 @@ export type TabType =
   | 'verifications'
   | 'reviews'
   | 'categories'
+  | 'regions'
+  | 'currencies'
+  | 'translations'
   | 'tars'
   | 'system'
   | 'reports'
@@ -171,10 +174,64 @@ export interface Category {
   description?: string;
   icon?: string;
   parentId?: string;
-  order: number;
-  active: boolean;
+  order?: number;
+  sortOrder?: number;
+  active?: boolean;
+  isActive?: boolean;
+  businessCount?: number;
+  children?: Category[];
   _count?: {
     businesses: number;
+  };
+}
+
+// ============================================================================
+// REGIONS
+// ============================================================================
+
+export interface Region {
+  id: string;
+  code: string;
+  name: string;
+  nativeName?: string;
+  defaultLanguage: string;
+  supportedLangs: string[];
+  currencyId?: string;
+  currency?: Currency;
+  timezone: string;
+  isRTL: boolean;
+  flagEmoji: string;
+  phoneCode: string;
+  active: boolean;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    businesses: number;
+    users: number;
+  };
+}
+
+// ============================================================================
+// CURRENCIES
+// ============================================================================
+
+export interface Currency {
+  id: string;
+  code: string;
+  name: string;
+  symbol: string;
+  symbolPosition: 'before' | 'after';
+  decimalPlaces: number;
+  thousandSeparator: string;
+  decimalSeparator: string;
+  exchangeRateToUSD: number;
+  lastRateUpdate?: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    regions: number;
   };
 }
 

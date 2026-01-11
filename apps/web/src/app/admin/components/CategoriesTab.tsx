@@ -5,19 +5,7 @@ import {
   FolderTree, Plus, Edit2, Trash2, Search, X,
   ChevronDown, ChevronRight, GripVertical
 } from 'lucide-react';
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  icon?: string;
-  parentId?: string;
-  businessCount: number;
-  isActive: boolean;
-  sortOrder: number;
-  children?: Category[];
-}
+import type { Category } from '../types';
 
 interface CategoriesTabProps {
   categories: Category[];
@@ -253,7 +241,7 @@ export function CategoriesTab({
         </div>
         <div className="bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 p-4">
           <p className="text-2xl font-bold text-white">
-            {sampleCategories.reduce((acc, cat) => acc + cat.businessCount, 0)}
+            {sampleCategories.reduce((acc, cat) => acc + (cat.businessCount || cat._count?.businesses || 0), 0)}
           </p>
           <p className="text-sm text-white/50">Total Businesses</p>
         </div>

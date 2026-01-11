@@ -12,6 +12,8 @@ export { ReviewsTab } from './ReviewsTab';
 export { SystemTab } from './SystemTab';
 export { ReportsTab } from './ReportsTab';
 export { CategoriesTab } from './CategoriesTab';
+export { RegionsTab } from './RegionsTab';
+export { CurrenciesTab } from './CurrenciesTab';
 export { AuditLogsTab } from './AuditLogsTab';
 export { SettingsTab } from './SettingsTab';
 export { BroadcastModal } from './BroadcastModal';
