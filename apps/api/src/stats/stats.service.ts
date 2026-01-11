@@ -15,7 +15,7 @@ export class StatsService {
   async getPublicStats(): Promise<PublicStats> {
     const [totalBusinesses, totalReviews, totalBookings, totalUsers] = await Promise.all([
       this.prisma.business.count({
-        where: { status: 'ACTIVE' },
+        where: { active: true },
       }),
       this.prisma.review.count(),
       this.prisma.appointment.count(),
