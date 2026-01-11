@@ -5,27 +5,27 @@ import { useAuth } from '@/contexts/auth-context';
 import { TarsPersona } from '@/lib/tars/personas';
 import { cn } from '@/lib/utils';
 import {
-  BarChart3,
-  Calendar,
-  CalendarDays,
-  Clock,
-  Compass,
-  ExternalLink,
-  Grid3X3,
-  Heart,
-  HelpCircle,
-  Keyboard,
-  Maximize2,
-  MessageSquare,
-  Minimize2,
-  RefreshCw,
-  Search,
-  Send,
-  Settings,
-  Sparkles,
-  Terminal,
-  UserPlus,
-  X,
+    BarChart3,
+    Calendar,
+    CalendarDays,
+    Clock,
+    Compass,
+    ExternalLink,
+    Grid3X3,
+    Heart,
+    HelpCircle,
+    Keyboard,
+    Maximize2,
+    MessageSquare,
+    Minimize2,
+    RefreshCw,
+    Search,
+    Send,
+    Settings,
+    Sparkles,
+    Terminal,
+    UserPlus,
+    X,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -61,7 +61,8 @@ interface Message {
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api';
-const API_URL = API_BASE.replace(/\/api$/, '');
+// Normalize: remove trailing /api or /api/ to get base URL, then we'll add /api/tars/chat
+const API_URL = API_BASE.replace(/\/api\/?$/, '');
 
 // TARS quotes per persona
 const TARS_QUOTES: Record<TarsPersona, string[]> = {

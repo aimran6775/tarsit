@@ -43,8 +43,8 @@ interface TarsChatProps {
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
   'https://improved-memory-p6vxppj655p37pgw-4001.app.github.dev/api';
-// Remove trailing /api if present to normalize, then we'll add /tars/chat
-const API_URL = API_BASE.replace(/\/api$/, '');
+// Remove trailing /api or /api/ if present to normalize, then we'll add /api/tars/chat
+const API_URL = API_BASE.replace(/\/api\/?$/, '');
 
 // TARS quotes for loading/idle states
 const TARS_QUOTES = [
