@@ -29,4 +29,5 @@ COPY --from=base /app/package.json ./
 
 EXPOSE 3001
 
-CMD ["node", "dist/main.js"]
+# Run prisma db push to sync schema, then start the app
+CMD npx prisma db push --skip-generate && node dist/main.js
