@@ -331,7 +331,8 @@ export class BusinessesService {
       }
     }
 
-    const { categoryId, slug: _ignoredSlug, ...businessData } = dto;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { categoryId, slug: _slug, ...businessData } = dto;
     const updateData: Record<string, unknown> = {
       ...businessData,
       slug,

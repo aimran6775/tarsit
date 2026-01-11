@@ -16,7 +16,6 @@ export class AdminService {
   async getRealTimeStats() {
     const now = new Date();
     const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const _last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     const [
@@ -98,10 +97,11 @@ export class AdminService {
     };
   }
 
-  private async getRecentActivities(_limit: number = 20) {
+  private async getRecentActivities(limit: number = 20) {
+    const take = Math.min(limit, 5);
     const [users, businesses, reviews, appointments] = await Promise.all([
       this.prisma.user.findMany({
-        take: 5,
+        take,
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
@@ -425,8 +425,6 @@ export class AdminService {
   // ============================================================================
 
   async getSystemHealth() {
-    const _startTime = Date.now();
-
     // Database health check
     let databaseStatus = 'healthy';
     let databaseLatency = 0;
@@ -470,7 +468,7 @@ export class AdminService {
 
   async generateAIInsights() {
     // Get recent data for analysis
-    const [recentBusinesses, recentReviews, _topCategories, userGrowth] = await Promise.all([
+    const [recentBusinesses, recentReviews, , userGrowth] = await Promise.all([
       this.prisma.business.findMany({
         take: 10,
         orderBy: { createdAt: 'desc' },

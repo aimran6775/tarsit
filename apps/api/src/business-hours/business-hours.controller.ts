@@ -1,18 +1,18 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Put,
-  Body,
-  Param,
-  UseGuards,
-  Req,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Put,
+    Req,
+    UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse } from '@nestjs/swagger';
-import { BusinessHoursService } from './business-hours.service';
-import { SetBusinessHoursDto, BusinessHourDto, UpdateAppointmentSettingsDto } from './dto';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
+import { BusinessHoursService } from './business-hours.service';
+import { BusinessHourDto, SetBusinessHoursDto, UpdateAppointmentSettingsDto } from './dto';
 
 @ApiTags('business-hours')
 @Controller('businesses/:businessId')
