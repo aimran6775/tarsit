@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
+import { IsOptional, IsEnum, IsDateString } from 'class-validator';
 
 export enum ReportType {
   USER_ACTIVITY = 'user-activity',

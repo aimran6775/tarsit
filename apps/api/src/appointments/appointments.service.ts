@@ -264,7 +264,7 @@ export class AppointmentsService {
     });
   }
 
-  async getAvailableSlots(businessId: string, date: string, serviceId?: string) {
+  async getAvailableSlots(businessId: string, date: string, _serviceId?: string) {
     // Get business hours for the day
     const dayOfWeek = new Date(date).getDay();
     const businessHours = await this.prisma.businessHours.findUnique({
