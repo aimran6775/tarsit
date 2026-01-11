@@ -5,7 +5,7 @@
     "buildCommand": "pnpm install && pnpm prisma generate && pnpm build"
   },
   "deploy": {
-    "startCommand": "node dist/main.js",
+    "startCommand": "npx prisma db push --skip-generate && node dist/main.js",
     "healthcheckPath": "/api/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
