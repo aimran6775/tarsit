@@ -28,6 +28,9 @@ interface TestBusiness {
   latitude: number;
   longitude: number;
   services: Array<{ name: string; price: number; duration: number }>;
+  coverImage: string;
+  logoImage?: string;
+  photos: Array<{ url: string; caption: string }>;
 }
 
 interface Category {
@@ -100,6 +103,11 @@ export class StartupSeederService implements OnModuleInit {
         { name: 'Test Service 1', price: 50.0, duration: 30 },
         { name: 'Test Service 2', price: 100.0, duration: 60 },
       ],
+      coverImage: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&h=600&fit=crop',
+      photos: [
+        { url: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&h=600&fit=crop', caption: 'Our workspace' },
+        { url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=600&fit=crop', caption: 'Tech equipment' },
+      ],
     },
     {
       name: 'QuickFix Phone Repair',
@@ -119,6 +127,12 @@ export class StartupSeederService implements OnModuleInit {
         { name: 'Screen Replacement', price: 89.99, duration: 45 },
         { name: 'Battery Replacement', price: 59.99, duration: 30 },
         { name: 'Water Damage Repair', price: 149.99, duration: 120 },
+      ],
+      coverImage: 'https://images.unsplash.com/photo-1621330396173-e41b1cafd17f?w=1200&h=600&fit=crop',
+      photos: [
+        { url: 'https://images.unsplash.com/photo-1621330396173-e41b1cafd17f?w=800&h=600&fit=crop', caption: 'Phone repair station' },
+        { url: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&h=600&fit=crop', caption: 'Professional tools' },
+        { url: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=800&h=600&fit=crop', caption: 'Screen repair' },
       ],
     },
     {
@@ -140,6 +154,12 @@ export class StartupSeederService implements OnModuleInit {
         { name: 'Brake Service', price: 199.99, duration: 90 },
         { name: 'Engine Diagnostic', price: 89.99, duration: 60 },
       ],
+      coverImage: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=1200&h=600&fit=crop',
+      photos: [
+        { url: 'https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=800&h=600&fit=crop', caption: 'Auto service bay' },
+        { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop', caption: 'Engine work' },
+        { url: 'https://images.unsplash.com/photo-1632823471565-1ecdf5c6da20?w=800&h=600&fit=crop', caption: 'Our garage' },
+      ],
     },
     {
       name: 'Bella Salon & Spa',
@@ -159,6 +179,12 @@ export class StartupSeederService implements OnModuleInit {
         { name: "Women's Haircut", price: 85.0, duration: 60 },
         { name: 'Hair Coloring', price: 150.0, duration: 120 },
         { name: 'Spa Manicure', price: 45.0, duration: 45 },
+      ],
+      coverImage: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=600&fit=crop',
+      photos: [
+        { url: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&h=600&fit=crop', caption: 'Salon interior' },
+        { url: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=800&h=600&fit=crop', caption: 'Hair styling' },
+        { url: 'https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=800&h=600&fit=crop', caption: 'Spa treatments' },
       ],
     },
     {
@@ -180,6 +206,12 @@ export class StartupSeederService implements OnModuleInit {
         { name: 'Leak Repair', price: 199.99, duration: 90 },
         { name: 'Water Heater Install', price: 899.99, duration: 180 },
       ],
+      coverImage: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=1200&h=600&fit=crop',
+      photos: [
+        { url: 'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&h=600&fit=crop', caption: 'Professional plumber' },
+        { url: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop', caption: 'Plumbing work' },
+        { url: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&h=600&fit=crop', caption: 'Service van' },
+      ],
     },
     {
       name: 'Golden Gate Cafe',
@@ -199,6 +231,12 @@ export class StartupSeederService implements OnModuleInit {
         { name: 'Espresso Drinks', price: 4.5, duration: 5 },
         { name: 'Fresh Pastries', price: 3.5, duration: 0 },
         { name: 'Lunch Special', price: 12.99, duration: 15 },
+      ],
+      coverImage: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&h=600&fit=crop',
+      photos: [
+        { url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&h=600&fit=crop', caption: 'Cafe interior' },
+        { url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=600&fit=crop', caption: 'Fresh coffee' },
+        { url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop', caption: 'Latte art' },
       ],
     },
   ];
@@ -352,6 +390,33 @@ export class StartupSeederService implements OnModuleInit {
       });
 
       if (existing) {
+        // Update existing business with photos if missing
+        if (!existing.coverImage) {
+          await this.prisma.business.update({
+            where: { id: existing.id },
+            data: { coverImage: bizData.coverImage },
+          });
+          this.logger.log(`📸 Updated cover image for ${bizData.name}`);
+        }
+        
+        // Add photos if none exist
+        const photoCount = await this.prisma.photo.count({
+          where: { businessId: existing.id },
+        });
+        
+        if (photoCount === 0 && bizData.photos.length > 0) {
+          await this.prisma.photo.createMany({
+            data: bizData.photos.map((photo, idx) => ({
+              businessId: existing.id,
+              url: photo.url,
+              caption: photo.caption,
+              order: idx,
+              featured: idx === 0,
+            })),
+          });
+          this.logger.log(`📸 Added ${bizData.photos.length} photos to ${bizData.name}`);
+        }
+        
         this.logger.log(`✅ Business ${bizData.name} already exists`);
         continue;
       }
@@ -376,7 +441,7 @@ export class StartupSeederService implements OnModuleInit {
         continue;
       }
 
-      // Create business
+      // Create business with cover image and photos
       await this.prisma.business.create({
         data: {
           name: bizData.name,
@@ -393,6 +458,8 @@ export class StartupSeederService implements OnModuleInit {
           longitude: bizData.longitude,
           phone: bizData.phone,
           priceRange: bizData.priceRange,
+          coverImage: bizData.coverImage,
+          logoImage: bizData.logoImage,
           verified: true,
           rating: 4.5,
           reviewCount: 0,
@@ -417,10 +484,18 @@ export class StartupSeederService implements OnModuleInit {
               bookable: true,
             })),
           },
+          photos: {
+            create: bizData.photos.map((photo, idx) => ({
+              url: photo.url,
+              caption: photo.caption,
+              order: idx,
+              featured: idx === 0,
+            })),
+          },
         },
       });
 
-      this.logger.log(`🏢 Created business: ${bizData.name}`);
+      this.logger.log(`🏢 Created business: ${bizData.name} with ${bizData.photos.length} photos`);
     }
   }
 }
