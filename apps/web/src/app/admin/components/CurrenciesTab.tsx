@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import {
-  DollarSign,
-  Plus,
-  Edit2,
-  Trash2,
-  RefreshCw,
-  TrendingUp,
-  TrendingDown,
+    DollarSign,
+    Edit2,
+    Plus,
+    RefreshCw,
+    Trash2,
+    TrendingDown,
+    TrendingUp,
 } from 'lucide-react';
+import { useState } from 'react';
 import type { Currency } from '../types';
 
 interface CurrenciesTabProps {

@@ -1,10 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { 
-  FolderTree, Plus, Edit2, Trash2, Search, X,
-  ChevronDown, ChevronRight, GripVertical
+import {
+    ChevronDown, ChevronRight,
+    Edit2,
+    FolderTree,
+    GripVertical,
+    Plus,
+    Search,
+    Trash2,
+    X
 } from 'lucide-react';
+import { useState } from 'react';
 import type { Category } from '../types';
 
 interface CategoriesTabProps {

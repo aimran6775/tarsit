@@ -1,11 +1,24 @@
 'use client';
 
-import Link from 'next/link';
 import {
-  Shield, BarChart3, Users, Building2, CheckCircle, Star,
-  Grid, Server, FileText, History, Settings, Bell, LogOut, X, Bot,
-  Globe, DollarSign
+    BarChart3,
+    Bell,
+    Bot,
+    Building2, CheckCircle,
+    DollarSign,
+    FileText,
+    Globe,
+    Grid,
+    History,
+    LogOut,
+    Server,
+    Settings,
+    Shield,
+    Star,
+    Users,
+    X
 } from 'lucide-react';
+import Link from 'next/link';
 import type { TabType } from '../types';
 
 interface AdminSidebarProps {

@@ -1,20 +1,17 @@
 'use client';
 
-import { useState } from 'react';
 import {
-  Globe,
-  Plus,
-  Edit2,
-  Trash2,
-  Check,
-  X,
-  ArrowUpDown,
-  Languages,
-  DollarSign,
-  Clock,
-  Phone,
+    Clock,
+    DollarSign,
+    Edit2,
+    Globe,
+    Languages,
+    Phone,
+    Plus,
+    Trash2
 } from 'lucide-react';
-import type { Region, Currency } from '../types';
+import { useState } from 'react';
+import type { Currency, Region } from '../types';
 
 interface RegionsTabProps {
   regions: Region[];

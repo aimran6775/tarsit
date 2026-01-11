@@ -18,26 +18,15 @@ export class AdminService {
     const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const [
-      totalUsers,
-      totalBusinesses,
-      totalReviews,
-      totalAppointments,
-      activeUsers24h,
-      newBusinesses24h,
-      newUsers24h,
-      activeChats,
-      pendingVerifications,
-      recentActivities,
-      // Previous period counts for growth calculation
-      users30DaysAgo,
-      businesses30DaysAgo,
-      reviews30DaysAgo,
-    ] = await Promise.all([
+    // Run queries in smaller batches to avoid max connection errors
+    const [totalUsers, totalBusinesses, totalReviews, totalAppointments] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.business.count(),
       this.prisma.review.count(),
       this.prisma.appointment.count(),
+    ]);
+
+    const [activeUsers24h, newBusinesses24h, newUsers24h] = await Promise.all([
       this.prisma.user.count({
         where: { lastLoginAt: { gte: last24Hours } },
       }),
@@ -47,14 +36,19 @@ export class AdminService {
       this.prisma.user.count({
         where: { createdAt: { gte: last24Hours } },
       }),
+    ]);
+
+    const [activeChats, pendingVerifications] = await Promise.all([
       this.prisma.chat.count({
         where: { updatedAt: { gte: last24Hours } },
       }),
       this.prisma.verificationRequest.count({
         where: { status: 'PENDING' },
       }),
-      this.getRecentActivities(20),
-      // Count users from 30 days ago (for growth calculation)
+    ]);
+
+    // Get previous period counts for growth calculation
+    const [users30DaysAgo, businesses30DaysAgo, reviews30DaysAgo] = await Promise.all([
       this.prisma.user.count({
         where: { createdAt: { lt: last30Days } },
       }),
@@ -65,6 +59,9 @@ export class AdminService {
         where: { createdAt: { lt: last30Days } },
       }),
     ]);
+
+    // Get recent activities
+    const recentActivities = await this.getRecentActivities(20);
 
     // Calculate growth percentages
     const calculateGrowth = (current: number, previous: number): number => {
@@ -99,59 +96,62 @@ export class AdminService {
 
   private async getRecentActivities(limit: number = 20) {
     const take = Math.min(limit, 5);
-    const [users, businesses, reviews, appointments] = await Promise.all([
-      this.prisma.user.findMany({
-        take,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          email: true,
-          firstName: true,
-          lastName: true,
-          createdAt: true,
+    
+    // Run queries sequentially to avoid max connections
+    const users = await this.prisma.user.findMany({
+      take,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+      },
+    });
+
+    const businesses = await this.prisma.business.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        owner: {
+          select: { firstName: true, lastName: true },
         },
-      }),
-      this.prisma.business.findMany({
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          name: true,
-          createdAt: true,
-          owner: {
-            select: { firstName: true, lastName: true },
-          },
+      },
+    });
+
+    const reviews = await this.prisma.review.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        rating: true,
+        createdAt: true,
+        user: {
+          select: { firstName: true, lastName: true },
         },
-      }),
-      this.prisma.review.findMany({
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          rating: true,
-          createdAt: true,
-          user: {
-            select: { firstName: true, lastName: true },
-          },
-          business: {
-            select: { name: true },
-          },
+        business: {
+          select: { name: true },
         },
-      }),
-      this.prisma.appointment.findMany({
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          status: true,
-          date: true,
-          createdAt: true,
-          business: {
-            select: { name: true },
-          },
+      },
+    });
+
+    const appointments = await this.prisma.appointment.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        status: true,
+        date: true,
+        createdAt: true,
+        business: {
+          select: { name: true },
         },
-      }),
-    ]);
+      },
+    });
 
     return {
       newUsers: users,
