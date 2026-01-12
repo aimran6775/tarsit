@@ -1,6 +1,4 @@
-import { Footer, Header } from '@/components/layout';
-import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
-import { MessagesWidget } from '@/components/messages';
+import { LayoutWrapper } from '@/components/layout';
 import { PerformanceMonitor } from '@/components/performance/PerformanceMonitor';
 import { ServiceWorkerRegistration } from '@/components/pwa/ServiceWorkerRegistration';
 import { generateSEOMetadata } from '@/lib/seo';
@@ -51,13 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Providers>
           <ServiceWorkerRegistration />
           <PerformanceMonitor />
-          <div className="flex flex-col min-h-screen page-enter">
-            <Header />
-            <main className="flex-1 pb-16 md:pb-0">{children}</main>
-            <Footer />
-            <MobileBottomNav />
-            <MessagesWidget />
-          </div>
+          <LayoutWrapper>{children}</LayoutWrapper>
         </Providers>
       </body>
     </html>
