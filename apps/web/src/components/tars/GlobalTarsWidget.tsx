@@ -260,6 +260,7 @@ export function GlobalTarsWidget() {
     if (isOpen && initialMessage && messages.length === 1) {
       sendMessage(initialMessage);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, initialMessage, messages.length]);
 
   // Keyboard shortcut (Cmd/Ctrl + K)

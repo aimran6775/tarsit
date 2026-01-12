@@ -78,6 +78,7 @@ export function MessagesWidget() {
       setView('list');
       fetchChats();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   // Fetch chats

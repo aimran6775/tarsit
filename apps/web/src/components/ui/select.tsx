@@ -58,6 +58,7 @@ interface SelectTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
   ({ className, children, ...props }, ref) => {
     const { open, setOpen } = useSelectContext();
+    const listboxId = React.useId();
 
     return (
       <button
@@ -65,6 +66,7 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, SelectTriggerProps>(
         type="button"
         role="combobox"
         aria-expanded={open}
+        aria-controls={listboxId}
         className={cn(
           'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
           className
