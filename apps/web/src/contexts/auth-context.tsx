@@ -34,23 +34,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         localStorage.setItem('accessToken', session.access_token);
+        if (session.refresh_token) {
+          localStorage.setItem('refreshToken', session.refresh_token);
+        }
         refreshUser();
       } else {
-        setIsLoading(false);
+        // Try to restore session from stored refresh token
+        const storedRefreshToken = localStorage.getItem('refreshToken');
+        if (storedRefreshToken) {
+          supabase.auth.refreshSession({ refresh_token: storedRefreshToken }).then(({ data, error }) => {
+            if (data.session && !error) {
+              localStorage.setItem('accessToken', data.session.access_token);
+              if (data.session.refresh_token) {
+                localStorage.setItem('refreshToken', data.session.refresh_token);
+              }
+              refreshUser();
+            } else {
+              setIsLoading(false);
+            }
+          });
+        } else {
+          setIsLoading(false);
+        }
       }
     });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
         localStorage.setItem('accessToken', session.access_token);
-        if (!user) {
+        if (session.refresh_token) {
+          localStorage.setItem('refreshToken', session.refresh_token);
+        }
+        if (!user || event === 'TOKEN_REFRESHED') {
           await refreshUser();
         }
       } else {
         localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
         setUser(null);
         setIsLoading(false);
       }
@@ -114,6 +137,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut();
     setUser(null);
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
   };
 
   const refreshUser = async () => {
