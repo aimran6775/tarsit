@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 // Extend Express Request to include region info
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       regionCode?: string;

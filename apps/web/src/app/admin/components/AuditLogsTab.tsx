@@ -1,10 +1,17 @@
 'use client';
 
-import { 
-  History, User, Building2, Shield, Settings, Trash2,
-  Search, ChevronLeft, ChevronRight, Download, Clock
+import {
+    Building2,
+    ChevronLeft, ChevronRight,
+    Clock,
+    Download,
+    History,
+    Search,
+    Settings,
+    Shield,
+    Trash2,
+    User
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import type { AuditLogsResponse } from '../types';
 
 interface AuditLogsTabProps {
