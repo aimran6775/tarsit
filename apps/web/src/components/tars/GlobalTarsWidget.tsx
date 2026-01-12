@@ -390,14 +390,14 @@ export function GlobalTarsWidget() {
   if (!isOpen) {
     return (
       <motion.button
-        drag
-        dragConstraints={{ top: -200, bottom: 100, left: -200, right: 50 }}
+        drag="y"
+        dragConstraints={{ top: -100, bottom: 0 }}
         dragElastic={0.1}
-        whileDrag={{ scale: 1.1 }}
+        whileDrag={{ scale: 1.05 }}
         onClick={toggleTars}
         className={cn(
-          'fixed bottom-20 right-6 md:bottom-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center',
-          'hover:scale-110 transition-all z-50 group cursor-grab active:cursor-grabbing'
+          'fixed bottom-20 right-4 md:bottom-6 md:right-6 w-14 h-14 rounded-full shadow-lg flex items-center justify-center',
+          'hover:scale-110 transition-all z-40 group cursor-grab active:cursor-grabbing'
         )}
         style={{
           background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,

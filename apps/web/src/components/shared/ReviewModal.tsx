@@ -1,21 +1,21 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  X,
-  Star,
-  Image as ImageIcon,
-  Loader2,
-  CheckCircle,
-  AlertCircle,
-  Trash2,
-} from 'lucide-react';
-import { InteractiveRating } from './StarRating';
 import { useAuth } from '@/contexts/auth-context';
 import { apiClient } from '@/lib/api/client';
 import { uploadApi, validateImageFile } from '@/lib/api/upload.api';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+    AlertCircle,
+    CheckCircle,
+    Image as ImageIcon,
+    Loader2,
+    Star,
+    Trash2,
+    X,
+} from 'lucide-react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { InteractiveRating } from './StarRating';
 
 interface ReviewModalProps {
   isOpen: boolean;

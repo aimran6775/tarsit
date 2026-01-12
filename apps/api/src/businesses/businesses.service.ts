@@ -84,8 +84,10 @@ export class BusinessesService {
   }
 
   private async createBusiness(userId: string, dto: CreateBusinessDto, slug: string, regionId?: string) {
-    const { categoryId, hours, amenities, defaultLanguage, ...businessData } = dto;
-    // Note: regionId from DTO is ignored, we use the regionId parameter passed from findOrCreateRegion
+    // Extract regionId from DTO to prevent it from being spread into businessData
+    // We use the regionId parameter passed from findOrCreateRegion instead
+    const { categoryId, hours, amenities, regionId: _dtoRegionId, defaultLanguage, ...businessData } = dto;
+    void _dtoRegionId; // Explicitly mark as intentionally unused
 
     return this.prisma.business.create({
       data: {
