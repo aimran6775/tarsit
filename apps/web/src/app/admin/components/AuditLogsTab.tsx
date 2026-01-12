@@ -2,8 +2,9 @@
 
 import { 
   History, User, Building2, Shield, Settings, Trash2,
-  Search, ChevronLeft, ChevronRight, Download
+  Search, ChevronLeft, ChevronRight, Download, Clock
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { AuditLogsResponse } from '../types';
 
 interface AuditLogsTabProps {
@@ -14,6 +15,38 @@ interface AuditLogsTabProps {
   setAuditActionFilter: (action: string) => void;
   auditPage: number;
   setAuditPage: (page: number) => void;
+}
+
+// Helper function to format relative time
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60) return 'Just now';
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  return date.toLocaleDateString();
+}
+
+// Helper function to format full timestamp
+function formatFullTimestamp(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
 }
 
 const getActionIcon = (action: string) => {
@@ -142,9 +175,12 @@ export function AuditLogsTab({
                         </div>
                       )}
                     </div>
-                    <div className="text-right text-xs text-white/40 whitespace-nowrap">
-                      <p>{new Date(log.createdAt).toLocaleDateString()}</p>
-                      <p>{new Date(log.createdAt).toLocaleTimeString()}</p>
+                    <div className="text-right whitespace-nowrap">
+                      <div className="flex items-center gap-1.5 text-white/60 mb-1">
+                        <Clock className="h-3 w-3" />
+                        <span className="text-xs font-medium">{formatRelativeTime(log.createdAt)}</span>
+                      </div>
+                      <p className="text-[11px] text-white/40">{formatFullTimestamp(log.createdAt)}</p>
                       {log.ipAddress && (
                         <p className="mt-1">IP: {log.ipAddress}</p>
                       )}

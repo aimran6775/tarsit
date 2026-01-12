@@ -1,12 +1,12 @@
 'use client';
 
 import {
-  authApi,
-  BusinessAuthResponse,
-  LoginData,
-  SignupBusinessData,
-  SignupData,
-  User,
+    authApi,
+    BusinessAuthResponse,
+    LoginData,
+    SignupBusinessData,
+    SignupData,
+    User,
 } from '@/lib/api/auth.api';
 import { isHttpError } from '@/lib/api/client';
 import { supabase } from '@/lib/supabase';

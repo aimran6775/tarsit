@@ -5,8 +5,39 @@ import {
   TrendingUp, MessageSquare, ArrowUpRight, ArrowDownRight,
   ChevronRight, Zap, AlertCircle, CheckCircle, Clock, Globe
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import type { RealTimeStats, TabType } from '../types';
 import { formatNumber } from '../types';
+
+// Helper function to format relative time
+function formatRelativeTime(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60) return 'Just now';
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
+
+// Helper function to format exact time
+function formatExactTime(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+}
 
 interface OverviewTabProps {
   stats: RealTimeStats | null;
@@ -14,6 +45,13 @@ interface OverviewTabProps {
 }
 
 export function OverviewTab({ stats, setActiveTab }: OverviewTabProps) {
+  // Force re-render every minute to update relative times
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => setTick(t => t + 1), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   const statCards = [
     {
       label: 'Total Users',
@@ -134,7 +172,7 @@ export function OverviewTab({ stats, setActiveTab }: OverviewTabProps) {
 
           <div className="space-y-4">
             {stats?.recentActivities?.newUsers?.slice(0, 3).map((user: any, i: number) => (
-              <div key={user.id || i} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5">
+              <div key={user.id || i} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5 group">
                 <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
                   <Users className="h-5 w-5 text-blue-400" />
                 </div>
@@ -144,14 +182,19 @@ export function OverviewTab({ stats, setActiveTab }: OverviewTabProps) {
                   </p>
                   <p className="text-xs text-white/50">{user.email}</p>
                 </div>
-                <span className="text-xs text-white/40">
-                  {new Date(user.createdAt).toLocaleDateString()}
-                </span>
+                <div className="text-right">
+                  <span className="text-xs text-white/60 font-medium">
+                    {formatRelativeTime(user.createdAt)}
+                  </span>
+                  <p className="text-[10px] text-white/30 group-hover:text-white/50 transition-colors">
+                    {formatExactTime(user.createdAt)}
+                  </p>
+                </div>
               </div>
             ))}
 
             {stats?.recentActivities?.newBusinesses?.slice(0, 2).map((biz: any, i: number) => (
-              <div key={biz.id || i} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5">
+              <div key={biz.id || i} className="flex items-center gap-4 p-3 rounded-xl bg-white/5 border border-white/5 group">
                 <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                   <Building2 className="h-5 w-5 text-emerald-400" />
                 </div>
@@ -163,9 +206,14 @@ export function OverviewTab({ stats, setActiveTab }: OverviewTabProps) {
                     by {biz.owner?.firstName} {biz.owner?.lastName}
                   </p>
                 </div>
-                <span className="text-xs text-white/40">
-                  {new Date(biz.createdAt).toLocaleDateString()}
-                </span>
+                <div className="text-right">
+                  <span className="text-xs text-white/60 font-medium">
+                    {formatRelativeTime(biz.createdAt)}
+                  </span>
+                  <p className="text-[10px] text-white/30 group-hover:text-white/50 transition-colors">
+                    {formatExactTime(biz.createdAt)}
+                  </p>
+                </div>
               </div>
             ))}
 
