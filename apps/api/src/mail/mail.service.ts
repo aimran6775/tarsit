@@ -1,7 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Resend } from 'resend';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+
+// Import email templates
+import {
+  welcomeEmailTemplate,
+  welcomeEmailSubject,
+  magicLinkEmailTemplate,
+  magicLinkEmailSubject,
+  passwordResetEmailTemplate,
+  passwordResetEmailSubject,
+  verificationEmailTemplate,
+  verificationEmailSubject,
+  appointmentConfirmationTemplate,
+  appointmentConfirmationSubject,
+  reviewNotificationTemplate,
+  reviewNotificationSubject,
+} from './templates';
 
 interface EmailOptions {
   to: string;
@@ -10,363 +27,191 @@ interface EmailOptions {
   text?: string;
 }
 
+type EmailProvider = 'resend' | 'nodemailer';
+
 @Injectable()
 export class MailService {
-  private transporter: Transporter;
+  private readonly logger = new Logger(MailService.name);
+  private resend: Resend | null = null;
+  private transporter: Transporter | null = null;
+  private provider: EmailProvider;
+  private fromEmail: string;
+  private frontendUrl: string;
 
   constructor(private configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('MAIL_HOST', 'smtp.gmail.com'),
-      port: this.configService.get<number>('MAIL_PORT', 587),
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: this.configService.get<string>('MAIL_USER'),
-        pass: this.configService.get<string>('MAIL_PASSWORD'),
-      },
+    // Determine email provider based on available config
+    const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
+    const mailUser = this.configService.get<string>('MAIL_USER');
+    
+    this.fromEmail = this.configService.get<string>('MAIL_FROM', 'Tarsit <noreply@tarsit.com>');
+    this.frontendUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:3000');
+
+    if (resendApiKey) {
+      // Use Resend (preferred)
+      this.resend = new Resend(resendApiKey);
+      this.provider = 'resend';
+      this.logger.log('Email service initialized with Resend');
+    } else if (mailUser) {
+      // Fallback to nodemailer SMTP
+      this.transporter = nodemailer.createTransport({
+        host: this.configService.get<string>('MAIL_HOST', 'smtp.gmail.com'),
+        port: this.configService.get<number>('MAIL_PORT', 587),
+        secure: false,
+        auth: {
+          user: mailUser,
+          pass: this.configService.get<string>('MAIL_PASSWORD'),
+        },
+      });
+      this.provider = 'nodemailer';
+      this.logger.log('Email service initialized with Nodemailer SMTP');
+    } else {
+      this.provider = 'nodemailer';
+      this.logger.warn('No email provider configured! Emails will not be sent.');
+    }
+  }
+
+  private async sendMail(options: EmailOptions): Promise<boolean> {
+    try {
+      if (this.provider === 'resend' && this.resend) {
+        const { error } = await this.resend.emails.send({
+          from: this.fromEmail,
+          to: options.to,
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+        });
+
+        if (error) {
+          this.logger.error(`Resend email error: ${error.message}`, error);
+          return false;
+        }
+        
+        this.logger.log(`Email sent via Resend to: ${options.to}`);
+        return true;
+      } else if (this.transporter) {
+        await this.transporter.sendMail({
+          from: this.fromEmail,
+          to: options.to,
+          subject: options.subject,
+          html: options.html,
+          text: options.text,
+        });
+        
+        this.logger.log(`Email sent via Nodemailer to: ${options.to}`);
+        return true;
+      } else {
+        this.logger.warn(`Email not sent (no provider configured): ${options.subject} to ${options.to}`);
+        return false;
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${options.to}:`, error);
+      return false;
+    }
+  }
+
+  // ============================================================================
+  // AUTH EMAILS
+  // ============================================================================
+
+  async sendWelcomeEmail(email: string, firstName: string): Promise<boolean> {
+    const html = welcomeEmailTemplate({
+      firstName,
+      appUrl: this.frontendUrl,
+    });
+
+    return this.sendMail({
+      to: email,
+      subject: welcomeEmailSubject,
+      html,
     });
   }
 
-  private async sendMail(options: EmailOptions): Promise<void> {
-    const from = this.configService.get<string>('MAIL_FROM', '"Tarsit" <noreply@tarsit.com>');
+  async sendVerificationEmail(email: string, firstName: string, token: string): Promise<boolean> {
+    const verificationUrl = `${this.frontendUrl}/verify-email?token=${token}`;
+    
+    const html = verificationEmailTemplate({
+      firstName,
+      verificationUrl,
+      expiresInHours: 24,
+    });
 
-    await this.transporter.sendMail({
-      from,
-      to: options.to,
-      subject: options.subject,
-      text: options.text,
-      html: options.html,
+    return this.sendMail({
+      to: email,
+      subject: verificationEmailSubject,
+      html,
     });
   }
 
-  async sendWelcomeEmail(email: string, firstName: string): Promise<void> {
-    const subject = 'Welcome to Tarsit!';
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .button { background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Welcome to Tarsit! 🎉</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${firstName},</h2>
-              <p>Thank you for joining Tarsit - Connecting Small Businesses to the World!</p>
-              <p>We're excited to have you as part of our community. With Tarsit, you can:</p>
-              <ul>
-                <li>Discover local businesses near you</li>
-                <li>Read and write reviews</li>
-                <li>Book appointments</li>
-                <li>Chat directly with business owners</li>
-                <li>Save your favorite businesses</li>
-              </ul>
-              <p>Start exploring now and find the perfect businesses for your needs!</p>
-              <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}" class="button">
-                Explore Businesses
-              </a>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-              <p>Connecting Small Businesses to the World</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    await this.sendMail({ to: email, subject, html });
-  }
-
-  async sendVerificationEmail(email: string, firstName: string, token: string): Promise<void> {
-    const verificationUrl = `${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/verify-email?token=${token}`;
+  async sendPasswordResetEmail(email: string, firstName: string, token: string): Promise<boolean> {
+    const resetUrl = `${this.frontendUrl}/auth/reset-password?token=${token}`;
     
-    const subject = 'Verify Your Email - Tarsit';
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .button { background-color: #10B981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-            .token { background-color: #f3f4f6; padding: 15px; border-radius: 5px; font-family: monospace; margin: 15px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Verify Your Email ✉️</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${firstName},</h2>
-              <p>Thanks for signing up! Please verify your email address by clicking the button below:</p>
-              <a href="${verificationUrl}" class="button">Verify Email</a>
-              <p>Or copy and paste this link into your browser:</p>
-              <div class="token">${verificationUrl}</div>
-              <p><strong>This link will expire in 24 hours.</strong></p>
-              <p>If you didn't create an account with Tarsit, you can safely ignore this email.</p>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+    const html = passwordResetEmailTemplate({
+      firstName,
+      resetUrl,
+      expiresInMinutes: 60,
+    });
 
-    await this.sendMail({ to: email, subject, html });
+    return this.sendMail({
+      to: email,
+      subject: passwordResetEmailSubject,
+      html,
+    });
   }
 
-  async sendPasswordResetEmail(email: string, firstName: string, token: string): Promise<void> {
-    const resetUrl = `${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/reset-password?token=${token}`;
-    
-    const subject = 'Reset Your Password - Tarsit';
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #EF4444; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .button { background-color: #EF4444; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-            .warning { background-color: #FEF3C7; border-left: 4px solid #F59E0B; padding: 15px; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Password Reset Request 🔐</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${firstName},</h2>
-              <p>We received a request to reset your password. Click the button below to create a new password:</p>
-              <a href="${resetUrl}" class="button">Reset Password</a>
-              <p>Or copy and paste this link into your browser:</p>
-              <div class="token">${resetUrl}</div>
-              <div class="warning">
-                <strong>⚠️ Security Notice:</strong> This link will expire in 1 hour for your security.
-              </div>
-              <p>If you didn't request a password reset, please ignore this email or contact support if you have concerns.</p>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
+  async sendMagicLinkEmail(
+    email: string,
+    firstName: string,
+    token: string,
+    redirectUrl?: string,
+  ): Promise<boolean> {
+    const baseUrl = this.frontendUrl;
+    const magicLinkUrl = `${baseUrl}/auth/magic-link?token=${token}${redirectUrl ? `&redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
 
-    await this.sendMail({ to: email, subject, html });
+    const html = magicLinkEmailTemplate({
+      firstName,
+      magicLinkUrl,
+      expiresInMinutes: 15,
+    });
+
+    return this.sendMail({
+      to: email,
+      subject: magicLinkEmailSubject,
+      html,
+    });
   }
+
+  // ============================================================================
+  // APPOINTMENT EMAILS
+  // ============================================================================
 
   async sendAppointmentConfirmation(
     email: string,
     firstName: string,
     businessName: string,
     appointmentDate: Date,
-    service: string,
-  ): Promise<void> {
-    const subject = `Appointment Confirmed with ${businessName}`;
-    const formattedDate = appointmentDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    serviceName: string,
+    businessAddress?: string,
+    businessPhone?: string,
+  ): Promise<boolean> {
+    const html = appointmentConfirmationTemplate({
+      firstName,
+      businessName,
+      serviceName,
+      appointmentDate,
+      appointmentTime: appointmentDate.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      businessAddress: businessAddress || 'Address will be provided',
+      businessPhone,
     });
 
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #10B981; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .appointment-details { background-color: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .detail-row { margin: 10px 0; }
-            .label { font-weight: bold; color: #4B5563; }
-            .button { background-color: #10B981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>✅ Appointment Confirmed!</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${firstName},</h2>
-              <p>Your appointment has been confirmed!</p>
-              <div class="appointment-details">
-                <div class="detail-row">
-                  <span class="label">Business:</span> ${businessName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Service:</span> ${service}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Date & Time:</span> ${formattedDate}
-                </div>
-              </div>
-              <p>We've notified ${businessName} and they're looking forward to seeing you!</p>
-              <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/appointments" class="button">
-                View My Appointments
-              </a>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    await this.sendMail({ to: email, subject, html });
+    return this.sendMail({
+      to: email,
+      subject: appointmentConfirmationSubject(businessName),
+      html,
+    });
   }
-
-  async sendReviewNotification(
-    email: string,
-    businessOwnerName: string,
-    businessName: string,
-    reviewerName: string,
-    rating: number,
-  ): Promise<void> {
-    const subject = `New Review for ${businessName}`;
-    const stars = '⭐'.repeat(rating);
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #F59E0B; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .rating { font-size: 32px; margin: 20px 0; text-align: center; }
-            .button { background-color: #F59E0B; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🌟 New Review Received!</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${businessOwnerName},</h2>
-              <p>Great news! ${reviewerName} just left a review for ${businessName}.</p>
-              <div class="rating">${stars}</div>
-              <p style="text-align: center; font-size: 20px;"><strong>${rating} out of 5 stars</strong></p>
-              <p>Check your dashboard to read the full review and respond to your customer.</p>
-              <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/dashboard/reviews" class="button">
-                View Review
-              </a>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    await this.sendMail({ to: email, subject, html });
-  }
-
-  async sendVerificationStatusEmail(
-    email: string,
-    businessOwnerName: string,
-    businessName: string,
-    status: 'approved' | 'rejected',
-    adminNotes?: string,
-  ): Promise<void> {
-    const isApproved = status === 'approved';
-    const subject = `Business Verification ${isApproved ? 'Approved' : 'Rejected'} - ${businessName}`;
-    
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: ${isApproved ? '#10B981' : '#EF4444'}; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .badge { background-color: ${isApproved ? '#D1FAE5' : '#FEE2E2'}; color: ${isApproved ? '#065F46' : '#991B1B'}; padding: 10px 20px; border-radius: 20px; display: inline-block; margin: 20px 0; font-weight: bold; }
-            .notes { background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${isApproved ? '#10B981' : '#EF4444'}; }
-            .button { background-color: ${isApproved ? '#10B981' : '#4F46E5'}; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>${isApproved ? '✅' : '❌'} Verification ${isApproved ? 'Approved' : 'Rejected'}</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${businessOwnerName},</h2>
-              ${isApproved 
-                ? `
-                  <p>Congratulations! Your business <strong>${businessName}</strong> has been successfully verified!</p>
-                  <div class="badge">✓ Verified Business</div>
-                  <p>Your business now displays a verified badge, which helps build trust with potential customers. Verified businesses typically receive:</p>
-                  <ul>
-                    <li>Higher search rankings</li>
-                    <li>Increased customer trust</li>
-                    <li>More appointment bookings</li>
-                    <li>Better visibility in search results</li>
-                  </ul>
-                `
-                : `
-                  <p>We've reviewed your verification request for <strong>${businessName}</strong>, but we're unable to approve it at this time.</p>
-                  <div class="badge">Verification Rejected</div>
-                  <p>Don't worry! You can submit a new verification request with additional documentation.</p>
-                `
-              }
-              ${adminNotes ? `
-                <div class="notes">
-                  <strong>${isApproved ? 'Admin Notes:' : 'Reason for Rejection:'}</strong>
-                  <p>${adminNotes}</p>
-                </div>
-              ` : ''}
-              <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/dashboard/business/${isApproved ? 'profile' : 'verification'}" class="button">
-                ${isApproved ? 'View Your Business' : 'Submit New Request'}
-              </a>
-              ${!isApproved ? '<p>If you have questions about the rejection, please don\'t hesitate to contact our support team.</p>' : ''}
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    await this.sendMail({ to: email, subject, html });
-  }
-
-  // ============================================================================
-  // APPOINTMENT EMAIL TEMPLATES
-  // ============================================================================
 
   async sendAppointmentRequestToBusiness(
     businessEmail: string,
@@ -376,8 +221,7 @@ export class MailService {
     appointmentDate: Date,
     serviceName: string,
     notes?: string,
-  ): Promise<void> {
-    const subject = `New Appointment Request - ${businessName}`;
+  ): Promise<boolean> {
     const formattedDate = appointmentDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -387,60 +231,35 @@ export class MailService {
       minute: '2-digit',
     });
 
+    // Using a simple inline template for this one
     const html = `
       <!DOCTYPE html>
       <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .appointment-details { background-color: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .detail-row { margin: 10px 0; }
-            .label { font-weight: bold; color: #4B5563; }
-            .button { color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 5px; }
-            .confirm-btn { background-color: #10B981; }
-            .decline-btn { background-color: #EF4444; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>📅 New Appointment Request</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${businessOwnerName},</h2>
-              <p>You have a new appointment request for ${businessName}!</p>
-              <div class="appointment-details">
-                <div class="detail-row">
-                  <span class="label">Customer:</span> ${customerName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Service:</span> ${serviceName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Requested Date:</span> ${formattedDate}
-                </div>
-                ${notes ? `<div class="detail-row"><span class="label">Notes:</span> ${notes}</div>` : ''}
-              </div>
-              <p>Please confirm or decline this appointment:</p>
-              <div style="text-align: center;">
-                <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/dashboard/appointments" class="button confirm-btn">
-                  View Appointments
-                </a>
-              </div>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #4F46E5;">New Appointment Request 📅</h1>
+          <p>Hi ${businessOwnerName},</p>
+          <p>You have a new appointment request for <strong>${businessName}</strong>:</p>
+          <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Customer:</strong> ${customerName}</p>
+            <p><strong>Service:</strong> ${serviceName}</p>
+            <p><strong>Requested Time:</strong> ${formattedDate}</p>
+            ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}
           </div>
+          <a href="${this.frontendUrl}/dashboard/appointments" style="display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+            View & Respond
+          </a>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+            &copy; ${new Date().getFullYear()} Tarsit. All rights reserved.
+          </p>
         </body>
       </html>
     `;
 
-    await this.sendMail({ to: businessEmail, subject, html });
+    return this.sendMail({
+      to: businessEmail,
+      subject: `New Appointment Request - ${customerName}`,
+      html,
+    });
   }
 
   async sendAppointmentCancellation(
@@ -451,8 +270,7 @@ export class MailService {
     serviceName: string,
     canceledBy: 'customer' | 'business',
     reason?: string,
-  ): Promise<void> {
-    const subject = `Appointment Cancelled - ${businessName}`;
+  ): Promise<boolean> {
     const formattedDate = appointmentDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -465,59 +283,30 @@ export class MailService {
     const html = `
       <!DOCTYPE html>
       <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #EF4444; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .appointment-details { background-color: #FEE2E2; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .detail-row { margin: 10px 0; }
-            .label { font-weight: bold; color: #4B5563; }
-            .reason { background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #EF4444; }
-            .button { background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>❌ Appointment Cancelled</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${firstName},</h2>
-              <p>Your appointment has been cancelled ${canceledBy === 'business' ? `by ${businessName}` : ''}.</p>
-              <div class="appointment-details">
-                <div class="detail-row">
-                  <span class="label">Business:</span> ${businessName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Service:</span> ${serviceName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Originally Scheduled:</span> ${formattedDate}
-                </div>
-              </div>
-              ${reason ? `
-                <div class="reason">
-                  <strong>Reason:</strong>
-                  <p>${reason}</p>
-                </div>
-              ` : ''}
-              <p>Would you like to book a new appointment?</p>
-              <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/search" class="button">
-                Find Businesses
-              </a>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #EF4444;">Appointment Cancelled ❌</h1>
+          <p>Hi ${firstName},</p>
+          <p>Your appointment with <strong>${businessName}</strong> has been cancelled ${canceledBy === 'business' ? 'by the business' : ''}.</p>
+          <div style="background: #fef2f2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #EF4444;">
+            <p><strong>Service:</strong> ${serviceName}</p>
+            <p><strong>Originally Scheduled:</strong> ${formattedDate}</p>
+            ${reason ? `<p><strong>Reason:</strong> ${reason}</p>` : ''}
           </div>
+          <a href="${this.frontendUrl}/businesses" style="display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+            Book Another Appointment
+          </a>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+            &copy; ${new Date().getFullYear()} Tarsit. All rights reserved.
+          </p>
         </body>
       </html>
     `;
 
-    await this.sendMail({ to: email, subject, html });
+    return this.sendMail({
+      to: email,
+      subject: `Appointment Cancelled - ${businessName}`,
+      html,
+    });
   }
 
   async sendAppointmentReminder(
@@ -527,8 +316,7 @@ export class MailService {
     businessAddress: string,
     appointmentDate: Date,
     serviceName: string,
-  ): Promise<void> {
-    const subject = `Reminder: Appointment Tomorrow - ${businessName}`;
+  ): Promise<boolean> {
     const formattedDate = appointmentDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -541,56 +329,32 @@ export class MailService {
     const html = `
       <!DOCTYPE html>
       <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #F59E0B; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .appointment-details { background-color: #FEF3C7; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .detail-row { margin: 10px 0; }
-            .label { font-weight: bold; color: #4B5563; }
-            .button { background-color: #F59E0B; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>⏰ Appointment Reminder</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${firstName},</h2>
-              <p>This is a friendly reminder about your upcoming appointment!</p>
-              <div class="appointment-details">
-                <div class="detail-row">
-                  <span class="label">Business:</span> ${businessName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Service:</span> ${serviceName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Date & Time:</span> ${formattedDate}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Location:</span> ${businessAddress}
-                </div>
-              </div>
-              <p>We look forward to seeing you!</p>
-              <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/appointments" class="button">
-                View My Appointments
-              </a>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-              <p>Need to cancel or reschedule? Visit your appointments page.</p>
-            </div>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #4F46E5;">Appointment Reminder ⏰</h1>
+          <p>Hi ${firstName},</p>
+          <p>This is a reminder about your upcoming appointment:</p>
+          <div style="background: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3b82f6;">
+            <p><strong>Business:</strong> ${businessName}</p>
+            <p><strong>Service:</strong> ${serviceName}</p>
+            <p><strong>When:</strong> ${formattedDate}</p>
+            <p><strong>Where:</strong> ${businessAddress}</p>
           </div>
+          <p style="color: #6b7280;">Need to reschedule? Visit your dashboard to manage your appointments.</p>
+          <a href="${this.frontendUrl}/appointments" style="display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+            View Appointment
+          </a>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+            &copy; ${new Date().getFullYear()} Tarsit. All rights reserved.
+          </p>
         </body>
       </html>
     `;
 
-    await this.sendMail({ to: email, subject, html });
+    return this.sendMail({
+      to: email,
+      subject: `Reminder: Appointment Tomorrow with ${businessName}`,
+      html,
+    });
   }
 
   async sendAppointmentStatusUpdate(
@@ -600,12 +364,7 @@ export class MailService {
     appointmentDate: Date,
     serviceName: string,
     status: 'CONFIRMED' | 'COMPLETED',
-  ): Promise<void> {
-    const isConfirmed = status === 'CONFIRMED';
-    const subject = isConfirmed 
-      ? `Appointment Confirmed - ${businessName}` 
-      : `Appointment Completed - ${businessName}`;
-    
+  ): Promise<boolean> {
     const formattedDate = appointmentDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -615,65 +374,116 @@ export class MailService {
       minute: '2-digit',
     });
 
+    const statusEmoji = status === 'CONFIRMED' ? '✅' : '🎉';
+    const statusText = status === 'CONFIRMED' ? 'has been confirmed' : 'is now complete';
+
     const html = `
       <!DOCTYPE html>
       <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #10B981; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .appointment-details { background-color: #D1FAE5; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .detail-row { margin: 10px 0; }
-            .label { font-weight: bold; color: #4B5563; }
-            .button { background-color: #10B981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>${isConfirmed ? '✅ Appointment Confirmed!' : '🎉 Thank You for Visiting!'}</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${firstName},</h2>
-              ${isConfirmed 
-                ? `<p>Great news! Your appointment with ${businessName} has been confirmed.</p>`
-                : `<p>Thank you for visiting ${businessName}! We hope you had a great experience.</p>`
-              }
-              <div class="appointment-details">
-                <div class="detail-row">
-                  <span class="label">Business:</span> ${businessName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Service:</span> ${serviceName}
-                </div>
-                <div class="detail-row">
-                  <span class="label">Date:</span> ${formattedDate}
-                </div>
-              </div>
-              ${isConfirmed 
-                ? `<p>${businessName} is looking forward to seeing you!</p>`
-                : `<p>Would you like to leave a review and help other customers?</p>`
-              }
-              <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/${isConfirmed ? 'appointments' : 'reviews'}" class="button">
-                ${isConfirmed ? 'View Appointments' : 'Leave a Review'}
-              </a>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #10B981;">Appointment ${status === 'CONFIRMED' ? 'Confirmed' : 'Completed'} ${statusEmoji}</h1>
+          <p>Hi ${firstName},</p>
+          <p>Your appointment with <strong>${businessName}</strong> ${statusText}!</p>
+          <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10B981;">
+            <p><strong>Service:</strong> ${serviceName}</p>
+            <p><strong>Date:</strong> ${formattedDate}</p>
           </div>
+          ${status === 'COMPLETED' ? `
+            <p>We hope you had a great experience! Would you mind leaving a review?</p>
+            <a href="${this.frontendUrl}/businesses" style="display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+              Leave a Review
+            </a>
+          ` : ''}
+          <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+            &copy; ${new Date().getFullYear()} Tarsit. All rights reserved.
+          </p>
         </body>
       </html>
     `;
 
-    await this.sendMail({ to: email, subject, html });
+    return this.sendMail({
+      to: email,
+      subject: `Appointment ${status === 'CONFIRMED' ? 'Confirmed' : 'Completed'} - ${businessName}`,
+      html,
+    });
   }
 
   // ============================================================================
-  // TEAM MEMBER EMAIL TEMPLATES
+  // REVIEW EMAILS
+  // ============================================================================
+
+  async sendReviewNotification(
+    email: string,
+    businessOwnerName: string,
+    businessName: string,
+    reviewerName: string,
+    rating: number,
+    reviewText?: string,
+  ): Promise<boolean> {
+    const html = reviewNotificationTemplate({
+      businessOwnerName,
+      businessName,
+      reviewerName,
+      rating,
+      reviewText,
+      reviewUrl: `${this.frontendUrl}/dashboard/reviews`,
+    });
+
+    return this.sendMail({
+      to: email,
+      subject: reviewNotificationSubject(rating),
+      html,
+    });
+  }
+
+  // ============================================================================
+  // BUSINESS VERIFICATION EMAILS
+  // ============================================================================
+
+  async sendVerificationStatusEmail(
+    email: string,
+    businessOwnerName: string,
+    businessName: string,
+    status: 'approved' | 'rejected',
+    adminNotes?: string,
+  ): Promise<boolean> {
+    const isApproved = status === 'approved';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: ${isApproved ? '#10B981' : '#EF4444'};">
+            Business Verification ${isApproved ? 'Approved ✅' : 'Update Required ⚠️'}
+          </h1>
+          <p>Hi ${businessOwnerName},</p>
+          ${isApproved ? `
+            <p>Great news! Your business <strong>${businessName}</strong> has been verified!</p>
+            <p>Your business will now show a verified badge and appear higher in search results.</p>
+          ` : `
+            <p>We've reviewed your verification request for <strong>${businessName}</strong> and need some additional information.</p>
+            ${adminNotes ? `<div style="background: #fef2f2; padding: 16px; border-radius: 8px; margin: 16px 0;"><strong>Notes:</strong> ${adminNotes}</div>` : ''}
+            <p>Please update your business information and resubmit for verification.</p>
+          `}
+          <a href="${this.frontendUrl}/dashboard" style="display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 16px;">
+            Go to Dashboard
+          </a>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+            &copy; ${new Date().getFullYear()} Tarsit. All rights reserved.
+          </p>
+        </body>
+      </html>
+    `;
+
+    return this.sendMail({
+      to: email,
+      subject: `Business Verification ${isApproved ? 'Approved' : 'Update Required'} - ${businessName}`,
+      html,
+    });
+  }
+
+  // ============================================================================
+  // TEAM INVITATION EMAILS
   // ============================================================================
 
   async sendTeamInvitation(
@@ -683,105 +493,36 @@ export class MailService {
     inviterName: string,
     role: string,
     permissions: string[],
-  ): Promise<void> {
-    const subject = `You've been invited to join ${businessName}`;
-    const permissionsList = permissions.map(p => `<li>${p}</li>`).join('');
-
+  ): Promise<boolean> {
     const html = `
       <!DOCTYPE html>
       <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background-color: #4F46E5; color: white; padding: 20px; text-align: center; }
-            .content { padding: 30px 20px; }
-            .role-badge { background-color: #EEF2FF; color: #4338CA; padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: bold; }
-            .permissions { background-color: #F3F4F6; padding: 20px; border-radius: 8px; margin: 20px 0; }
-            .button { background-color: #4F46E5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>👋 Team Invitation</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${inviteeName},</h2>
-              <p>${inviterName} has invited you to join the team at <strong>${businessName}</strong>!</p>
-              <p>Your role: <span class="role-badge">${role}</span></p>
-              <div class="permissions">
-                <strong>Your Permissions:</strong>
-                <ul>${permissionsList}</ul>
-              </div>
-              <p>Click below to accept the invitation and access the business dashboard:</p>
-              <a href="${this.configService.get<string>('FRONTEND_URL', 'https://improved-memory-p6vxppj655p37pgw-3001.app.github.dev')}/dashboard" class="button">
-                Accept Invitation
-              </a>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. All rights reserved.</p>
-            </div>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #4F46E5;">You're Invited to Join ${businessName}! 🎉</h1>
+          <p>Hi ${inviteeName || 'there'},</p>
+          <p><strong>${inviterName}</strong> has invited you to join the team at <strong>${businessName}</strong> on Tarsit.</p>
+          <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Role:</strong> ${role}</p>
+            <p><strong>Permissions:</strong></p>
+            <ul>
+              ${permissions.map(p => `<li>${p}</li>`).join('')}
+            </ul>
           </div>
+          <a href="${this.frontendUrl}/auth/signup" style="display: inline-block; background: #4F46E5; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px;">
+            Accept Invitation
+          </a>
+          <p style="color: #6b7280; margin-top: 20px;">This invitation will expire in 7 days.</p>
+          <p style="color: #6b7280; font-size: 12px; margin-top: 30px;">
+            &copy; ${new Date().getFullYear()} Tarsit. All rights reserved.
+          </p>
         </body>
       </html>
     `;
 
-    await this.sendMail({ to: email, subject, html });
-  }
-
-  async sendMagicLinkEmail(email: string, firstName: string, token: string, redirectUrl?: string): Promise<void> {
-    const baseUrl = this.configService.get<string>('FRONTEND_URL', 'https://tarsit.com');
-    const magicLinkUrl = `${baseUrl}/auth/magic-link?token=${token}${redirectUrl ? `&redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
-    
-    const subject = 'Sign in to Tarsit - Magic Link 🔮';
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-            .content { padding: 30px 20px; background: #ffffff; }
-            .button { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; margin: 20px 0; font-weight: 600; }
-            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
-            .info { background-color: #EEF2FF; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0; border-radius: 4px; }
-            .link-box { background-color: #f3f4f6; padding: 12px; border-radius: 6px; word-break: break-all; font-size: 12px; color: #666; margin: 15px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>Magic Link Sign In 🔮</h1>
-            </div>
-            <div class="content">
-              <h2>Hi ${firstName || 'there'},</h2>
-              <p>Click the button below to securely sign in to your Tarsit account - no password needed!</p>
-              <div style="text-align: center;">
-                <a href="${magicLinkUrl}" class="button">Sign In to Tarsit</a>
-              </div>
-              <p>Or copy and paste this link into your browser:</p>
-              <div class="link-box">${magicLinkUrl}</div>
-              <div class="info">
-                <strong>🔒 Security Info:</strong>
-                <ul style="margin: 10px 0; padding-left: 20px;">
-                  <li>This link expires in 15 minutes</li>
-                  <li>Can only be used once</li>
-                  <li>If you didn't request this, just ignore this email</li>
-                </ul>
-              </div>
-            </div>
-            <div class="footer">
-              <p>&copy; ${new Date().getFullYear()} Tarsit. Connecting small businesses to the world.</p>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    await this.sendMail({ to: email, subject, html });
+    return this.sendMail({
+      to: email,
+      subject: `You're invited to join ${businessName} on Tarsit`,
+      html,
+    });
   }
 }
-
