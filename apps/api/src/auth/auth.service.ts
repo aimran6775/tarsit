@@ -14,7 +14,7 @@ import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { SupabaseService } from '../supabase/supabase.service';
 import { geocodeAddress, geocodeCityState, getDefaultCityCoordinates } from '../utils/geocoding';
-import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto } from './dto';
+import { ForgotPasswordDto, LoginDto, RequestMagicLinkDto, ResetPasswordDto, SignupDto, VerifyMagicLinkDto } from './dto';
 import { SignupBusinessDto } from './dto/signup-business.dto';
 import { JwtPayload } from './jwt.strategy';
 
@@ -94,12 +94,20 @@ export class AuthService {
       throw new BadRequestException('Registration failed: No user returned');
     }
 
-    // 2. Create user in local database (Prisma)
+    // 2. Create user in local database (Prisma) or return existing user with session
     try {
       // Check if user exists first to avoid unique constraint errors if trigger already ran
       const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
       if (existing) {
-        // If user exists locally, we should throw ConflictException so the frontend knows to ask for login
+        // User exists in local DB - if we have a session, just return it (auto-login)
+        // This handles the case where Supabase and local DB both have the user
+        if (supabaseSession) {
+          return {
+            user: existing,
+            session: supabaseSession,
+          };
+        }
+        // No session means password was wrong when trying to sign in to existing Supabase user
         throw new ConflictException('User already exists. Please login.');
       }
 
@@ -109,6 +117,7 @@ export class AuthService {
       const user = await this.prisma.user.create({
         data: {
           email: dto.email,
+          username: dto.username,
           firstName: dto.firstName,
           lastName: dto.lastName,
           role: dto.role,
@@ -668,6 +677,113 @@ export class AuthService {
     return {
       success: true,
       message: 'If the email exists and is not verified, a verification link has been sent',
+    };
+  }
+
+  /**
+   * Request a magic link for passwordless login
+   */
+  async requestMagicLink(dto: RequestMagicLinkDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    // Always return success to prevent email enumeration
+    if (!user) {
+      return {
+        success: true,
+        message: 'If the email exists, a magic link has been sent',
+      };
+    }
+
+    // Generate magic link token
+    const magicLinkToken = crypto.randomBytes(32).toString('hex');
+    const magicLinkTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Save token to database
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        magicLinkToken,
+        magicLinkTokenExpiry,
+      },
+    });
+
+    // Send magic link email
+    try {
+      await this.mailService.sendMagicLinkEmail(
+        user.email,
+        user.firstName,
+        magicLinkToken,
+        dto.redirectUrl
+      );
+    } catch (error) {
+      console.error('Failed to send magic link email:', error);
+      // Don't throw error to prevent email enumeration
+    }
+
+    return {
+      success: true,
+      message: 'If the email exists, a magic link has been sent',
+    };
+  }
+
+  /**
+   * Verify magic link token and return session
+   */
+  async verifyMagicLink(dto: VerifyMagicLinkDto) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        magicLinkToken: dto.token,
+        magicLinkTokenExpiry: {
+          gte: new Date(), // Token not expired
+        },
+      },
+      include: {
+        businesses: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired magic link');
+    }
+
+    // Clear the magic link token (one-time use)
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        magicLinkToken: null,
+        magicLinkTokenExpiry: null,
+        lastLoginAt: new Date(),
+        // Auto-verify if not already verified
+        verified: true,
+      },
+    });
+
+    // Generate tokens
+    const tokens = await this.generateTokens(user.id, user.email, user.role);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        verified: true,
+        phone: user.phone,
+        avatar: user.avatar,
+        businesses: user.businesses,
+      },
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 

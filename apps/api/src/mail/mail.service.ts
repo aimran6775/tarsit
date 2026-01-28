@@ -730,4 +730,58 @@ export class MailService {
 
     await this.sendMail({ to: email, subject, html });
   }
+
+  async sendMagicLinkEmail(email: string, firstName: string, token: string, redirectUrl?: string): Promise<void> {
+    const baseUrl = this.configService.get<string>('FRONTEND_URL', 'https://tarsit.com');
+    const magicLinkUrl = `${baseUrl}/auth/magic-link?token=${token}${redirectUrl ? `&redirect=${encodeURIComponent(redirectUrl)}` : ''}`;
+    
+    const subject = 'Sign in to Tarsit - Magic Link 🔮';
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { padding: 30px 20px; background: #ffffff; }
+            .button { background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; margin: 20px 0; font-weight: 600; }
+            .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; border-radius: 0 0 8px 8px; }
+            .info { background-color: #EEF2FF; border-left: 4px solid #4F46E5; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .link-box { background-color: #f3f4f6; padding: 12px; border-radius: 6px; word-break: break-all; font-size: 12px; color: #666; margin: 15px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Magic Link Sign In 🔮</h1>
+            </div>
+            <div class="content">
+              <h2>Hi ${firstName || 'there'},</h2>
+              <p>Click the button below to securely sign in to your Tarsit account - no password needed!</p>
+              <div style="text-align: center;">
+                <a href="${magicLinkUrl}" class="button">Sign In to Tarsit</a>
+              </div>
+              <p>Or copy and paste this link into your browser:</p>
+              <div class="link-box">${magicLinkUrl}</div>
+              <div class="info">
+                <strong>🔒 Security Info:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                  <li>This link expires in 15 minutes</li>
+                  <li>Can only be used once</li>
+                  <li>If you didn't request this, just ignore this email</li>
+                </ul>
+              </div>
+            </div>
+            <div class="footer">
+              <p>&copy; ${new Date().getFullYear()} Tarsit. Connecting small businesses to the world.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    await this.sendMail({ to: email, subject, html });
+  }
 }
+

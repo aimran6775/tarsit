@@ -17,7 +17,7 @@ import { Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
 import { AuthService } from './auth.service';
-import { ForgotPasswordDto, LoginDto, ResetPasswordDto, SignupDto, UpdateProfileDto } from './dto';
+import { ForgotPasswordDto, LoginDto, RequestMagicLinkDto, ResetPasswordDto, SignupDto, UpdateProfileDto, VerifyMagicLinkDto } from './dto';
 import { SignupBusinessDto } from './dto/signup-business.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { SupabaseAuthGuard } from './guards/supabase-auth.guard';
@@ -124,6 +124,25 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Verification email sent if email exists' })
   async resendVerification(@Body('email') email: string) {
     return this.authService.resendVerification(email);
+  }
+
+  @Post('magic-link/request')
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 3 requests per minute
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Request a magic link for passwordless login' })
+  @ApiResponse({ status: 200, description: 'Magic link sent if email exists' })
+  async requestMagicLink(@Body() dto: RequestMagicLinkDto) {
+    return this.authService.requestMagicLink(dto);
+  }
+
+  @Post('magic-link/verify')
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 requests per minute
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify magic link token and get session' })
+  @ApiResponse({ status: 200, description: 'Authentication successful' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired magic link' })
+  async verifyMagicLink(@Body() dto: VerifyMagicLinkDto) {
+    return this.authService.verifyMagicLink(dto);
   }
 
   @Get('google')

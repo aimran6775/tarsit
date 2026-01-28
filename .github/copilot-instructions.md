@@ -1,46 +1,97 @@
 # GitHub Copilot Instructions for Tarsit
 
-## Project Overview
+## Architecture Overview
 
-Tarsit is a monorepo containing a Next.js frontend (`apps/web`) and a NestJS backend (`apps/api`).
-The platform connects users with local businesses, featuring an AI assistant named "Tars".
-Documentation is located in the `docs/` directory.
+Tarsit is a **TurboRepo monorepo** with two apps:
+- **`apps/api`** – NestJS backend (PostgreSQL via Prisma, Supabase Auth/Storage)
+- **`apps/web`** – Next.js 14 frontend (App Router, React Query, Tailwind/Shadcn)
 
-## Tech Stack
+The platform connects users with local businesses and features "Tars", an AI assistant powered by OpenAI.
 
-- **Frontend:** Next.js 14 (App Router), React, Tailwind CSS, Shadcn UI, Lucide Icons.
-- **Backend:** NestJS, Prisma (PostgreSQL), Supabase (Auth, Storage, Realtime).
-- **AI:** OpenAI API (GPT-4/3.5).
-- **Package Manager:** pnpm (TurboRepo).
+## Critical Commands
 
-## Key Architecture Rules
+```bash
+pnpm install                          # Install all dependencies
+pnpm dev                              # Start both apps (web:3001, api:4000)
+cd apps/api && pnpm prisma:migrate    # Run database migrations
+cd apps/api && pnpm prisma:studio     # Open Prisma Studio
+cd apps/api && pnpm prisma:seed:demo  # Seed demo data
+pnpm test:tarsit                      # Run full test suite
+```
 
-1.  **Supabase Only:** Use Supabase for Authentication, File Storage (Buckets), and Realtime (WebSockets). Do NOT use Cloudinary or Socket.io.
-2.  **Strict Typing:** All code must be strictly typed. Avoid `any`. Use DTOs for API requests/responses.
-3.  **Component Structure:**
-    - UI components: `apps/web/src/components/ui`
-    - Feature components: `apps/web/src/components/features`
-    - Tars AI components: `apps/web/src/components/tars`
-    - Map components: `apps/web/src/components/map`
-4.  **API Structure:**
-    - Feature modules in `apps/api/src/<feature>`
-    - DTOs in `apps/api/src/<feature>/dto`
-    - Guards in `apps/api/src/auth/guards`
+## Data Flow & Auth Pattern
 
-## Coding Standards
+1. Frontend stores JWT in `localStorage` (`accessToken`, `refreshToken`)
+2. `apiClient` ([apps/web/src/lib/api-client.ts](apps/web/src/lib/api-client.ts)) auto-attaches Bearer token via interceptor
+3. Backend validates with `JwtAuthGuard` – combine with `RolesGuard` or `AdminGuard` for protected routes:
+   ```typescript
+   @UseGuards(JwtAuthGuard, RolesGuard)
+   @Roles('ADMIN', 'BUSINESS_OWNER')
+   ```
+4. Supabase handles auth state; `AuthContext` ([apps/web/src/contexts/auth-context.tsx](apps/web/src/contexts/auth-context.tsx)) syncs tokens
 
-- **Frontend:** Use functional components with hooks. Use `zod` for form validation.
-- **Backend:** Use NestJS decorators (`@Controller`, `@Get`, `@Post`). Use `class-validator` for DTOs.
-- **Testing:** Write unit tests for backend services. Write E2E tests with Playwright for critical flows.
+## Frontend Patterns
 
-## Common Tasks
+**API Layer:** Create typed functions in `apps/web/src/lib/api/<feature>.api.ts`, then wrap with React Query hooks in `apps/web/src/hooks/use-<feature>.ts`:
+```typescript
+// lib/api/business.api.ts
+export const businessApi = { getById: (id) => apiClient.get(`/businesses/${id}`) }
 
-- **New Feature:** Create a new module in API and a new route group in Web.
-- **Database Change:** Modify `apps/api/prisma/schema.prisma` and run `pnpm prisma:migrate`.
-- **AI Logic:** Implement AI logic in `apps/api/src/tars` or `apps/web/src/lib/ai`.
+// hooks/use-businesses.ts
+export const useBusinessBySlug = (slug: string) =>
+  useQuery({ queryKey: ['business', slug], queryFn: () => businessApi.getBySlug(slug) });
+```
 
-## Forbidden Libraries
+**Component Organization:**
+- `components/ui/` – Shadcn primitives (Button, Card, Dialog)
+- `components/features/` – Domain components (BusinessCard, ReviewCard)
+- `components/tars/` – AI assistant widgets (TarsChat, TarsNudge)
+- `components/map/` – Map-related components
 
-- `cloudinary` (Use Supabase Storage)
-- `socket.io` (Use Supabase Realtime)
-- `pages` router (Use App Router)
+**Form Validation:** Use `zod` with `@hookform/resolvers` (see existing forms)
+
+## Backend Patterns
+
+**Module Structure:** Each feature is a NestJS module at `apps/api/src/<feature>/`:
+```
+businesses/
+├── businesses.module.ts
+├── businesses.controller.ts
+├── businesses.service.ts
+└── dto/
+    ├── create-business.dto.ts
+    └── update-business.dto.ts
+```
+
+**DTOs:** Always use `class-validator` decorators for request validation:
+```typescript
+@IsString() @IsNotEmpty() @MinLength(2) name!: string;
+```
+
+**Database:** Schema at [apps/api/prisma/schema.prisma](apps/api/prisma/schema.prisma). Key models: `User`, `Business`, `Review`, `Region`, `Currency`
+
+## Tars AI Integration
+
+- Backend service: [apps/api/src/tars/tars.service.ts](apps/api/src/tars/tars.service.ts) – handles OpenAI calls, memory, actions
+- Frontend widget: [apps/web/src/components/tars/TarsChat.tsx](apps/web/src/components/tars/TarsChat.tsx) – chat UI
+- Context-aware personas: `general`, `help`, `business`, `booking`, `analytics`
+
+## Forbidden Patterns
+
+- ❌ `cloudinary` → Use Supabase Storage (`SupabaseService.uploadImage()`)
+- ❌ `socket.io` → Use Supabase Realtime
+- ❌ `pages/` router → Use App Router only
+- ❌ `any` type → Use proper TypeScript types or DTOs
+
+## Testing
+
+```bash
+cd apps/web && pnpm test:smoke      # Quick Playwright smoke test
+cd tarsit-testing && ./quick-start.sh  # Interactive test agent
+```
+
+## Environment Setup
+
+Required env files: `apps/web/.env.local`, `apps/api/.env`
+Key variables: `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `JWT_SECRET`, `OPENAI_API_KEY`
+See [docs/technical/ENVIRONMENT_SETUP.md](docs/technical/ENVIRONMENT_SETUP.md) for full list.

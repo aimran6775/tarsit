@@ -94,7 +94,7 @@ importers:
         specifier: ^6.5.0
         version: 6.5.0(@nestjs/common@10.4.20)(@nestjs/core@10.4.20)(reflect-metadata@0.1.14)
       '@prisma/client':
-        specifier: ^5.7.1
+        specifier: ^5.22.0
         version: 5.22.0(prisma@5.22.0)
       '@sentry/node':
         specifier: ^10.32.1
@@ -239,7 +239,7 @@ importers:
         specifier: ^29.7.0
         version: 29.7.0(@types/node@20.19.25)(ts-node@10.9.2)
       prisma:
-        specifier: ^5.7.1
+        specifier: ^5.22.0
         version: 5.22.0
       supertest:
         specifier: ^7.1.4

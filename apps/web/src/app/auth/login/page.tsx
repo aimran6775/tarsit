@@ -1,21 +1,27 @@
 'use client';
 
 import { useAuth } from '@/contexts/auth-context';
+import { authApi } from '@/lib/api/auth.api';
 import { signInWithGoogle } from '@/lib/oauth';
-import { AlertCircle, Eye, EyeOff, Lock, Mail, Shield, Sparkles, User, Zap } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, Lock, Mail, Shield, Sparkles, User, Wand2, Zap } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useState } from 'react';
 
-export default function LoginPage() {
+function LoginContent() {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'magic' ? 'magic' : 'password';
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [authMethod, setAuthMethod] = useState<'password' | 'magic'>(initialTab);
   const [loginMethod, setLoginMethod] = useState<'email' | 'username'>('email');
   const [formData, setFormData] = useState({ email: '', username: '', password: '' });
   const [error, setError] = useState('');
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   const handleGoogleSignIn = async () => {
     setError('');
@@ -34,6 +40,22 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
+    
+    // Handle magic link request
+    if (authMethod === 'magic') {
+      try {
+        await authApi.requestMagicLink(formData.email);
+        setMagicLinkSent(true);
+      } catch (err: unknown) {
+        const error = err as { response?: { data?: { message?: string } }; message?: string };
+        setError(error?.response?.data?.message || error?.message || 'Failed to send magic link');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+    
+    // Handle password login
     try {
       await login({
         email: loginMethod === 'email' ? formData.email : undefined,
@@ -87,111 +109,200 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-            {/* Login Method Toggle */}
-            <div className="flex p-1 bg-white/5 rounded-xl">
+            {/* Auth Method Toggle - Password vs Magic Link */}
+            <div className="flex p-1 bg-white/5 rounded-xl mb-2">
               <button
                 type="button"
-                onClick={() => setLoginMethod('email')}
-                className={`flex-1 py-2.5 sm:py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                  loginMethod === 'email'
+                onClick={() => { setAuthMethod('password'); setMagicLinkSent(false); setError(''); }}
+                className={`flex-1 py-2.5 sm:py-2 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                  authMethod === 'password'
                     ? 'bg-purple-500 text-white'
                     : 'text-gray-400 hover:text-white active:bg-white/10'
                 }`}
               >
-                Email
+                <Lock className="w-4 h-4" />
+                Password
               </button>
               <button
                 type="button"
-                onClick={() => setLoginMethod('username')}
-                className={`flex-1 py-2.5 sm:py-2 px-4 rounded-lg text-sm font-medium transition-all ${
-                  loginMethod === 'username'
+                onClick={() => { setAuthMethod('magic'); setMagicLinkSent(false); setError(''); }}
+                className={`flex-1 py-2.5 sm:py-2 px-4 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                  authMethod === 'magic'
                     ? 'bg-purple-500 text-white'
                     : 'text-gray-400 hover:text-white active:bg-white/10'
                 }`}
               >
-                Username
+                <Wand2 className="w-4 h-4" />
+                Magic Link
               </button>
             </div>
 
-            {/* Email/Username Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                {loginMethod === 'email' ? 'Email' : 'Username'}
-              </label>
-              <div className="relative">
-                {loginMethod === 'email' ? (
+            {/* Magic Link Success Message */}
+            {magicLinkSent && authMethod === 'magic' && (
+              <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-green-400 font-medium">Check your email!</p>
+                  <p className="text-green-400/80 text-sm mt-1">
+                    We sent a magic link to <strong>{formData.email}</strong>. Click it to sign in instantly.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {authMethod === 'password' && (
+              <>
+                {/* Login Method Toggle - Email vs Username */}
+                <div className="flex p-1 bg-white/5 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setLoginMethod('email')}
+                    className={`flex-1 py-2.5 sm:py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                      loginMethod === 'email'
+                        ? 'bg-purple-500 text-white'
+                        : 'text-gray-400 hover:text-white active:bg-white/10'
+                    }`}
+                  >
+                    Email
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLoginMethod('username')}
+                    className={`flex-1 py-2.5 sm:py-2 px-4 rounded-lg text-sm font-medium transition-all ${
+                      loginMethod === 'username'
+                        ? 'bg-purple-500 text-white'
+                        : 'text-gray-400 hover:text-white active:bg-white/10'
+                    }`}
+                  >
+                    Username
+                  </button>
+                </div>
+
+                {/* Email/Username Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    {loginMethod === 'email' ? 'Email' : 'Username'}
+                  </label>
+                  <div className="relative">
+                    {loginMethod === 'email' ? (
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    ) : (
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    )}
+                    <input
+                      type={loginMethod === 'email' ? 'email' : 'text'}
+                      value={loginMethod === 'email' ? formData.email : formData.username}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          [loginMethod === 'email' ? 'email' : 'username']: e.target.value,
+                        })
+                      }
+                      className="w-full h-12 sm:h-auto pl-12 pr-4 py-3 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white text-base sm:text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                      placeholder={loginMethod === 'email' ? 'you@example.com' : 'johndoe'}
+                      required
+                      autoComplete={loginMethod === 'email' ? 'email' : 'username'}
+                      enterKeyHint="next"
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            {authMethod === 'magic' && !magicLinkSent && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+                <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                ) : (
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                )}
-                <input
-                  type={loginMethod === 'email' ? 'email' : 'text'}
-                  value={loginMethod === 'email' ? formData.email : formData.username}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      [loginMethod === 'email' ? 'email' : 'username']: e.target.value,
-                    })
-                  }
-                  className="w-full h-12 sm:h-auto pl-12 pr-4 py-3 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white text-base sm:text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
-                  placeholder={loginMethod === 'email' ? 'you@example.com' : 'johndoe'}
-                  required
-                  autoComplete={loginMethod === 'email' ? 'email' : 'username'}
-                  enterKeyHint="next"
-                />
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full h-12 sm:h-auto pl-12 pr-4 py-3 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white text-base sm:text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                    placeholder="you@example.com"
+                    required
+                    autoComplete="email"
+                    enterKeyHint="done"
+                  />
+                </div>
+                <p className="text-gray-500 text-xs mt-2">
+                  We&apos;ll email you a magic link for password-free sign in
+                </p>
               </div>
-            </div>
+            )}
 
-            {/* Password Input */}
-            <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="w-full h-12 sm:h-auto pl-12 pr-12 py-3 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white text-base sm:text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
-                  placeholder="Enter your password"
-                  required
-                  autoComplete="current-password"
-                  enterKeyHint="done"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-300 active:bg-white/10 rounded-lg transition-colors"
+            {/* Password Input - Only for password auth method */}
+            {authMethod === 'password' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full h-12 sm:h-auto pl-12 pr-12 py-3 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white text-base sm:text-sm placeholder-gray-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                    placeholder="Enter your password"
+                    required
+                    autoComplete="current-password"
+                    enterKeyHint="done"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-500 hover:text-gray-300 active:bg-white/10 rounded-lg transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Forgot Password - Only for password auth */}
+            {authMethod === 'password' && (
+              <div className="flex justify-end">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-purple-400 hover:text-purple-300 py-1"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+                  Forgot password?
+                </Link>
               </div>
-            </div>
+            )}
 
-            {/* Forgot Password */}
-            <div className="flex justify-end">
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-purple-400 hover:text-purple-300 py-1"
+            {/* Submit Button - Hide if magic link already sent */}
+            {!(authMethod === 'magic' && magicLinkSent) && (
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-12 sm:h-auto py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-indigo-700 active:from-purple-700 active:to-indigo-800 disabled:opacity-50 flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
               >
-                Forgot password?
-              </Link>
-            </div>
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    {authMethod === 'magic' ? 'Sending...' : 'Signing in...'}
+                  </>
+                ) : authMethod === 'magic' ? (
+                  <>
+                    <Wand2 className="w-5 h-5" />
+                    Send Magic Link
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            )}
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-12 sm:h-auto py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-indigo-700 active:from-purple-700 active:to-indigo-800 disabled:opacity-50 flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                'Sign In'
-              )}
-            </button>
+            {/* Send Another Magic Link */}
+            {authMethod === 'magic' && magicLinkSent && (
+              <button
+                type="button"
+                onClick={() => setMagicLinkSent(false)}
+                className="w-full py-3 px-4 bg-white/5 text-gray-300 font-medium rounded-xl hover:bg-white/10 transition-colors text-sm"
+              >
+                Send to a different email
+              </button>
+            )}
           </form>
 
           {/* Divider */}
@@ -305,5 +416,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-black flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-white/30 border-t-purple-500 rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }

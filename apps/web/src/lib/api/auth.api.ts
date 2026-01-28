@@ -147,4 +147,17 @@ export const authApi = {
   async resendVerificationEmail(): Promise<void> {
     await apiClient.post('/auth/resend-verification');
   },
+
+  async requestMagicLink(email: string, redirectUrl?: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<{ success: boolean; message: string }>('/auth/magic-link/request', {
+      email,
+      redirectUrl,
+    });
+    return response.data;
+  },
+
+  async verifyMagicLink(token: string): Promise<AuthResponse> {
+    const response = await apiClient.post<AuthResponse>('/auth/magic-link/verify', { token });
+    return response.data;
+  },
 };
