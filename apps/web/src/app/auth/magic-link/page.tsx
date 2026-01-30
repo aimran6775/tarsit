@@ -1,7 +1,6 @@
 'use client';
 
 import { authApi } from '@/lib/api/auth.api';
-import { supabase } from '@/lib/supabase';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -27,24 +26,24 @@ function MagicLinkContent() {
       try {
         const response = await authApi.verifyMagicLink(token);
         
-        // Store tokens
+        // Store tokens - this is what the app uses for auth
         if (response.accessToken) {
           localStorage.setItem('accessToken', response.accessToken);
         }
         if (response.refreshToken) {
           localStorage.setItem('refreshToken', response.refreshToken);
         }
-
-        // If there's a session from Supabase, set it
-        if (response.session) {
-          await supabase.auth.setSession(response.session);
+        
+        // Store user data so AuthContext picks it up on redirect
+        if (response.user) {
+          localStorage.setItem('user', JSON.stringify(response.user));
         }
 
         setStatus('success');
 
-        // Redirect after a short delay
+        // Force a full page reload to ensure AuthContext re-initializes with new tokens
         setTimeout(() => {
-          router.push(redirect || '/');
+          window.location.href = redirect || '/';
         }, 1500);
       } catch (err: unknown) {
         setStatus('error');

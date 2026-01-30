@@ -30,7 +30,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session
+    // First check if we have a stored access token (from magic link or direct login)
+    const storedToken = localStorage.getItem('accessToken');
+    const storedUser = localStorage.getItem('user');
+    
+    if (storedToken && storedUser) {
+      // We have tokens from magic link login - use them
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        // Clear the stored user (tokens remain for API calls)
+        localStorage.removeItem('user');
+        setIsLoading(false);
+        return;
+      } catch {
+        // Invalid stored user, continue with normal flow
+        localStorage.removeItem('user');
+      }
+    }
+    
+    if (storedToken) {
+      // Have token but no stored user - fetch from API
+      refreshUser();
+      return;
+    }
+    
+    // Check Supabase session as fallback
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         localStorage.setItem('accessToken', session.access_token);
