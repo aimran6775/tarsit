@@ -1,4 +1,17 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * APPOINTMENT STATUS EMAIL TEMPLATE
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * Sent when an appointment status changes (confirmed, completed).
+ * Uses the Tarsit design system for consistent branding.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+
 import { baseTemplate, emailComponents } from './base.template';
+import { colors, icons, typography } from './design-system';
+
+const { button, text, heading, glassCard, divider } = emailComponents;
 
 export interface AppointmentStatusProps {
   firstName: string;
@@ -30,49 +43,86 @@ export const appointmentStatusTemplate = ({
 
   const isConfirmed = status === 'CONFIRMED';
   const statusText = isConfirmed ? 'Confirmed' : 'Completed';
-  const bgGradient = isConfirmed 
-    ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
-    : 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)';
-  const borderColor = isConfirmed ? '#10b981' : '#f59e0b';
-  const labelColor = isConfirmed ? '#065f46' : '#92400e';
+  const heroIcon = isConfirmed ? icons.checkCircle('#ffffff', 40) : icons.celebration('#ffffff', 40);
+  const heroGlow = isConfirmed
+    ? '0 0 30px rgba(16, 185, 129, 0.4)'
+    : '0 0 30px rgba(168, 85, 247, 0.4)';
+  const heroBg = isConfirmed
+    ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+    : colors.gradientPrimary;
 
   const content = `
-    ${emailComponents.heading(`Appointment ${statusText}`)}
-    
-    ${emailComponents.text(`Hi ${firstName},`)}
-    
-    ${emailComponents.text(isConfirmed 
-      ? `Great news! Your appointment with <strong>${businessName}</strong> has been confirmed.`
-      : `Your appointment with <strong>${businessName}</strong> is now complete!`
-    )}
-    
-    <table role="presentation" style="width: 100%; margin: 24px 0; background: ${bgGradient}; border-radius: 12px; border-left: 4px solid ${borderColor};">
+    <!-- Hero section with status icon -->
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
       <tr>
-        <td style="padding: 24px;">
-          <table role="presentation" style="width: 100%;">
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: ${labelColor}; font-size: 12px; text-transform: uppercase;">Service</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${serviceName}</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: ${labelColor}; font-size: 12px; text-transform: uppercase;">Date & Time</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${formattedDate} at ${formattedTime}</span>
-              </td>
-            </tr>
-          </table>
+        <td align="center">
+          <div style="width: 80px; height: 80px; background: ${heroBg}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: ${heroGlow};">
+            ${heroIcon}
+          </div>
         </td>
       </tr>
     </table>
     
+    ${heading(`Appointment ${statusText}`)}
+    
+    ${text(`Hi ${firstName},`)}
+    
+    ${text(isConfirmed
+      ? `Great news! Your appointment with <strong>${businessName}</strong> has been confirmed.`
+      : `Your appointment with <strong>${businessName}</strong> is now complete!`
+    )}
+    
+    <!-- Appointment details card -->
+    ${glassCard(`
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+        <tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid ${colors.glassBorder};">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="width: 32px; vertical-align: top; padding-top: 2px;">
+                  ${icons.sparkles(colors.accent, 20)}
+                </td>
+                <td>
+                  <p style="margin: 0 0 4px 0; color: ${colors.accent}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+                    Service
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-family: ${typography.fontFamily};">
+                    ${serviceName}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="width: 32px; vertical-align: top; padding-top: 2px;">
+                  ${icons.calendar(colors.accent, 20)}
+                </td>
+                <td>
+                  <p style="margin: 0 0 4px 0; color: ${colors.accent}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+                    Date & Time
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-family: ${typography.fontFamily};">
+                    ${formattedDate} at ${formattedTime}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    `)}
+    
     ${!isConfirmed && reviewUrl ? `
-      ${emailComponents.text("We hope you had a great experience! Would you mind taking a moment to share your feedback?")}
-      ${emailComponents.button('Leave a Review', reviewUrl, true)}
+      ${divider()}
+      ${text("We hope you had a great experience! Would you mind taking a moment to share your feedback?")}
+      ${button('Leave a Review', reviewUrl, true)}
     ` : ''}
     
-    ${isConfirmed ? emailComponents.text("We look forward to seeing you!", true) : ''}
+    ${isConfirmed ? text("We look forward to seeing you!", true) : ''}
   `;
 
   return baseTemplate({
@@ -82,5 +132,5 @@ export const appointmentStatusTemplate = ({
   });
 };
 
-export const appointmentStatusSubject = (businessName: string, status: 'CONFIRMED' | 'COMPLETED') => 
+export const appointmentStatusSubject = (businessName: string, status: 'CONFIRMED' | 'COMPLETED') =>
   `Appointment ${status === 'CONFIRMED' ? 'Confirmed' : 'Completed'} - ${businessName}`;

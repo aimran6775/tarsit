@@ -1,4 +1,17 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * APPOINTMENT CONFIRMATION EMAIL TEMPLATE
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * Sent when a customer's appointment has been confirmed.
+ * Uses the Tarsit design system for consistent branding.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+
 import { baseTemplate, emailComponents } from './base.template';
+import { colors, icons, typography } from './design-system';
+
+const { button, text, heading, infoBox, divider, glassCard } = emailComponents;
 
 export interface AppointmentConfirmationProps {
   firstName: string;
@@ -29,58 +42,106 @@ export const appointmentConfirmationTemplate = ({
   });
 
   const content = `
-    ${emailComponents.heading('Appointment Confirmed')}
-    
-    ${emailComponents.text(`Hi ${firstName},`)}
-    
-    ${emailComponents.text(`Great news! Your appointment with <strong>${businessName}</strong> has been confirmed.`)}
-    
-    <table role="presentation" style="width: 100%; margin: 24px 0; background: #f9fafb; border-radius: 12px; padding: 24px;">
+    <!-- Hero section with calendar icon -->
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
       <tr>
-        <td>
-          <table role="presentation" style="width: 100%;">
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #6b7280; font-size: 12px; text-transform: uppercase;">Service</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${serviceName}</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #6b7280; font-size: 12px; text-transform: uppercase;">Date & Time</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${formattedDate} at ${appointmentTime}</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #6b7280; font-size: 12px; text-transform: uppercase;">Location</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${businessAddress}</span>
-              </td>
-            </tr>
-            ${businessPhone ? `
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #6b7280; font-size: 12px; text-transform: uppercase;">Contact</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${businessPhone}</span>
-              </td>
-            </tr>
-            ` : ''}
-            ${notes ? `
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #6b7280; font-size: 12px; text-transform: uppercase;">Notes</strong><br>
-                <span style="color: #1f2937; font-size: 14px;">${notes}</span>
-              </td>
-            </tr>
-            ` : ''}
-          </table>
+        <td align="center">
+          <div style="width: 80px; height: 80px; background: ${colors.successMuted}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+            ${icons.calendar(colors.success, 40)}
+          </div>
         </td>
       </tr>
     </table>
     
-    ${emailComponents.infoBox('Need to reschedule or cancel? You can manage your appointments from your Tarsit dashboard.', 'info')}
+    ${heading('Appointment Confirmed')}
     
-    ${emailComponents.button('View Appointment', 'https://tarsit.com/appointments', true)}
+    ${text(`Hi ${firstName},`)}
+    
+    ${text(`Great news! Your appointment with <strong>${businessName}</strong> has been confirmed.`)}
+    
+    <!-- Appointment details card -->
+    ${glassCard(`
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+        <tr>
+          <td style="padding: 12px 0; border-bottom: 1px solid ${colors.glassBorder};">
+            <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightMedium}; font-family: ${typography.fontFamily};">
+              Service
+            </p>
+            <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-weight: ${typography.weightMedium}; font-family: ${typography.fontFamily};">
+              ${serviceName}
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 0; border-bottom: 1px solid ${colors.glassBorder};">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="vertical-align: top; width: 24px; padding-top: 2px;">
+                  ${icons.calendar(colors.accentPrimary, 16)}
+                </td>
+                <td style="padding-left: 12px;">
+                  <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightMedium}; font-family: ${typography.fontFamily};">
+                    Date & Time
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-weight: ${typography.weightMedium}; font-family: ${typography.fontFamily};">
+                    ${formattedDate} at ${appointmentTime}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 12px 0; ${businessPhone || notes ? `border-bottom: 1px solid ${colors.glassBorder};` : ''}">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="vertical-align: top; width: 24px; padding-top: 2px;">
+                  ${icons.mapPin(colors.accentPrimary, 16)}
+                </td>
+                <td style="padding-left: 12px;">
+                  <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightMedium}; font-family: ${typography.fontFamily};">
+                    Location
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-family: ${typography.fontFamily};">
+                    ${businessAddress}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        ${businessPhone ? `
+        <tr>
+          <td style="padding: 12px 0; ${notes ? `border-bottom: 1px solid ${colors.glassBorder};` : ''}">
+            <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightMedium}; font-family: ${typography.fontFamily};">
+              Contact
+            </p>
+            <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-family: ${typography.fontFamily};">
+              ${businessPhone}
+            </p>
+          </td>
+        </tr>
+        ` : ''}
+        ${notes ? `
+        <tr>
+          <td style="padding: 12px 0;">
+            <p style="margin: 0 0 4px 0; color: ${colors.textMuted}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightMedium}; font-family: ${typography.fontFamily};">
+              Notes
+            </p>
+            <p style="margin: 0; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-style: italic; font-family: ${typography.fontFamily};">
+              "${notes}"
+            </p>
+          </td>
+        </tr>
+        ` : ''}
+      </table>
+    `)}
+    
+    ${divider()}
+    
+    ${infoBox('Need to reschedule or cancel? You can manage your appointments from your Tarsit dashboard.', 'info')}
+    
+    ${button('View Appointment', 'https://tarsit.com/appointments', true)}
   `;
 
   return baseTemplate({
@@ -89,5 +150,5 @@ export const appointmentConfirmationTemplate = ({
   });
 };
 
-export const appointmentConfirmationSubject = (businessName: string) => 
+export const appointmentConfirmationSubject = (businessName: string) =>
   `Appointment Confirmed - ${businessName}`;

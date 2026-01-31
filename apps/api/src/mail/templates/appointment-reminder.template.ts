@@ -1,4 +1,17 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * APPOINTMENT REMINDER EMAIL TEMPLATE
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * Sent as a reminder before an upcoming appointment.
+ * Uses the Tarsit design system for consistent branding.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+
 import { baseTemplate, emailComponents } from './base.template';
+import { colors, icons, typography } from './design-system';
+
+const { button, text, heading, infoBox, glassCard, divider, detailRow } = emailComponents;
 
 export interface AppointmentReminderProps {
   firstName: string;
@@ -31,56 +44,129 @@ export const appointmentReminderTemplate = ({
   });
 
   const content = `
-    ${emailComponents.heading('Appointment Reminder')}
-    
-    ${emailComponents.text(`Hi ${firstName},`)}
-    
-    ${emailComponents.text(`This is a friendly reminder about your upcoming appointment tomorrow!`)}
-    
-    <table role="presentation" style="width: 100%; margin: 24px 0; background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border-radius: 12px; border-left: 4px solid #3b82f6;">
+    <!-- Hero section with clock icon -->
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
       <tr>
-        <td style="padding: 24px;">
-          <table role="presentation" style="width: 100%;">
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #1e40af; font-size: 12px; text-transform: uppercase;">Business</strong><br>
-                <span style="color: #1f2937; font-size: 18px; font-weight: 600;">${businessName}</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #1e40af; font-size: 12px; text-transform: uppercase;">Service</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${serviceName}</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #1e40af; font-size: 12px; text-transform: uppercase;">When</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${formattedDate} at ${formattedTime}</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #1e40af; font-size: 12px; text-transform: uppercase;">Where</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${businessAddress}</span>
-              </td>
-            </tr>
-            ${businessPhone ? `
-            <tr>
-              <td style="padding: 8px 0;">
-                <strong style="color: #1e40af; font-size: 12px; text-transform: uppercase;">Contact</strong><br>
-                <span style="color: #1f2937; font-size: 16px;">${businessPhone}</span>
-              </td>
-            </tr>
-            ` : ''}
-          </table>
+        <td align="center">
+          <div style="width: 80px; height: 80px; background: ${colors.gradientPrimary}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);">
+            ${icons.clock('#ffffff', 40)}
+          </div>
         </td>
       </tr>
     </table>
     
-    ${emailComponents.infoBox('Need to reschedule? Visit your dashboard to manage your appointments.', 'info')}
+    ${heading('Appointment Tomorrow')}
     
-    ${emailComponents.button('View Appointment', appointmentUrl, true)}
+    ${text(`Hi ${firstName},`)}
+    
+    ${text(`This is a friendly reminder about your upcoming appointment!`)}
+    
+    <!-- Appointment details card -->
+    ${glassCard(`
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+        <tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid ${colors.glassBorder};">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="width: 32px; vertical-align: top; padding-top: 2px;">
+                  ${icons.diamond(colors.accent, 20)}
+                </td>
+                <td>
+                  <p style="margin: 0 0 4px 0; color: ${colors.accent}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+                    Business
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeLg}; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+                    ${businessName}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid ${colors.glassBorder};">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="width: 32px; vertical-align: top; padding-top: 2px;">
+                  ${icons.sparkles(colors.accent, 20)}
+                </td>
+                <td>
+                  <p style="margin: 0 0 4px 0; color: ${colors.accent}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+                    Service
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-family: ${typography.fontFamily};">
+                    ${serviceName}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; border-bottom: 1px solid ${colors.glassBorder};">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="width: 32px; vertical-align: top; padding-top: 2px;">
+                  ${icons.calendar(colors.accent, 20)}
+                </td>
+                <td>
+                  <p style="margin: 0 0 4px 0; color: ${colors.accent}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+                    When
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-family: ${typography.fontFamily};">
+                    ${formattedDate} at ${formattedTime}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; ${businessPhone ? `border-bottom: 1px solid ${colors.glassBorder};` : ''}">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="width: 32px; vertical-align: top; padding-top: 2px;">
+                  ${icons.mapPin(colors.accent, 20)}
+                </td>
+                <td>
+                  <p style="margin: 0 0 4px 0; color: ${colors.accent}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+                    Where
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-family: ${typography.fontFamily};">
+                    ${businessAddress}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        ${businessPhone ? `
+        <tr>
+          <td style="padding: 8px 0;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="width: 32px; vertical-align: top; padding-top: 2px;">
+                  ${icons.mail(colors.accent, 20)}
+                </td>
+                <td>
+                  <p style="margin: 0 0 4px 0; color: ${colors.accent}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+                    Contact
+                  </p>
+                  <p style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-family: ${typography.fontFamily};">
+                    ${businessPhone}
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        ` : ''}
+      </table>
+    `)}
+    
+    ${infoBox('Need to reschedule? Visit your dashboard to manage your appointments.', 'info')}
+    
+    ${button('View Appointment', appointmentUrl, true)}
   `;
 
   return baseTemplate({
@@ -89,5 +175,5 @@ export const appointmentReminderTemplate = ({
   });
 };
 
-export const appointmentReminderSubject = (businessName: string) => 
+export const appointmentReminderSubject = (businessName: string) =>
   `Reminder: Appointment Tomorrow with ${businessName}`;

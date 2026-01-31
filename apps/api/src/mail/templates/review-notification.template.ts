@@ -1,4 +1,17 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * REVIEW NOTIFICATION EMAIL TEMPLATE
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * Sent to business owners when they receive a new review.
+ * Uses the Tarsit design system for consistent branding.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+
 import { baseTemplate, emailComponents } from './base.template';
+import { borderRadius, colors, icons, typography } from './design-system';
+
+const { button, text, heading, glassCard, divider } = emailComponents;
 
 export interface ReviewNotificationProps {
   businessOwnerName: string;
@@ -17,37 +30,72 @@ export const reviewNotificationTemplate = ({
   reviewText,
   reviewUrl,
 }: ReviewNotificationProps): string => {
-  const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
-  
+  // Generate star display using SVG icons
+  const starDisplay = Array.from({ length: 5 }, (_, i) => {
+    const isFilled = i < rating;
+    return `<td style="padding: 0 2px;">${icons.star(isFilled ? '#fbbf24' : 'rgba(255, 255, 255, 0.2)', 28)}</td>`;
+  }).join('');
+
   const content = `
-    ${emailComponents.heading('New Review for Your Business')}
-    
-    ${emailComponents.text(`Hi ${businessOwnerName},`)}
-    
-    ${emailComponents.text(`Great news! <strong>${reviewerName}</strong> just left a review for <strong>${businessName}</strong>.`)}
-    
-    <table role="presentation" style="width: 100%; margin: 24px 0; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 12px; padding: 24px;">
+    <!-- Hero section with star icon -->
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
       <tr>
-        <td style="text-align: center;">
-          <div style="font-size: 32px; letter-spacing: 4px; color: #f59e0b;">${stars}</div>
-          <div style="margin-top: 8px; font-size: 14px; color: #92400e;">${rating} out of 5 stars</div>
+        <td align="center">
+          <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 0 30px rgba(251, 191, 36, 0.4);">
+            ${icons.star('#ffffff', 40)}
+          </div>
         </td>
       </tr>
     </table>
     
-    ${reviewText ? `
-      <table role="presentation" style="width: 100%; margin: 16px 0;">
+    ${heading('New Review Received')}
+    
+    ${text(`Hi ${businessOwnerName},`)}
+    
+    ${text(`Great news! <strong>${reviewerName}</strong> just left a review for <strong>${businessName}</strong>.`)}
+    
+    <!-- Star rating display -->
+    ${glassCard(`
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
         <tr>
-          <td style="background: #f9fafb; border-left: 4px solid #7c3aed; padding: 16px 20px; border-radius: 8px; font-style: italic; color: #4b5563;">
-            "${reviewText}"
+          <td align="center" style="padding: 16px 0;">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                ${starDisplay}
+              </tr>
+            </table>
+            <p style="margin: 12px 0 0 0; color: ${colors.textMuted}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
+              ${rating} out of 5 stars
+            </p>
+          </td>
+        </tr>
+      </table>
+    `)}
+    
+    ${reviewText ? `
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin: 16px 0;">
+        <tr>
+          <td style="background: ${colors.glassBackground}; border: 1px solid ${colors.glassBorder}; border-left: 4px solid ${colors.accent}; padding: 20px 24px; border-radius: ${borderRadius.lg};">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="width: 24px; vertical-align: top; padding-top: 2px;">
+                  ${icons.message(colors.accent, 18)}
+                </td>
+                <td>
+                  <p style="margin: 0; font-style: italic; color: ${colors.textSecondary}; font-size: ${typography.sizeBase}; line-height: 1.6; font-family: ${typography.fontFamily};">
+                    "${reviewText}"
+                  </p>
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
       </table>
     ` : ''}
     
-    ${emailComponents.button('View & Respond', reviewUrl, true)}
+    ${button('View & Respond', reviewUrl, true)}
     
-    ${emailComponents.text('Responding to reviews helps build trust with potential customers and shows you value feedback.', true)}
+    ${text('Responding to reviews helps build trust with potential customers and shows you value feedback.', true)}
   `;
 
   return baseTemplate({
@@ -56,5 +104,5 @@ export const reviewNotificationTemplate = ({
   });
 };
 
-export const reviewNotificationSubject = (rating: number) => 
+export const reviewNotificationSubject = (rating: number) =>
   `New ${rating}-Star Review for Your Business`;

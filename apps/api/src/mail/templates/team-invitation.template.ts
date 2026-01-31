@@ -1,5 +1,17 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * TEAM INVITATION EMAIL TEMPLATE
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * Sent when someone is invited to join a business team.
+ * Uses the Tarsit design system for consistent branding.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
+
 import { baseTemplate, emailComponents } from './base.template';
-import { icons } from './design-system';
+import { colors, icons, typography } from './design-system';
+
+const { button, text, heading, infoBox, glassCard } = emailComponents;
 
 export interface TeamInvitationProps {
   inviteeName: string;
@@ -19,45 +31,60 @@ export const teamInvitationTemplate = ({
   acceptUrl,
 }: TeamInvitationProps): string => {
   const content = `
-    ${emailComponents.heading("You're Invited!")}
-    
-    ${emailComponents.text(`Hi ${inviteeName || 'there'},`)}
-    
-    ${emailComponents.text(`<strong>${inviterName}</strong> has invited you to join the team at <strong>${businessName}</strong> on Tarsit.`)}
-    
-    <table role="presentation" style="width: 100%; margin: 24px 0; background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%); border-radius: 12px; padding: 24px;">
+    <!-- Hero section with user plus icon -->
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
       <tr>
-        <td>
-          <div style="text-align: center; margin-bottom: 20px;">
-            <div style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">
-              ${role}
-            </div>
-          </div>
-          
-          <div style="text-align: left;">
-            <strong style="color: #1e40af; font-size: 12px; text-transform: uppercase;">Your Permissions:</strong>
-            <table role="presentation" style="width: 100%; margin-top: 12px;">
-              ${permissions.map(p => `
-                <tr>
-                  <td style="padding: 6px 0; vertical-align: top; width: 24px;">
-                    ${icons.check('#10b981', 14)}
-                  </td>
-                  <td style="padding: 6px 0; padding-left: 8px; color: #374151; font-size: 14px;">
-                    ${p}
-                  </td>
-                </tr>
-              `).join('')}
-            </table>
+        <td align="center">
+          <div style="width: 80px; height: 80px; background: ${colors.gradientPrimary}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);">
+            ${icons.user('#ffffff', 40)}
           </div>
         </td>
       </tr>
     </table>
     
-    ${emailComponents.button('Accept Invitation', acceptUrl, true)}
+    ${heading("You're Invited!")}
     
-    ${emailComponents.infoBox('This invitation will expire in 7 days.', 'warning')}
+    ${text(`Hi ${inviteeName || 'there'},`)}
     
-    ${emailComponents.text("If you don't recognize this business or didn't expect this invitation, you can safely ignore this email.", true)}
+    ${text(`<strong>${inviterName}</strong> has invited you to join the team at <strong>${businessName}</strong> on Tarsit.`)}
+    
+    <!-- Role and permissions card -->
+    ${glassCard(`
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+        <tr>
+          <td align="center" style="padding-bottom: 20px;">
+            <span style="display: inline-block; background: ${colors.gradientPrimary}; color: white; padding: 10px 24px; border-radius: 30px; font-size: ${typography.sizeSm}; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily}; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);">
+              ${role}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p style="margin: 0 0 12px 0; color: ${colors.accent}; font-size: ${typography.sizeXs}; text-transform: uppercase; letter-spacing: 0.5px; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+              Your Permissions:
+            </p>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+              ${permissions.map(p => `
+                <tr>
+                  <td style="padding: 8px 0; vertical-align: top; width: 24px;">
+                    ${icons.check('#10b981', 16)}
+                  </td>
+                  <td style="padding: 8px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
+                    ${p}
+                  </td>
+                </tr>
+              `).join('')}
+            </table>
+          </td>
+        </tr>
+      </table>
+    `)}
+    
+    ${button('Accept Invitation', acceptUrl, true)}
+    
+    ${infoBox('This invitation will expire in 7 days.', 'warning')}
+    
+    ${text("If you don't recognize this business or didn't expect this invitation, you can safely ignore this email.", true)}
   `;
 
   return baseTemplate({
@@ -66,5 +93,5 @@ export const teamInvitationTemplate = ({
   });
 };
 
-export const teamInvitationSubject = (businessName: string) => 
+export const teamInvitationSubject = (businessName: string) =>
   `You're Invited to Join ${businessName} on Tarsit`;

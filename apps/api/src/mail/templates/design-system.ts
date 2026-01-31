@@ -289,7 +289,16 @@ export const emailDesignSystem = {
 };
 
 // Export individual sections for convenience
-export const { colors, gradients, typography, spacing, borderRadius, shadows, icons } = emailDesignSystem;
+export const { gradients, typography, spacing, borderRadius, shadows, icons } = emailDesignSystem;
+
+// Colors with convenience aliases
+export const colors = {
+  ...emailDesignSystem.colors,
+  // Convenience aliases used in templates
+  accent: emailDesignSystem.colors.accentPrimary,
+  gradientPrimary: emailDesignSystem.gradients.accent,
+  glassBackground: emailDesignSystem.colors.glassBg,
+};
 
 // Type exports
 export type EmailColors = typeof emailDesignSystem.colors;
