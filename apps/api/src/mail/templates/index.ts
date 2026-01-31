@@ -19,6 +19,7 @@ export * from './appointment-status.template';
 
 // Business email templates
 export * from './contact-notification.template';
+export * from './promotional.template';
 export * from './review-notification.template';
 export * from './team-invitation.template';
 export * from './verification-status.template';

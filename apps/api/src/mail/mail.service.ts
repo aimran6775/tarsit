@@ -27,6 +27,10 @@ import {
     magicLinkEmailTemplate,
     passwordResetEmailSubject,
     passwordResetEmailTemplate,
+    // Promotional templates
+    promotionalEmailSubject,
+    promotionalEmailTemplate,
+    PromotionType,
     reviewNotificationSubject,
     reviewNotificationTemplate,
     SecurityEventType,
@@ -43,6 +47,7 @@ import {
     // Auth templates
     welcomeEmailTemplate,
 } from './templates';
+import { PrismaService } from '../prisma/prisma.service';
 
 interface EmailOptions {
   to: string;
@@ -62,7 +67,10 @@ export class MailService {
   private fromEmail: string;
   private frontendUrl: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {
     const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
     const mailUser = this.configService.get<string>('MAIL_USER');
     
@@ -91,7 +99,12 @@ export class MailService {
     }
   }
 
-  private async sendMail(options: EmailOptions): Promise<boolean> {
+  private async sendMail(
+    options: EmailOptions & { template?: string; userId?: string },
+  ): Promise<boolean> {
+    let success = false;
+    let errorMessage: string | undefined;
+
     try {
       if (this.provider === 'resend' && this.resend) {
         const { error } = await this.resend.emails.send({
@@ -104,11 +117,11 @@ export class MailService {
 
         if (error) {
           this.logger.error(`Resend email error: ${error.message}`, error);
-          return false;
+          errorMessage = error.message;
+        } else {
+          this.logger.log(`Email sent via Resend to: ${options.to}`);
+          success = true;
         }
-        
-        this.logger.log(`Email sent via Resend to: ${options.to}`);
-        return true;
       } else if (this.transporter) {
         await this.transporter.sendMail({
           from: this.fromEmail,
@@ -119,15 +132,34 @@ export class MailService {
         });
         
         this.logger.log(`Email sent via Nodemailer to: ${options.to}`);
-        return true;
+        success = true;
       } else {
         this.logger.warn(`Email not sent (no provider): ${options.subject} to ${options.to}`);
-        return false;
+        errorMessage = 'No email provider configured';
       }
     } catch (error) {
       this.logger.error(`Failed to send email to ${options.to}:`, error);
-      return false;
+      errorMessage = error.message;
     }
+
+    // Log email to database
+    try {
+      await this.prisma.emailLog.create({
+        data: {
+          to: options.to,
+          subject: options.subject,
+          template: options.template || 'unknown',
+          status: success ? 'SENT' : 'FAILED',
+          error: errorMessage,
+          sentAt: success ? new Date() : null,
+          userId: options.userId,
+        },
+      });
+    } catch (logError) {
+      this.logger.warn(`Failed to log email: ${logError.message}`);
+    }
+
+    return success;
   }
 
   // ============================================================================
@@ -139,6 +171,7 @@ export class MailService {
       to: email,
       subject: welcomeEmailSubject,
       html: welcomeEmailTemplate({ firstName, appUrl: this.frontendUrl }),
+      template: 'welcome',
     });
   }
 
@@ -148,6 +181,7 @@ export class MailService {
       to: email,
       subject: verificationEmailSubject,
       html: verificationEmailTemplate({ firstName, verificationUrl, expiresInHours: 24 }),
+      template: 'verification',
     });
   }
 
@@ -157,6 +191,7 @@ export class MailService {
       to: email,
       subject: passwordResetEmailSubject,
       html: passwordResetEmailTemplate({ firstName, resetUrl, expiresInMinutes: 60 }),
+      template: 'password-reset',
     });
   }
 
@@ -171,6 +206,7 @@ export class MailService {
       to: email,
       subject: magicLinkEmailSubject,
       html: magicLinkEmailTemplate({ firstName, magicLinkUrl, expiresInMinutes: 15 }),
+      template: 'magic-link',
     });
   }
 
@@ -453,6 +489,87 @@ export class MailService {
         device,
         securityUrl: `${this.frontendUrl}/settings/security`,
       }),
+      template: 'account-security',
     });
+  }
+
+  // ============================================================================
+  // PROMOTIONAL EMAILS
+  // ============================================================================
+
+  async sendPromotionalEmail(
+    email: string,
+    recipientName: string,
+    businessName: string,
+    promotionType: PromotionType,
+    title: string,
+    bodyContent: string,
+    ctaText: string,
+    ctaUrl: string,
+    options?: {
+      subtitle?: string;
+      businessLogo?: string;
+      imageUrl?: string;
+      discountCode?: string;
+      expiresAt?: Date;
+    },
+  ): Promise<boolean> {
+    const unsubscribeUrl = `${this.frontendUrl}/unsubscribe?email=${encodeURIComponent(email)}&business=${encodeURIComponent(businessName)}`;
+    
+    return this.sendMail({
+      to: email,
+      subject: promotionalEmailSubject(businessName, title),
+      html: promotionalEmailTemplate({
+        recipientName,
+        businessName,
+        businessLogo: options?.businessLogo,
+        promotionType,
+        title,
+        subtitle: options?.subtitle,
+        bodyContent,
+        ctaText,
+        ctaUrl,
+        expiresAt: options?.expiresAt,
+        discountCode: options?.discountCode,
+        imageUrl: options?.imageUrl,
+        unsubscribeUrl,
+      }),
+      template: 'promotional',
+    });
+  }
+
+  // ============================================================================
+  // EMAIL ANALYTICS
+  // ============================================================================
+
+  async getEmailStats(startDate?: Date, endDate?: Date) {
+    const where: any = {};
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = startDate;
+      if (endDate) where.createdAt.lte = endDate;
+    }
+
+    const [total, sent, failed, byTemplate] = await Promise.all([
+      this.prisma.emailLog.count({ where }),
+      this.prisma.emailLog.count({ where: { ...where, status: 'SENT' } }),
+      this.prisma.emailLog.count({ where: { ...where, status: 'FAILED' } }),
+      this.prisma.emailLog.groupBy({
+        by: ['template'],
+        where,
+        _count: true,
+      }),
+    ]);
+
+    return {
+      total,
+      sent,
+      failed,
+      successRate: total > 0 ? ((sent / total) * 100).toFixed(2) : '0',
+      byTemplate: byTemplate.map((t) => ({
+        template: t.template,
+        count: t._count,
+      })),
+    };
   }
 }

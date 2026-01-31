@@ -8,9 +8,9 @@
  */
 
 import { Module } from '@nestjs/common';
-import { ScheduledTasksService } from './scheduled-tasks.service';
-import { PrismaModule } from '../prisma/prisma.module';
 import { MailModule } from '../mail/mail.module';
+import { PrismaModule } from '../prisma/prisma.module';
+import { ScheduledTasksService } from './scheduled-tasks.service';
 
 @Module({
   imports: [PrismaModule, MailModule],
