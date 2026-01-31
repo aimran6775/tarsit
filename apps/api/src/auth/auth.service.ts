@@ -129,6 +129,13 @@ export class AuthService {
         },
       });
 
+      // Send welcome email
+      try {
+        await this.mailService.sendWelcomeEmail(user.email, user.firstName);
+      } catch (error) {
+        console.error('Failed to send welcome email:', error);
+      }
+
       // If we have a Supabase session, return it
       if (supabaseSession) {
         return {
