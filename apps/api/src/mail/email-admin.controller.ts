@@ -470,7 +470,8 @@ export class EmailAdminController {
   async sendTestEmail(
     @Body() body: { templateId: string; email: string },
   ) {
-    const { templateId, email } = body;
+    const { email } = body;
+    // templateId can be used in future for template selection
 
     // Use welcome template for simplicity in test
     const success = await this.mailService.sendWelcomeEmail(email, 'Test User');

@@ -11,7 +11,7 @@
 import { baseTemplate, emailComponents } from './base.template';
 import { colors, icons, typography } from './design-system';
 
-const { button, text, heading, infoBox, glassCard, divider, detailRow } = emailComponents;
+const { button, text, heading, infoBox, glassCard } = emailComponents;
 
 export interface AppointmentReminderProps {
   firstName: string;

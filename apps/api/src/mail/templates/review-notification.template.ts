@@ -11,7 +11,7 @@
 import { baseTemplate, emailComponents } from './base.template';
 import { borderRadius, colors, icons, typography } from './design-system';
 
-const { button, text, heading, glassCard, divider } = emailComponents;
+const { button, text, heading, glassCard } = emailComponents;
 
 export interface ReviewNotificationProps {
   businessOwnerName: string;

@@ -11,7 +11,7 @@
 import { baseTemplate, emailComponents } from './base.template';
 import { borderRadius, colors, icons, typography } from './design-system';
 
-const { button, text, heading, featureList, divider, glassCard, smallText } = emailComponents;
+const { button, text, heading, divider, glassCard, smallText } = emailComponents;
 
 export interface WelcomeEmailProps {
   firstName: string;

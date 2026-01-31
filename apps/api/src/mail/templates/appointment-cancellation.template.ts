@@ -11,7 +11,7 @@
 import { baseTemplate, emailComponents } from './base.template';
 import { borderRadius, colors, icons, typography } from './design-system';
 
-const { button, text, heading, divider, glassCard } = emailComponents;
+const { button, text, heading, divider } = emailComponents;
 
 export interface AppointmentCancellationProps {
   firstName: string;
