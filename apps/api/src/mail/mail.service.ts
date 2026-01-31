@@ -27,12 +27,21 @@ import {
   appointmentStatusTemplate,
   appointmentStatusSubject,
   // Business templates
+  contactNotificationTemplate,
+  contactNotificationSubject,
   reviewNotificationTemplate,
   reviewNotificationSubject,
   verificationStatusTemplate,
   verificationStatusSubject,
   teamInvitationTemplate,
   teamInvitationSubject,
+  weeklyDigestTemplate,
+  weeklyDigestSubject,
+  WeeklyDigestStats,
+  // Account templates
+  accountSecurityTemplate,
+  accountSecuritySubject,
+  SecurityEventType,
 } from './templates';
 
 interface EmailOptions {
@@ -357,6 +366,92 @@ export class MailService {
         role,
         permissions,
         acceptUrl: `${this.frontendUrl}/auth/signup`,
+      }),
+    });
+  }
+
+  // ============================================================================
+  // CONTACT FORM EMAILS
+  // ============================================================================
+
+  async sendContactNotification(
+    email: string,
+    businessOwnerName: string,
+    businessName: string,
+    senderName: string,
+    senderEmail: string,
+    subject: string,
+    message: string,
+    senderPhone?: string,
+  ): Promise<boolean> {
+    return this.sendMail({
+      to: email,
+      subject: contactNotificationSubject(senderName),
+      html: contactNotificationTemplate({
+        businessOwnerName,
+        businessName,
+        senderName,
+        senderEmail,
+        senderPhone,
+        subject,
+        message,
+        dashboardUrl: `${this.frontendUrl}/dashboard/messages`,
+      }),
+    });
+  }
+
+  // ============================================================================
+  // WEEKLY DIGEST EMAILS
+  // ============================================================================
+
+  async sendWeeklyDigest(
+    email: string,
+    businessOwnerName: string,
+    businessName: string,
+    weekStart: Date,
+    weekEnd: Date,
+    stats: WeeklyDigestStats,
+    topReview?: { reviewerName: string; rating: number; text: string },
+  ): Promise<boolean> {
+    return this.sendMail({
+      to: email,
+      subject: weeklyDigestSubject(businessName),
+      html: weeklyDigestTemplate({
+        businessOwnerName,
+        businessName,
+        weekStart,
+        weekEnd,
+        stats,
+        topReview,
+        dashboardUrl: `${this.frontendUrl}/dashboard/analytics`,
+      }),
+    });
+  }
+
+  // ============================================================================
+  // ACCOUNT SECURITY EMAILS
+  // ============================================================================
+
+  async sendAccountSecurityAlert(
+    email: string,
+    firstName: string,
+    eventType: SecurityEventType,
+    timestamp: Date,
+    ipAddress?: string,
+    location?: string,
+    device?: string,
+  ): Promise<boolean> {
+    return this.sendMail({
+      to: email,
+      subject: accountSecuritySubject(eventType),
+      html: accountSecurityTemplate({
+        firstName,
+        eventType,
+        timestamp,
+        ipAddress,
+        location,
+        device,
+        securityUrl: `${this.frontendUrl}/settings/security`,
       }),
     });
   }
