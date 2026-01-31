@@ -81,8 +81,6 @@ export const accountSecurityTemplate = ({
   });
 
   const isWarning = eventType === 'new_login' || eventType === 'two_factor_disabled';
-  // heroColor used for potential future icon coloring
-  const _heroColor = isWarning ? colors.warning : '#10b981';
   const heroGlow = isWarning
     ? '0 0 30px rgba(245, 158, 11, 0.4)'
     : '0 0 30px rgba(16, 185, 129, 0.4)';
