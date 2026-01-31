@@ -43,4 +43,15 @@ export class HealthController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  @Get('email-config')
+  @ApiOperation({ summary: 'Check email configuration' })
+  async emailConfig() {
+    return {
+      hasResendKey: !!process.env.RESEND_API_KEY,
+      resendKeyPrefix: process.env.RESEND_API_KEY?.substring(0, 6) || 'not set',
+      mailFrom: process.env.MAIL_FROM || 'not set',
+      frontendUrl: process.env.FRONTEND_URL || 'not set',
+    };
+  }
 }
