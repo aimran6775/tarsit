@@ -15,6 +15,7 @@ import {
     Body,
     Controller,
     Get,
+    NotFoundException,
     Param,
     Post,
     Query,
@@ -23,6 +24,7 @@ import {
 import {
     ApiBearerAuth,
     ApiOperation,
+    ApiParam,
     ApiQuery,
     ApiResponse,
     ApiTags,
@@ -211,7 +213,7 @@ export class EmailAdminController {
     ]);
 
     return {
-      data: bounces,
+      bounces,
       pagination: {
         page,
         limit,
@@ -247,7 +249,7 @@ export class EmailAdminController {
     ]);
 
     return {
-      data: events,
+      events,
       pagination: {
         page,
         limit,
@@ -257,12 +259,22 @@ export class EmailAdminController {
     };
   }
 
-  @Post('bounces/:id/unsuppress')
+  @Post('bounces/:email/unsuppress')
   @ApiOperation({ summary: 'Unsuppress a bounced email address' })
+  @ApiParam({ name: 'email', description: 'The email address to unsuppress' })
   @ApiResponse({ status: 200, description: 'Email unsuppressed' })
-  async unsuppressEmail(@Param('id') id: string) {
+  @ApiResponse({ status: 404, description: 'Email not found' })
+  async unsuppressEmail(@Param('email') email: string) {
+    const preference = await this.prisma.emailPreference.findUnique({
+      where: { email: decodeURIComponent(email) },
+    });
+
+    if (!preference) {
+      throw new NotFoundException(`No preferences found for email: ${email}`);
+    }
+
     const updated = await this.prisma.emailPreference.update({
-      where: { id },
+      where: { email: decodeURIComponent(email) },
       data: {
         isSupressed: false,
         bounceCount: 0,

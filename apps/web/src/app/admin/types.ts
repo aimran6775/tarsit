@@ -550,10 +550,37 @@ export interface EmailStats {
   total: number;
   sent: number;
   failed: number;
+  successRate: string;
+  deliverability?: {
+    suppressed: number;
+    bounced: number;
+    complaints: number;
+  };
   byTemplate: Array<{
     template: string;
-    _count: { template: number };
+    count: number;
   }>;
+}
+
+export interface EmailBounce {
+  id: string;
+  email: string;
+  bounceCount: number;
+  bounceType?: string;
+  lastBounceAt?: string;
+  isSupressed: boolean;
+  complainedAt?: string;
+  createdAt: string;
+}
+
+export interface EmailEvent {
+  id: string;
+  email: string;
+  eventType: string;
+  messageId?: string;
+  bounceType?: string;
+  reason?: string;
+  createdAt: string;
 }
 
 export interface EmailTemplate {
