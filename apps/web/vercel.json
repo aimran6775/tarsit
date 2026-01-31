@@ -6,5 +6,18 @@
   "regions": ["iad1"],
   "git": {
     "deploymentEnabled": true
-  }
+  },
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "tarsit-web.vercel.app"
+        }
+      ],
+      "destination": "https://tarsit.com/:path*",
+      "permanent": true
+    }
+  ]
 }
