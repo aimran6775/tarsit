@@ -179,9 +179,9 @@ export class MailService {
         this.logger.warn(`Email not sent (no provider): ${options.subject} to ${options.to}`);
         errorMessage = 'No email provider configured';
       }
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Failed to send email to ${options.to}:`, error);
-      errorMessage = error.message;
+      errorMessage = error?.message || String(error);
     }
 
     // Log email to database
@@ -197,8 +197,8 @@ export class MailService {
           userId: options.userId,
         },
       });
-    } catch (logError) {
-      this.logger.warn(`Failed to log email: ${logError.message}`);
+    } catch (logError: any) {
+      this.logger.warn(`Failed to log email: ${logError?.message || logError}`);
     }
 
     return success;

@@ -17,21 +17,21 @@
  */
 
 import {
-  Body,
-  Controller,
-  Headers,
-  HttpCode,
-  HttpStatus,
-  Logger,
-  Post,
-  RawBodyRequest,
-  Req,
+    Body,
+    Controller,
+    Headers,
+    HttpCode,
+    HttpStatus,
+    Logger,
+    Post,
+    RawBodyRequest,
+    Req,
 } from '@nestjs/common';
-import { ApiExcludeController } from '@nestjs/swagger';
-import { Request } from 'express';
-import * as crypto from 'crypto';
-import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { ApiExcludeController } from '@nestjs/swagger';
+import * as crypto from 'crypto';
+import { Request } from 'express';
+import { PrismaService } from '../prisma/prisma.service';
 
 // Resend webhook event types
 interface ResendWebhookEvent {

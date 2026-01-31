@@ -39,6 +39,7 @@ const tabLabels: Record<TabType, { title: string; description: string }> = {
   regions: { title: 'Region Management', description: 'Manage global regions and localization' },
   currencies: { title: 'Currency Management', description: 'Manage currencies and exchange rates' },
   translations: { title: 'Translation Management', description: 'Manage multi-language content' },
+  emails: { title: 'Email Management', description: 'Monitor email logs, templates, and deliverability' },
   tars: { title: 'Tars AI Management', description: 'Manage AI settings and interactions' },
   system: { title: 'System Monitoring', description: 'Server health and performance metrics' },
   reports: { title: 'Reports & Analytics', description: 'Generate and export platform reports' },

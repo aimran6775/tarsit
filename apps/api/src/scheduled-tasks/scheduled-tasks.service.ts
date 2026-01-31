@@ -37,7 +37,7 @@ export class ScheduledTasksService {
       // Get all businesses with their owners
       const businesses = await this.prisma.business.findMany({
         where: {
-          isActive: true,
+          active: true,
         },
         include: {
           owner: true,
@@ -83,9 +83,9 @@ export class ScheduledTasksService {
           } else {
             errorCount++;
           }
-        } catch (error) {
+        } catch (error: any) {
           this.logger.error(
-            `Failed to send digest for business ${business.id}: ${error.message}`,
+            `Failed to send digest for business ${business.id}: ${error?.message || error}`,
           );
           errorCount++;
         }
@@ -94,8 +94,8 @@ export class ScheduledTasksService {
       this.logger.log(
         `Weekly digest job complete: ${sentCount} sent, ${errorCount} errors`,
       );
-    } catch (error) {
-      this.logger.error(`Weekly digest job failed: ${error.message}`);
+    } catch (error: any) {
+      this.logger.error(`Weekly digest job failed: ${error?.message || error}`);
     }
   }
 
@@ -118,14 +118,14 @@ export class ScheduledTasksService {
       // Get all confirmed appointments for tomorrow
       const appointments = await this.prisma.appointment.findMany({
         where: {
-          startTime: {
+          date: {
             gte: tomorrow,
             lt: dayAfterTomorrow,
           },
           status: 'CONFIRMED',
         },
         include: {
-          customer: true,
+          user: true,
           business: true,
           service: true,
         },
@@ -136,24 +136,24 @@ export class ScheduledTasksService {
       for (const appointment of appointments) {
         try {
           await this.mailService.sendAppointmentReminder(
-            appointment.customer.email,
-            appointment.customer.firstName,
+            appointment.user.email,
+            appointment.user.firstName,
             appointment.business.name,
-            appointment.business.address || 'Address not available',
-            appointment.startTime,
+            appointment.business.addressLine1 || 'Address not available',
+            appointment.date,
             appointment.service?.name || 'Service',
           );
           sentCount++;
-        } catch (error) {
+        } catch (error: any) {
           this.logger.error(
-            `Failed to send reminder for appointment ${appointment.id}: ${error.message}`,
+            `Failed to send reminder for appointment ${appointment.id}: ${error?.message || error}`,
           );
         }
       }
 
       this.logger.log(`Appointment reminder job complete: ${sentCount} sent`);
-    } catch (error) {
-      this.logger.error(`Appointment reminder job failed: ${error.message}`);
+    } catch (error: any) {
+      this.logger.error(`Appointment reminder job failed: ${error?.message || error}`);
     }
   }
 
@@ -219,8 +219,8 @@ export class ScheduledTasksService {
       this.logger.log(
         `Token cleanup complete: ${magicLinkResult.count} magic links, ${resetResult.count} reset tokens, ${verificationResult.count} verification tokens cleared`,
       );
-    } catch (error) {
-      this.logger.error(`Token cleanup job failed: ${error.message}`);
+    } catch (error: any) {
+      this.logger.error(`Token cleanup job failed: ${error?.message || error}`);
     }
   }
 
@@ -252,7 +252,7 @@ export class ScheduledTasksService {
         this.prisma.appointment.count({
           where: {
             businessId,
-            status: 'CANCELLED',
+            status: 'CANCELED',
             updatedAt: { gte: weekStart, lte: weekEnd },
           },
         }),
@@ -270,7 +270,7 @@ export class ScheduledTasksService {
     const newReviews = reviews.length;
     const averageRating =
       newReviews > 0
-        ? reviews.reduce((sum, r) => sum + r.rating, 0) / newReviews
+        ? reviews.reduce((sum: number, r: { rating: number }) => sum + r.rating, 0) / newReviews
         : 0;
 
     // Profile views and messages would need separate tracking tables

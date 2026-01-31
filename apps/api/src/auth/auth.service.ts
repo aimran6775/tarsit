@@ -610,8 +610,8 @@ export class AuthService {
         'password_changed',
         new Date(),
       );
-    } catch (error) {
-      this.logger.warn(`Failed to send security alert email: ${error.message}`);
+    } catch (error: any) {
+      console.warn(`Failed to send security alert email: ${error?.message || error}`);
     }
 
     return {
