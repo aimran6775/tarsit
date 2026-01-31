@@ -5,6 +5,7 @@ import { Transporter } from 'nodemailer';
 import { Resend } from 'resend';
 
 // Import all email templates
+import { PrismaService } from '../prisma/prisma.service';
 import {
     accountSecuritySubject,
     // Account templates
@@ -47,7 +48,6 @@ import {
     // Auth templates
     welcomeEmailTemplate,
 } from './templates';
-import { PrismaService } from '../prisma/prisma.service';
 
 interface EmailOptions {
   to: string;
