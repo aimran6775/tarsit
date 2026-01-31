@@ -556,6 +556,33 @@ model EmailLog {
   @@map("email_logs")
 }
 
+// Email preferences for users - allows granular control over email notifications
+model EmailPreference {
+  id                    String   @id @default(uuid())
+  email                 String   @unique // Can be used without user account
+  userId                String?  @unique // Optional link to user
+  unsubscribeToken      String   @unique @default(uuid())
+  // Marketing emails
+  promotionalEmails     Boolean  @default(true)
+  weeklyDigest          Boolean  @default(true)
+  // Transactional emails (recommended to keep enabled)
+  appointmentReminders  Boolean  @default(true)
+  appointmentUpdates    Boolean  @default(true)
+  reviewNotifications   Boolean  @default(true)
+  // Account emails (critical - always sent)
+  securityAlerts        Boolean  @default(true) // Cannot be disabled via UI
+  // Global unsubscribe
+  unsubscribedAll       Boolean  @default(false)
+  unsubscribedAt        DateTime?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([email])
+  @@index([userId])
+  @@index([unsubscribeToken])
+  @@map("email_preferences")
+}
+
 model TarsConversation {
   id         String        @id @default(uuid())
   userId     String?

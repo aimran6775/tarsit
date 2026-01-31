@@ -59,6 +59,7 @@ export default function SettingsPage() {
         pushAppointments: true,
         pushMessages: true,
     });
+    const [emailPrefsLoading, setEmailPrefsLoading] = useState(false);
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -77,6 +78,27 @@ export default function SettingsPage() {
             });
         }
     }, [user]);
+
+    // Load email preferences
+    useEffect(() => {
+        const loadEmailPreferences = async () => {
+            if (!isAuthenticated) return;
+            try {
+                const res = await apiClient.get('/email-preferences/me');
+                if (res.data.preferences) {
+                    setNotifications(prev => ({
+                        ...prev,
+                        emailAppointments: res.data.preferences.appointmentReminders,
+                        emailMessages: res.data.preferences.reviewNotifications,
+                        emailMarketing: res.data.preferences.promotionalEmails,
+                    }));
+                }
+            } catch (err) {
+                console.error('Failed to load email preferences:', err);
+            }
+        };
+        loadEmailPreferences();
+    }, [isAuthenticated]);
 
     const clearMessages = () => {
         setSuccess('');
@@ -455,10 +477,28 @@ export default function SettingsPage() {
                                     </div>
 
                                     <button
-                                        onClick={() => setSuccess('Notification preferences saved!')}
-                                        className="w-full sm:w-auto px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-medium rounded-xl transition-colors"
+                                        onClick={async () => {
+                                            setEmailPrefsLoading(true);
+                                            setError('');
+                                            try {
+                                                await apiClient.put('/email-preferences/me', {
+                                                    appointmentReminders: notifications.emailAppointments,
+                                                    appointmentUpdates: notifications.emailAppointments,
+                                                    reviewNotifications: notifications.emailMessages,
+                                                    promotionalEmails: notifications.emailMarketing,
+                                                    weeklyDigest: notifications.emailMarketing,
+                                                });
+                                                setSuccess('Notification preferences saved!');
+                                            } catch (err) {
+                                                setError('Failed to save preferences. Please try again.');
+                                            } finally {
+                                                setEmailPrefsLoading(false);
+                                            }
+                                        }}
+                                        disabled={emailPrefsLoading}
+                                        className="w-full sm:w-auto px-6 py-3 bg-purple-500 hover:bg-purple-600 disabled:opacity-50 text-white font-medium rounded-xl transition-colors"
                                     >
-                                        Save Preferences
+                                        {emailPrefsLoading ? 'Saving...' : 'Save Preferences'}
                                     </button>
                                 </div>
                             )}
