@@ -1,3 +1,6 @@
+// Design system tokens (synced with frontend)
+export * from './design-system';
+
 // Base template and components
 export * from './base.template';
 

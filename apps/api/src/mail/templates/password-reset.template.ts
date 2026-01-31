@@ -1,47 +1,174 @@
-import { baseTemplate, emailComponents } from './base.template';
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * PASSWORD RESET EMAIL TEMPLATE
+ * ═══════════════════════════════════════════════════════════════════════════════
+ * 
+ * Password recovery email with security warnings and expiration notice.
+ * Uses the Tarsit design system for consistent branding.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ */
 
-const { button, text, heading, infoBox, divider } = emailComponents;
+import { baseTemplate, emailComponents } from './base.template';
+import { borderRadius, colors, typography } from './design-system';
+
+const { button, text, heading, infoBox, smallText, divider, glassCard } = emailComponents;
 
 export interface PasswordResetEmailProps {
   firstName: string;
   resetUrl: string;
   expiresInMinutes?: number;
+  ipAddress?: string;
+  requestedAt?: Date;
 }
 
 export const passwordResetEmailTemplate = ({
   firstName,
   resetUrl,
   expiresInMinutes = 60,
+  ipAddress,
+  requestedAt = new Date(),
 }: PasswordResetEmailProps): string => {
+  
+  const formattedTime = requestedAt.toLocaleString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  });
+
   const content = `
-    ${heading('Reset Your Password 🔐')}
+    <!-- Hero section with lock icon -->
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
+      <tr>
+        <td align="center">
+          <div style="width: 80px; height: 80px; background: ${colors.warningMuted}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+            <span style="font-size: 40px;">🔐</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+    
+    ${heading('Reset Your Password')}
     
     ${text(`Hi ${firstName || 'there'},`)}
     
-    ${text('We received a request to reset your password for your Tarsit account. Click the button below to choose a new password.')}
+    ${text("We received a request to reset your password for your Tarsit account. Click the button below to create a new password.")}
     
-    ${button('Reset Password', resetUrl, true)}
+    ${button('🔑 Reset Password', resetUrl, true)}
     
-    ${infoBox(`
-      <strong>⏰ Time Sensitive:</strong><br>
-      This link will expire in ${expiresInMinutes} minutes for security reasons.
-    `, 'warning')}
+    <!-- Expiration warning -->
+    ${glassCard(`
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+        <tr>
+          <td style="vertical-align: middle; width: 48px;">
+            <div style="width: 40px; height: 40px; background: ${colors.warningMuted}; border-radius: 10px; text-align: center; line-height: 40px;">
+              <span style="font-size: 20px;">⏱️</span>
+            </div>
+          </td>
+          <td style="padding-left: 16px;">
+            <p style="margin: 0 0 4px 0; color: ${colors.textPrimary}; font-size: ${typography.sizeBase}; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
+              Link expires in ${expiresInMinutes} minutes
+            </p>
+            <p style="margin: 0; color: ${colors.textMuted}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
+              After that, you'll need to request a new reset link
+            </p>
+          </td>
+        </tr>
+      </table>
+    `)}
     
     ${divider()}
     
-    ${text(`Didn't request this? No worries — your password won't be changed unless you click the button above. If you're concerned about your account security, you can <a href="https://tarsit.com/help" style="color: #7c3aed;">contact our support team</a>.`, true)}
+    <!-- Security tips -->
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 16px;">
+      <tr>
+        <td>
+          <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; font-size: ${typography.sizeSm}; font-weight: ${typography.weightSemibold}; text-transform: uppercase; letter-spacing: 0.5px; font-family: ${typography.fontFamily};">
+            🛡️ Password Tips
+          </p>
+        </td>
+      </tr>
+    </table>
     
-    ${text(`Or copy and paste this link into your browser:`, true)}
-    <p style="margin: 8px 0 0 0; word-break: break-all; font-size: 12px; color: #6b7280; background: #f3f4f6; padding: 12px; border-radius: 6px;">
-      ${resetUrl}
-    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: ${colors.bgTertiary}; border-radius: ${borderRadius.lg}; padding: 20px;">
+      <tr>
+        <td style="padding: 16px 20px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+            <tr>
+              <td style="padding: 6px 0; vertical-align: top; width: 24px;">
+                <span style="color: ${colors.success}; font-size: 14px;">✓</span>
+              </td>
+              <td style="padding: 6px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
+                Use at least 12 characters
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; vertical-align: top; width: 24px;">
+                <span style="color: ${colors.success}; font-size: 14px;">✓</span>
+              </td>
+              <td style="padding: 6px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
+                Mix uppercase, lowercase, numbers & symbols
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; vertical-align: top; width: 24px;">
+                <span style="color: ${colors.success}; font-size: 14px;">✓</span>
+              </td>
+              <td style="padding: 6px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
+                Avoid common words or personal info
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 0; vertical-align: top; width: 24px;">
+                <span style="color: ${colors.success}; font-size: 14px;">✓</span>
+              </td>
+              <td style="padding: 6px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
+                Don't reuse passwords from other sites
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+    
+    ${divider()}
+    
+    ${infoBox(
+      "<strong>Didn't request this?</strong> If you didn't request a password reset, please ignore this email. Your password will remain unchanged and your account is secure.",
+      'warning'
+    )}
+    
+    <!-- Request details -->
+    ${ipAddress ? `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; margin-top: 16px;">
+      <tr>
+        <td>
+          ${smallText(`Request details: ${formattedTime}${ipAddress ? ` • IP: ${ipAddress}` : ''}`)}
+        </td>
+      </tr>
+    </table>
+    ` : ''}
+    
+    ${smallText('Or copy and paste this link into your browser:')}
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+      <tr>
+        <td style="background: ${colors.bgTertiary}; padding: 12px 16px; border-radius: ${borderRadius.md}; word-break: break-all;">
+          <a href="${resetUrl}" style="color: ${colors.accentLight}; font-size: ${typography.sizeXs}; font-family: ${typography.fontFamilyMono}; text-decoration: none;">
+            ${resetUrl}
+          </a>
+        </td>
+      </tr>
+    </table>
   `;
 
   return baseTemplate({
-    previewText: 'Reset your Tarsit password',
+    previewText: `🔐 Reset your Tarsit password - expires in ${expiresInMinutes} minutes`,
     content,
-    footerText: 'You received this email because a password reset was requested for your account.',
+    footerText: 'You received this email because a password reset was requested for your Tarsit account.',
+    showSocialLinks: false,
   });
 };
 
-export const passwordResetEmailSubject = 'Reset Your Password - Tarsit';
+export const passwordResetEmailSubject = '🔐 Reset Your Tarsit Password';
