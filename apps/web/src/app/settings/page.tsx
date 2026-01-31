@@ -1,25 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { apiClient } from '@/lib/api/client';
 import {
-    User,
-    Lock,
-    Bell,
-    Shield,
-    Trash2,
-    ChevronRight,
-    Check,
     AlertCircle,
+    ArrowLeft,
+    Bell,
+    Camera,
+    Check,
+    ChevronRight,
     Eye,
     EyeOff,
-    ArrowLeft,
+    Lock,
     Mail,
     Phone,
-    Camera,
+    Shield,
+    Trash2,
+    User,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 type SettingsTab = 'profile' | 'password' | 'notifications' | 'privacy' | 'danger';
 

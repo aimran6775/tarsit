@@ -574,13 +574,38 @@ model EmailPreference {
   // Global unsubscribe
   unsubscribedAll       Boolean  @default(false)
   unsubscribedAt        DateTime?
+  // Bounce tracking
+  bounceCount           Int      @default(0)
+  lastBounceAt          DateTime?
+  bounceType            String?  // 'hard' or 'soft'
+  isSupressed           Boolean  @default(false) // Stop all emails after hard bounce
+  complainedAt          DateTime? // Spam complaint timestamp
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
   @@index([email])
   @@index([userId])
   @@index([unsubscribeToken])
+  @@index([isSupressed])
   @@map("email_preferences")
+}
+
+// Email events from webhook (bounces, complaints, deliveries)
+model EmailEvent {
+  id            String   @id @default(uuid())
+  email         String
+  eventType     String   // 'delivered', 'bounced', 'complained', 'opened', 'clicked'
+  messageId     String?  // Resend message ID
+  bounceType    String?  // 'hard', 'soft'
+  reason        String?  // Bounce/complaint reason
+  metadata      Json?    // Additional event data
+  createdAt     DateTime @default(now())
+
+  @@index([email])
+  @@index([eventType])
+  @@index([messageId])
+  @@index([createdAt])
+  @@map("email_events")
 }
 
 model TarsConversation {

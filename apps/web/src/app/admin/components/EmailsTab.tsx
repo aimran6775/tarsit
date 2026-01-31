@@ -6,26 +6,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/components/ui/table';
 import {
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Eye,
-  Mail,
-  RefreshCw,
-  Search,
-  Send,
-  TrendingUp,
+    AlertCircle,
+    CheckCircle,
+    Clock,
+    Eye,
+    Mail,
+    RefreshCw,
+    Search,
+    Send,
+    TrendingUp,
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
-import type { EmailLog, EmailLogsResponse, EmailStats, EmailTemplate } from '../types';
+import type { EmailLogsResponse, EmailStats, EmailTemplate } from '../types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001/api';
 const API_BASE = API_URL.replace(/\/api\/?$/, '');

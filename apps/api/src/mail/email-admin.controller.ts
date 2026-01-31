@@ -12,20 +12,20 @@
  */
 
 import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Query,
-  UseGuards,
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Query,
+    UseGuards,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
+    ApiBearerAuth,
+    ApiOperation,
+    ApiQuery,
+    ApiResponse,
+    ApiTags,
 } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -34,22 +34,22 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from './mail.service';
 
 // Import templates directly to avoid barrel file issues
-import { welcomeEmailTemplate } from './templates/welcome.template';
-import { magicLinkEmailTemplate } from './templates/magic-link.template';
-import { passwordResetEmailTemplate } from './templates/password-reset.template';
-import { verificationEmailTemplate } from './templates/verification.template';
-import { appointmentConfirmationTemplate } from './templates/appointment-confirmation.template';
+import { accountSecurityTemplate } from './templates/account-security.template';
 import { appointmentCancellationTemplate } from './templates/appointment-cancellation.template';
+import { appointmentConfirmationTemplate } from './templates/appointment-confirmation.template';
 import { appointmentReminderTemplate } from './templates/appointment-reminder.template';
 import { appointmentRequestTemplate } from './templates/appointment-request.template';
 import { appointmentStatusTemplate } from './templates/appointment-status.template';
-import { reviewNotificationTemplate } from './templates/review-notification.template';
-import { verificationStatusTemplate } from './templates/verification-status.template';
-import { teamInvitationTemplate } from './templates/team-invitation.template';
 import { contactNotificationTemplate } from './templates/contact-notification.template';
-import { weeklyDigestTemplate } from './templates/weekly-digest.template';
-import { accountSecurityTemplate } from './templates/account-security.template';
+import { magicLinkEmailTemplate } from './templates/magic-link.template';
+import { passwordResetEmailTemplate } from './templates/password-reset.template';
 import { promotionalEmailTemplate } from './templates/promotional.template';
+import { reviewNotificationTemplate } from './templates/review-notification.template';
+import { teamInvitationTemplate } from './templates/team-invitation.template';
+import { verificationStatusTemplate } from './templates/verification-status.template';
+import { verificationEmailTemplate } from './templates/verification.template';
+import { weeklyDigestTemplate } from './templates/weekly-digest.template';
+import { welcomeEmailTemplate } from './templates/welcome.template';
 
 // Sample data for template previews
 const sampleData = {
@@ -166,6 +166,115 @@ export class EmailAdminController {
   @ApiResponse({ status: 200, description: 'Email log details retrieved' })
   async getEmailLogById(@Param('id') id: string) {
     return this.prisma.emailLog.findUnique({ where: { id } });
+  }
+
+  // ============================================================================
+  // BOUNCE & SUPPRESSION MANAGEMENT
+  // ============================================================================
+
+  @Get('bounces')
+  @ApiOperation({ summary: 'Get bounced/suppressed email addresses' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'Bounce list retrieved' })
+  async getBouncedEmails(
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+  ) {
+    const skip = (page - 1) * limit;
+    const where = {
+      OR: [
+        { isSupressed: true },
+        { bounceCount: { gt: 0 } },
+        { complainedAt: { not: null } },
+      ],
+    };
+
+    const [bounces, total] = await Promise.all([
+      this.prisma.emailPreference.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          bounceCount: true,
+          bounceType: true,
+          lastBounceAt: true,
+          isSupressed: true,
+          complainedAt: true,
+          createdAt: true,
+        },
+        orderBy: { lastBounceAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.emailPreference.count({ where }),
+    ]);
+
+    return {
+      data: bounces,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  @Get('events')
+  @ApiOperation({ summary: 'Get email events (deliveries, bounces, complaints)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'eventType', required: false, type: String })
+  @ApiResponse({ status: 200, description: 'Events retrieved' })
+  async getEmailEvents(
+    @Query('page') page = 1,
+    @Query('limit') limit = 50,
+    @Query('eventType') eventType?: string,
+  ) {
+    const skip = (page - 1) * limit;
+    const where: any = {};
+    if (eventType) where.eventType = eventType;
+
+    const [events, total] = await Promise.all([
+      this.prisma.emailEvent.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.emailEvent.count({ where }),
+    ]);
+
+    return {
+      data: events,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  @Post('bounces/:id/unsuppress')
+  @ApiOperation({ summary: 'Unsuppress a bounced email address' })
+  @ApiResponse({ status: 200, description: 'Email unsuppressed' })
+  async unsuppressEmail(@Param('id') id: string) {
+    const updated = await this.prisma.emailPreference.update({
+      where: { id },
+      data: {
+        isSupressed: false,
+        bounceCount: 0,
+        bounceType: null,
+        lastBounceAt: null,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Email ${updated.email} has been unsuppressed`,
+    };
   }
 
   // ============================================================================

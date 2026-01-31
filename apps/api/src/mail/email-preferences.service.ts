@@ -204,7 +204,13 @@ export class EmailPreferencesService {
       return true;
     }
 
-    // Security and transactional emails are always allowed
+    // Check if email is suppressed (bounced or complained)
+    if (preferences.isSupressed) {
+      this.logger.log(`Email suppressed for ${normalizedEmail} (bounce/complaint)`);
+      return false;
+    }
+
+    // Security and transactional emails are always allowed (unless suppressed)
     if (category === 'security' || category === 'transactional') {
       return true;
     }

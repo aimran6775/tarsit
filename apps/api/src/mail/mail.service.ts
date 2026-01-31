@@ -603,7 +603,7 @@ export class MailService {
       if (endDate) where.createdAt.lte = endDate;
     }
 
-    const [total, sent, failed, byTemplate] = await Promise.all([
+    const [total, sent, failed, byTemplate, suppressed, bounced, complaints] = await Promise.all([
       this.prisma.emailLog.count({ where }),
       this.prisma.emailLog.count({ where: { ...where, status: 'SENT' } }),
       this.prisma.emailLog.count({ where: { ...where, status: 'FAILED' } }),
@@ -612,6 +612,9 @@ export class MailService {
         where,
         _count: true,
       }),
+      this.prisma.emailPreference.count({ where: { isSupressed: true } }),
+      this.prisma.emailPreference.count({ where: { bounceCount: { gt: 0 } } }),
+      this.prisma.emailPreference.count({ where: { complainedAt: { not: null } } }),
     ]);
 
     return {
@@ -619,6 +622,11 @@ export class MailService {
       sent,
       failed,
       successRate: total > 0 ? ((sent / total) * 100).toFixed(2) : '0',
+      deliverability: {
+        suppressed,
+        bounced,
+        complaints,
+      },
       byTemplate: byTemplate.map((t) => ({
         template: t.template,
         count: t._count,
