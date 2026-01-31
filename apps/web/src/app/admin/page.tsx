@@ -11,6 +11,7 @@ import {
     BusinessesTab,
     CategoriesTab,
     CurrenciesTab,
+    EmailsTab,
     LoadingState,
     OverviewTab,
     RegionsTab,
@@ -793,6 +794,10 @@ export default function AdminDashboardPage() {
               onBulkReview={handleTarsBulkReview}
               onRefresh={fetchTarsActions}
             />
+          )}
+
+          {activeTab === 'emails' && (
+            <EmailsTab token={getToken()} />
           )}
 
           {activeTab === 'settings' && (

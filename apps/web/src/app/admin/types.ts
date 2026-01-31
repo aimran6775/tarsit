@@ -18,7 +18,8 @@ export type TabType =
   | 'system'
   | 'reports'
   | 'audit-logs'
-  | 'settings';
+  | 'settings'
+  | 'emails';
 
 // ============================================================================
 // USER MANAGEMENT
@@ -522,3 +523,41 @@ export const getActivityIcon = (type: string): string => {
       return '📌';
   }
 };
+
+// ============================================================================
+// EMAIL MANAGEMENT
+// ============================================================================
+
+export interface EmailLog {
+  id: string;
+  to: string;
+  subject: string;
+  template: string;
+  status: 'SENT' | 'FAILED' | 'PENDING';
+  error?: string;
+  sentAt?: string;
+  appointmentId?: string;
+  userId?: string;
+  createdAt: string;
+}
+
+export interface EmailLogsResponse {
+  data: EmailLog[];
+  pagination: Pagination;
+}
+
+export interface EmailStats {
+  total: number;
+  sent: number;
+  failed: number;
+  byTemplate: Array<{
+    template: string;
+    _count: { template: number };
+  }>;
+}
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  category: 'auth' | 'appointment' | 'business' | 'account' | 'marketing';
+}

@@ -8,6 +8,7 @@ export { BusinessDetailModal } from './BusinessDetailModal';
 export { BusinessesTab } from './BusinessesTab';
 export { CategoriesTab } from './CategoriesTab';
 export { CurrenciesTab } from './CurrenciesTab';
+export { EmailsTab } from './EmailsTab';
 export { LoadingState } from './LoadingState';
 export { OverviewTab } from './OverviewTab';
 export { RegionsTab } from './RegionsTab';
