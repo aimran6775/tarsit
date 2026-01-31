@@ -31,7 +31,7 @@ export const appointmentRequestTemplate = ({
   });
 
   const content = `
-    ${emailComponents.heading('New Appointment Request 📅')}
+    ${emailComponents.heading('New Appointment Request')}
     
     ${emailComponents.text(`Hi ${businessOwnerName},`)}
     
@@ -84,4 +84,4 @@ export const appointmentRequestTemplate = ({
 };
 
 export const appointmentRequestSubject = (customerName: string) => 
-  `New Appointment Request from ${customerName} 📅`;
+  `New Appointment Request from ${customerName}`;

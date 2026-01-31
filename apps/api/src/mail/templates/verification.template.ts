@@ -9,7 +9,7 @@
  */
 
 import { baseTemplate, emailComponents } from './base.template';
-import { borderRadius, colors, typography } from './design-system';
+import { borderRadius, colors, icons, typography } from './design-system';
 
 const { button, text, heading, infoBox, smallText, divider, glassCard } = emailComponents;
 
@@ -31,7 +31,7 @@ export const verificationEmailTemplate = ({
       <tr>
         <td align="center">
           <div style="width: 80px; height: 80px; background: ${colors.infoMuted}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-            <span style="font-size: 40px;">✉️</span>
+            ${icons.mail(colors.info, 40)}
           </div>
         </td>
       </tr>
@@ -39,11 +39,11 @@ export const verificationEmailTemplate = ({
     
     ${heading('Verify Your Email')}
     
-    ${text(`Hi ${firstName || 'there'}! 👋`)}
+    ${text(`Hi ${firstName || 'there'},`)}
     
     ${text("Thanks for signing up for Tarsit! Please verify your email address to complete your account setup and unlock all features.")}
     
-    ${button('✓ Verify Email Address', verificationUrl, true)}
+    ${button('Verify Email Address', verificationUrl, true)}
     
     <!-- Why verify section -->
     ${glassCard(`
@@ -56,7 +56,7 @@ export const verificationEmailTemplate = ({
             <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
               <tr>
                 <td style="padding: 4px 0; vertical-align: top; width: 24px;">
-                  <span style="color: ${colors.accentPrimary}; font-size: 14px;">✦</span>
+                  ${icons.diamond(colors.accentPrimary, 8)}
                 </td>
                 <td style="padding: 4px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeXs}; font-family: ${typography.fontFamily};">
                   Write reviews and help others discover great businesses
@@ -64,7 +64,7 @@ export const verificationEmailTemplate = ({
               </tr>
               <tr>
                 <td style="padding: 4px 0; vertical-align: top; width: 24px;">
-                  <span style="color: ${colors.accentPrimary}; font-size: 14px;">✦</span>
+                  ${icons.diamond(colors.accentPrimary, 8)}
                 </td>
                 <td style="padding: 4px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeXs}; font-family: ${typography.fontFamily};">
                   Book appointments with local businesses
@@ -72,7 +72,7 @@ export const verificationEmailTemplate = ({
               </tr>
               <tr>
                 <td style="padding: 4px 0; vertical-align: top; width: 24px;">
-                  <span style="color: ${colors.accentPrimary}; font-size: 14px;">✦</span>
+                  ${icons.diamond(colors.accentPrimary, 8)}
                 </td>
                 <td style="padding: 4px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeXs}; font-family: ${typography.fontFamily};">
                   Receive important account notifications
@@ -80,7 +80,7 @@ export const verificationEmailTemplate = ({
               </tr>
               <tr>
                 <td style="padding: 4px 0; vertical-align: top; width: 24px;">
-                  <span style="color: ${colors.accentPrimary}; font-size: 14px;">✦</span>
+                  ${icons.diamond(colors.accentPrimary, 8)}
                 </td>
                 <td style="padding: 4px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeXs}; font-family: ${typography.fontFamily};">
                   Recover your account if you forget your password
@@ -101,7 +101,7 @@ export const verificationEmailTemplate = ({
           <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
             <tr>
               <td style="vertical-align: middle; width: 32px;">
-                <span style="font-size: 18px;">⏰</span>
+                ${icons.clock(colors.textSecondary, 18)}
               </td>
               <td style="padding-left: 12px;">
                 <p style="margin: 0; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
@@ -132,11 +132,11 @@ export const verificationEmailTemplate = ({
   `;
 
   return baseTemplate({
-    previewText: `✉️ Verify your email to complete your Tarsit account setup`,
+    previewText: `Verify your email to complete your Tarsit account setup`,
     content,
     footerText: 'You received this email because you signed up for a Tarsit account.',
     showSocialLinks: false,
   });
 };
 
-export const verificationEmailSubject = '✉️ Verify Your Tarsit Email';
+export const verificationEmailSubject = 'Verify Your Tarsit Email';

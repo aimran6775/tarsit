@@ -31,7 +31,7 @@ export const appointmentReminderTemplate = ({
   });
 
   const content = `
-    ${emailComponents.heading('Appointment Reminder ⏰')}
+    ${emailComponents.heading('Appointment Reminder')}
     
     ${emailComponents.text(`Hi ${firstName},`)}
     
@@ -90,4 +90,4 @@ export const appointmentReminderTemplate = ({
 };
 
 export const appointmentReminderSubject = (businessName: string) => 
-  `Reminder: Appointment Tomorrow with ${businessName} ⏰`;
+  `Reminder: Appointment Tomorrow with ${businessName}`;

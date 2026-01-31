@@ -9,7 +9,7 @@
  */
 
 import { baseTemplate, emailComponents } from './base.template';
-import { borderRadius, colors, typography } from './design-system';
+import { borderRadius, colors, icons, typography } from './design-system';
 
 const { button, text, heading, infoBox, smallText, divider, glassCard } = emailComponents;
 
@@ -58,7 +58,7 @@ export const magicLinkEmailTemplate = ({
       <tr>
         <td align="center">
           <div style="width: 80px; height: 80px; background: ${colors.accentGlow}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-            <span style="font-size: 40px;">🔮</span>
+            ${icons.magicWand(colors.accentPrimary, 40)}
           </div>
         </td>
       </tr>
@@ -66,19 +66,19 @@ export const magicLinkEmailTemplate = ({
     
     ${heading('Sign in to Tarsit')}
     
-    ${text(`Hey ${firstName || 'there'}! 👋`)}
+    ${text(`Hey ${firstName || 'there'},`)}
     
     ${text('You requested a magic link to sign in to your Tarsit account. Click the button below to securely access your account — no password needed!')}
     
-    ${button('✨ Sign In Now', magicLinkUrl, true)}
+    ${button('Sign In Now', magicLinkUrl, true)}
     
     <!-- Expiration warning -->
     ${glassCard(`
       <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
         <tr>
           <td style="vertical-align: middle; width: 48px;">
-            <div style="width: 40px; height: 40px; background: ${colors.warningMuted}; border-radius: 10px; text-align: center; line-height: 40px;">
-              <span style="font-size: 20px;">⏱️</span>
+            <div style="width: 40px; height: 40px; background: ${colors.warningMuted}; border-radius: 10px; text-align: center; line-height: 40px; padding: 8px; box-sizing: border-box;">
+              ${icons.clock(colors.warning, 24)}
             </div>
           </td>
           <td style="padding-left: 16px;">
@@ -100,7 +100,8 @@ export const magicLinkEmailTemplate = ({
       <tr>
         <td>
           <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; font-size: ${typography.sizeSm}; font-weight: ${typography.weightSemibold}; text-transform: uppercase; letter-spacing: 0.5px; font-family: ${typography.fontFamily};">
-            🔒 Security Details
+            <span style="display: inline-block; vertical-align: middle; margin-right: 8px;">${icons.shield(colors.textMuted, 16)}</span>
+            Security Details
           </p>
         </td>
       </tr>
@@ -161,11 +162,11 @@ export const magicLinkEmailTemplate = ({
   `;
 
   return baseTemplate({
-    previewText: `🔮 Your Tarsit magic link - expires in ${expiresInMinutes} minutes`,
+    previewText: `Your Tarsit magic link - expires in ${expiresInMinutes} minutes`,
     content,
     footerText: 'You received this email because a magic link was requested for your Tarsit account.',
     showSocialLinks: false,
   });
 };
 
-export const magicLinkEmailSubject = '🔮 Your Magic Link to Sign In';
+export const magicLinkEmailSubject = 'Your Magic Link to Sign In';

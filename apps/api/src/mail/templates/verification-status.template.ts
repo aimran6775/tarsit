@@ -1,4 +1,5 @@
 import { baseTemplate, emailComponents } from './base.template';
+import { icons } from './design-system';
 
 export interface VerificationStatusProps {
   businessOwnerName: string;
@@ -18,7 +19,7 @@ export const verificationStatusTemplate = ({
   const isApproved = status === 'approved';
 
   const content = isApproved ? `
-    ${emailComponents.heading('Congratulations! 🎉')}
+    ${emailComponents.heading('Congratulations!')}
     
     ${emailComponents.text(`Hi ${businessOwnerName},`)}
     
@@ -27,7 +28,7 @@ export const verificationStatusTemplate = ({
     <table role="presentation" style="width: 100%; margin: 24px 0; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 12px; text-align: center; padding: 32px;">
       <tr>
         <td>
-          <div style="font-size: 48px; margin-bottom: 16px;">✅</div>
+          <div style="margin-bottom: 16px;">${icons.checkCircle('#10b981', 48)}</div>
           <div style="font-size: 20px; font-weight: 700; color: #065f46;">Business Verified</div>
           <div style="font-size: 14px; color: #047857; margin-top: 8px;">Your business now has a verified badge</div>
         </td>
@@ -45,7 +46,7 @@ export const verificationStatusTemplate = ({
     
     ${emailComponents.button('Go to Dashboard', dashboardUrl, true)}
   ` : `
-    ${emailComponents.heading('Verification Update Required ⚠️')}
+    ${emailComponents.heading('Verification Update Required')}
     
     ${emailComponents.text(`Hi ${businessOwnerName},`)}
     
@@ -79,5 +80,5 @@ export const verificationStatusTemplate = ({
 
 export const verificationStatusSubject = (businessName: string, status: 'approved' | 'rejected') => 
   status === 'approved' 
-    ? `🎉 ${businessName} is Now Verified!`
+    ? `${businessName} is Now Verified!`
     : `Action Required: ${businessName} Verification`;

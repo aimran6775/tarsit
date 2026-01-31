@@ -29,7 +29,7 @@ export const appointmentConfirmationTemplate = ({
   });
 
   const content = `
-    ${emailComponents.heading('Appointment Confirmed! 📅')}
+    ${emailComponents.heading('Appointment Confirmed')}
     
     ${emailComponents.text(`Hi ${firstName},`)}
     

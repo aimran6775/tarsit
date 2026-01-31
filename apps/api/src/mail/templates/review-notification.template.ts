@@ -20,7 +20,7 @@ export const reviewNotificationTemplate = ({
   const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
   
   const content = `
-    ${emailComponents.heading('New Review for Your Business ⭐')}
+    ${emailComponents.heading('New Review for Your Business')}
     
     ${emailComponents.text(`Hi ${businessOwnerName},`)}
     
@@ -57,4 +57,4 @@ export const reviewNotificationTemplate = ({
 };
 
 export const reviewNotificationSubject = (rating: number) => 
-  `New ${rating}-Star Review for Your Business ⭐`;
+  `New ${rating}-Star Review for Your Business`;

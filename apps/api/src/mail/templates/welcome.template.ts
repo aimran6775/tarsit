@@ -9,7 +9,7 @@
  */
 
 import { baseTemplate, emailComponents } from './base.template';
-import { borderRadius, colors, typography } from './design-system';
+import { borderRadius, colors, icons, typography } from './design-system';
 
 const { button, text, heading, featureList, divider, glassCard, smallText } = emailComponents;
 
@@ -29,7 +29,7 @@ export const welcomeEmailTemplate = ({
       <tr>
         <td align="center">
           <div style="width: 80px; height: 80px; background: ${colors.successMuted}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-            <span style="font-size: 40px;">🎉</span>
+            ${icons.celebration(colors.success, 40)}
           </div>
         </td>
       </tr>
@@ -37,11 +37,11 @@ export const welcomeEmailTemplate = ({
     
     ${heading('Welcome to Tarsit!')}
     
-    ${text(`Hey ${firstName}! 👋`)}
+    ${text(`Hey ${firstName},`)}
     
     ${text("We're thrilled to have you join our community! Tarsit connects you with amazing local businesses — from cozy cafés to expert services, all in one place.")}
     
-    ${button('🚀 Start Exploring', appUrl, true)}
+    ${button('Start Exploring', appUrl, true)}
     
     ${divider()}
     
@@ -50,7 +50,7 @@ export const welcomeEmailTemplate = ({
       <tr>
         <td>
           <p style="margin: 0 0 20px 0; color: ${colors.textPrimary}; font-size: ${typography.sizeLg}; font-weight: ${typography.weightSemibold}; font-family: ${typography.fontFamily};">
-            Here's what you can do ✨
+            Here's what you can do
           </p>
         </td>
       </tr>
@@ -60,27 +60,27 @@ export const welcomeEmailTemplate = ({
     <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
       <tr>
         <td style="padding-bottom: 12px;">
-          ${featureCard('🔍', 'Discover', 'Find local businesses tailored to your interests and location')}
+          ${featureCard(icons.search(colors.accentPrimary, 20), 'Discover', 'Find local businesses tailored to your interests and location')}
         </td>
       </tr>
       <tr>
         <td style="padding-bottom: 12px;">
-          ${featureCard('⭐', 'Review', 'Share your experiences and help others find great spots')}
+          ${featureCard(icons.star(colors.accentPrimary, 20), 'Review', 'Share your experiences and help others find great spots')}
         </td>
       </tr>
       <tr>
         <td style="padding-bottom: 12px;">
-          ${featureCard('📅', 'Book', 'Schedule appointments directly with businesses')}
+          ${featureCard(icons.calendar(colors.accentPrimary, 20), 'Book', 'Schedule appointments directly with businesses')}
         </td>
       </tr>
       <tr>
         <td style="padding-bottom: 12px;">
-          ${featureCard('💬', 'Connect', 'Message business owners and get quick responses')}
+          ${featureCard(icons.message(colors.accentPrimary, 20), 'Connect', 'Message business owners and get quick responses')}
         </td>
       </tr>
       <tr>
         <td>
-          ${featureCard('🤖', 'Ask Tars', 'Our AI assistant helps you find exactly what you need')}
+          ${featureCard(icons.robot(colors.accentPrimary, 20), 'Ask Tars', 'Our AI assistant helps you find exactly what you need')}
         </td>
       </tr>
     </table>
@@ -92,8 +92,8 @@ export const welcomeEmailTemplate = ({
       <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
         <tr>
           <td style="vertical-align: top; width: 48px;">
-            <div style="width: 40px; height: 40px; background: ${colors.accentGlow}; border-radius: 10px; text-align: center; line-height: 40px;">
-              <span style="font-size: 20px;">💡</span>
+            <div style="width: 40px; height: 40px; background: ${colors.accentGlow}; border-radius: 10px; text-align: center; padding: 8px; box-sizing: border-box;">
+              ${icons.lightbulb(colors.accentPrimary, 24)}
             </div>
           </td>
           <td style="padding-left: 16px;">
@@ -101,7 +101,7 @@ export const welcomeEmailTemplate = ({
               Pro tip: Try Tars AI
             </p>
             <p style="margin: 0; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; line-height: 1.5; font-family: ${typography.fontFamily};">
-              Just click the ✨ button anywhere in the app to ask Tars for personalized recommendations. Try "Find me a quiet café for working" or "Best-rated barber near me"!
+              Just click the sparkle button anywhere in the app to ask Tars for personalized recommendations. Try "Find me a quiet café for working" or "Best-rated barber near me"!
             </p>
           </td>
         </tr>
@@ -136,7 +136,7 @@ export const welcomeEmailTemplate = ({
   `;
 
   return baseTemplate({
-    previewText: `🎉 Welcome to Tarsit, ${firstName}! Start discovering amazing local businesses.`,
+    previewText: `Welcome to Tarsit, ${firstName}! Start discovering amazing local businesses.`,
     content,
     footerText: 'You received this email because you created a Tarsit account.',
   });
@@ -145,7 +145,7 @@ export const welcomeEmailTemplate = ({
 /**
  * Feature card component for welcome email
  */
-function featureCard(emoji: string, title: string, description: string): string {
+function featureCard(icon: string, title: string, description: string): string {
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: ${colors.bgTertiary}; border: 1px solid ${colors.glassBorder}; border-radius: ${borderRadius.lg};">
       <tr>
@@ -153,8 +153,8 @@ function featureCard(emoji: string, title: string, description: string): string 
           <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
             <tr>
               <td style="vertical-align: top; width: 44px;">
-                <div style="width: 36px; height: 36px; background: ${colors.glassBg}; border-radius: 8px; text-align: center; line-height: 36px;">
-                  <span style="font-size: 18px;">${emoji}</span>
+                <div style="width: 36px; height: 36px; background: ${colors.glassBg}; border-radius: 8px; text-align: center; padding: 8px; box-sizing: border-box;">
+                  ${icon}
                 </div>
               </td>
               <td style="padding-left: 12px; vertical-align: middle;">
@@ -173,4 +173,4 @@ function featureCard(emoji: string, title: string, description: string): string 
   `;
 }
 
-export const welcomeEmailSubject = '🎉 Welcome to Tarsit!';
+export const welcomeEmailSubject = 'Welcome to Tarsit!';

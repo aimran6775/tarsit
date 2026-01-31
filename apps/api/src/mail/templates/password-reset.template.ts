@@ -9,7 +9,7 @@
  */
 
 import { baseTemplate, emailComponents } from './base.template';
-import { borderRadius, colors, typography } from './design-system';
+import { borderRadius, colors, icons, typography } from './design-system';
 
 const { button, text, heading, infoBox, smallText, divider, glassCard } = emailComponents;
 
@@ -44,7 +44,7 @@ export const passwordResetEmailTemplate = ({
       <tr>
         <td align="center">
           <div style="width: 80px; height: 80px; background: ${colors.warningMuted}; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-            <span style="font-size: 40px;">🔐</span>
+            ${icons.lock(colors.warning, 40)}
           </div>
         </td>
       </tr>
@@ -56,15 +56,15 @@ export const passwordResetEmailTemplate = ({
     
     ${text("We received a request to reset your password for your Tarsit account. Click the button below to create a new password.")}
     
-    ${button('🔑 Reset Password', resetUrl, true)}
+    ${button('Reset Password', resetUrl, true)}
     
     <!-- Expiration warning -->
     ${glassCard(`
       <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
         <tr>
           <td style="vertical-align: middle; width: 48px;">
-            <div style="width: 40px; height: 40px; background: ${colors.warningMuted}; border-radius: 10px; text-align: center; line-height: 40px;">
-              <span style="font-size: 20px;">⏱️</span>
+            <div style="width: 40px; height: 40px; background: ${colors.warningMuted}; border-radius: 10px; text-align: center; padding: 8px; box-sizing: border-box;">
+              ${icons.clock(colors.warning, 24)}
             </div>
           </td>
           <td style="padding-left: 16px;">
@@ -86,7 +86,8 @@ export const passwordResetEmailTemplate = ({
       <tr>
         <td>
           <p style="margin: 0 0 16px 0; color: ${colors.textMuted}; font-size: ${typography.sizeSm}; font-weight: ${typography.weightSemibold}; text-transform: uppercase; letter-spacing: 0.5px; font-family: ${typography.fontFamily};">
-            🛡️ Password Tips
+            <span style="display: inline-block; vertical-align: middle; margin-right: 8px;">${icons.shield(colors.textMuted, 16)}</span>
+            Password Tips
           </p>
         </td>
       </tr>
@@ -98,7 +99,7 @@ export const passwordResetEmailTemplate = ({
           <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
             <tr>
               <td style="padding: 6px 0; vertical-align: top; width: 24px;">
-                <span style="color: ${colors.success}; font-size: 14px;">✓</span>
+                ${icons.check(colors.success, 14)}
               </td>
               <td style="padding: 6px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
                 Use at least 12 characters
@@ -106,7 +107,7 @@ export const passwordResetEmailTemplate = ({
             </tr>
             <tr>
               <td style="padding: 6px 0; vertical-align: top; width: 24px;">
-                <span style="color: ${colors.success}; font-size: 14px;">✓</span>
+                ${icons.check(colors.success, 14)}
               </td>
               <td style="padding: 6px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
                 Mix uppercase, lowercase, numbers & symbols
@@ -114,7 +115,7 @@ export const passwordResetEmailTemplate = ({
             </tr>
             <tr>
               <td style="padding: 6px 0; vertical-align: top; width: 24px;">
-                <span style="color: ${colors.success}; font-size: 14px;">✓</span>
+                ${icons.check(colors.success, 14)}
               </td>
               <td style="padding: 6px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
                 Avoid common words or personal info
@@ -122,7 +123,7 @@ export const passwordResetEmailTemplate = ({
             </tr>
             <tr>
               <td style="padding: 6px 0; vertical-align: top; width: 24px;">
-                <span style="color: ${colors.success}; font-size: 14px;">✓</span>
+                ${icons.check(colors.success, 14)}
               </td>
               <td style="padding: 6px 0; padding-left: 8px; color: ${colors.textSecondary}; font-size: ${typography.sizeSm}; font-family: ${typography.fontFamily};">
                 Don't reuse passwords from other sites
@@ -164,11 +165,11 @@ export const passwordResetEmailTemplate = ({
   `;
 
   return baseTemplate({
-    previewText: `🔐 Reset your Tarsit password - expires in ${expiresInMinutes} minutes`,
+    previewText: `Reset your Tarsit password - expires in ${expiresInMinutes} minutes`,
     content,
     footerText: 'You received this email because a password reset was requested for your Tarsit account.',
     showSocialLinks: false,
   });
 };
 
-export const passwordResetEmailSubject = '🔐 Reset Your Tarsit Password';
+export const passwordResetEmailSubject = 'Reset Your Tarsit Password';

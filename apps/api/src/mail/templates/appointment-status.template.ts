@@ -29,7 +29,6 @@ export const appointmentStatusTemplate = ({
   });
 
   const isConfirmed = status === 'CONFIRMED';
-  const statusEmoji = isConfirmed ? '✅' : '🎉';
   const statusText = isConfirmed ? 'Confirmed' : 'Completed';
   const bgGradient = isConfirmed 
     ? 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
@@ -38,7 +37,7 @@ export const appointmentStatusTemplate = ({
   const labelColor = isConfirmed ? '#065f46' : '#92400e';
 
   const content = `
-    ${emailComponents.heading(`Appointment ${statusText} ${statusEmoji}`)}
+    ${emailComponents.heading(`Appointment ${statusText}`)}
     
     ${emailComponents.text(`Hi ${firstName},`)}
     
@@ -70,7 +69,7 @@ export const appointmentStatusTemplate = ({
     
     ${!isConfirmed && reviewUrl ? `
       ${emailComponents.text("We hope you had a great experience! Would you mind taking a moment to share your feedback?")}
-      ${emailComponents.button('Leave a Review ⭐', reviewUrl, true)}
+      ${emailComponents.button('Leave a Review', reviewUrl, true)}
     ` : ''}
     
     ${isConfirmed ? emailComponents.text("We look forward to seeing you!", true) : ''}

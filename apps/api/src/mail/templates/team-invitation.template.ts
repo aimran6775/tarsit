@@ -1,4 +1,5 @@
 import { baseTemplate, emailComponents } from './base.template';
+import { icons } from './design-system';
 
 export interface TeamInvitationProps {
   inviteeName: string;
@@ -18,7 +19,7 @@ export const teamInvitationTemplate = ({
   acceptUrl,
 }: TeamInvitationProps): string => {
   const content = `
-    ${emailComponents.heading("You're Invited! 🎉")}
+    ${emailComponents.heading("You're Invited!")}
     
     ${emailComponents.text(`Hi ${inviteeName || 'there'},`)}
     
@@ -39,7 +40,7 @@ export const teamInvitationTemplate = ({
               ${permissions.map(p => `
                 <tr>
                   <td style="padding: 6px 0; vertical-align: top; width: 24px;">
-                    <span style="color: #10b981; font-size: 14px;">✓</span>
+                    ${icons.check('#10b981', 14)}
                   </td>
                   <td style="padding: 6px 0; padding-left: 8px; color: #374151; font-size: 14px;">
                     ${p}
@@ -66,4 +67,4 @@ export const teamInvitationTemplate = ({
 };
 
 export const teamInvitationSubject = (businessName: string) => 
-  `You're Invited to Join ${businessName} on Tarsit 🎉`;
+  `You're Invited to Join ${businessName} on Tarsit`;

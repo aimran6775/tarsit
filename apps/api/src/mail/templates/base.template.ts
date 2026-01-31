@@ -14,7 +14,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-import { borderRadius, colors, gradients, shadows, spacing, typography } from './design-system';
+import { borderRadius, colors, gradients, icons, shadows, spacing, typography } from './design-system';
 
 export interface BaseTemplateProps {
   previewText?: string;
@@ -49,17 +49,17 @@ const socialLinks = `
     <tr>
       <td style="padding: 0 8px;">
         <a href="https://twitter.com/tarsit" style="display: inline-block; width: 36px; height: 36px; background: ${colors.glassBg}; border-radius: 8px; text-align: center; line-height: 36px; text-decoration: none;">
-          <span style="color: ${colors.textSecondary}; font-size: 16px;">𝕏</span>
+          <span style="color: ${colors.textSecondary}; font-size: 16px; font-weight: 700;">X</span>
         </a>
       </td>
       <td style="padding: 0 8px;">
         <a href="https://instagram.com/tarsit" style="display: inline-block; width: 36px; height: 36px; background: ${colors.glassBg}; border-radius: 8px; text-align: center; line-height: 36px; text-decoration: none;">
-          <span style="color: ${colors.textSecondary}; font-size: 16px;">📷</span>
+          ${icons.camera(colors.textSecondary, 18)}
         </a>
       </td>
       <td style="padding: 0 8px;">
         <a href="https://linkedin.com/company/tarsit" style="display: inline-block; width: 36px; height: 36px; background: ${colors.glassBg}; border-radius: 8px; text-align: center; line-height: 36px; text-decoration: none;">
-          <span style="color: ${colors.textSecondary}; font-size: 16px;">in</span>
+          <span style="color: ${colors.textSecondary}; font-size: 14px; font-weight: 700;">in</span>
         </a>
       </td>
     </tr>
@@ -353,10 +353,10 @@ export const emailComponents = {
    */
   infoBox: (content: string, type: 'info' | 'warning' | 'success' | 'error' = 'info'): string => {
     const styles = {
-      info: { bg: colors.infoMuted, border: colors.info, icon: 'ℹ️' },
-      warning: { bg: colors.warningMuted, border: colors.warning, icon: '⚠️' },
-      success: { bg: colors.successMuted, border: colors.success, icon: '✅' },
-      error: { bg: colors.errorMuted, border: colors.error, icon: '❌' },
+      info: { bg: colors.infoMuted, border: colors.info, icon: icons.infoCircle(colors.info, 20) },
+      warning: { bg: colors.warningMuted, border: colors.warning, icon: icons.alertTriangle(colors.warning, 20) },
+      success: { bg: colors.successMuted, border: colors.success, icon: icons.checkCircle(colors.success, 20) },
+      error: { bg: colors.errorMuted, border: colors.error, icon: icons.x(colors.error, 20) },
     };
     const s = styles[type];
     return `
@@ -365,7 +365,7 @@ export const emailComponents = {
           <td style="background: ${s.bg}; border-left: 4px solid ${s.border}; padding: 16px 20px; border-radius: ${borderRadius.lg};">
             <table role="presentation" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="vertical-align: top; padding-right: 12px; font-size: 18px;">${s.icon}</td>
+                <td style="vertical-align: top; padding-right: 12px; width: 20px;">${s.icon}</td>
                 <td>
                   <p class="dark-mode-text" style="margin: 0; color: ${colors.textPrimary}; font-size: ${typography.sizeSm}; line-height: ${typography.lineHeightRelaxed}; font-family: ${typography.fontFamily};">
                     ${content}
@@ -449,7 +449,7 @@ export const emailComponents = {
       ${items.map(item => `
         <tr>
           <td style="padding: 8px 0; vertical-align: top; width: 28px;">
-            <span style="color: ${colors.success}; font-size: 16px;">✓</span>
+            ${icons.check(colors.success, 16)}
           </td>
           <td class="dark-mode-text" style="padding: 8px 0; padding-left: 8px; color: ${colors.textPrimary}; font-size: ${typography.sizeSm}; line-height: ${typography.lineHeightNormal}; font-family: ${typography.fontFamily};">
             ${item}

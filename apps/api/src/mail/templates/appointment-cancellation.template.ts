@@ -31,7 +31,7 @@ export const appointmentCancellationTemplate = ({
   });
 
   const content = `
-    ${emailComponents.heading('Appointment Cancelled ❌')}
+    ${emailComponents.heading('Appointment Cancelled')}
     
     ${emailComponents.text(`Hi ${firstName},`)}
     
