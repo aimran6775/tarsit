@@ -602,6 +602,18 @@ export class AuthService {
       },
     });
 
+    // Send security alert email
+    try {
+      await this.mailService.sendAccountSecurityAlert(
+        user.email,
+        user.firstName,
+        'password_changed',
+        new Date(),
+      );
+    } catch (error) {
+      this.logger.warn(`Failed to send security alert email: ${error.message}`);
+    }
+
     return {
       success: true,
       message: 'Password has been reset successfully',

@@ -33,6 +33,7 @@ import { RegionsModule } from './regions/regions.module';
 import { ReportsModule } from './reports/reports.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { SavedSearchesModule } from './saved-searches/saved-searches.module';
+import { ScheduledTasksModule } from './scheduled-tasks/scheduled-tasks.module';
 import { SearchModule } from './search/search.module';
 import { SeederModule } from './seeder/seeder.module';
 import { ServicesModule } from './services/services.module';
@@ -98,6 +99,8 @@ import { VerificationRequestsModule } from './verification-requests/verification
     RegionsModule,
     CurrenciesModule,
     TranslationsModule,
+    // Background jobs
+    ScheduledTasksModule,
   ],
   controllers: [],
   providers: [

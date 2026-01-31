@@ -1,47 +1,47 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+import { Resend } from 'resend';
 
 // Import all email templates
 import {
-  // Auth templates
-  welcomeEmailTemplate,
-  welcomeEmailSubject,
-  magicLinkEmailTemplate,
-  magicLinkEmailSubject,
-  passwordResetEmailTemplate,
-  passwordResetEmailSubject,
-  verificationEmailTemplate,
-  verificationEmailSubject,
-  // Appointment templates
-  appointmentConfirmationTemplate,
-  appointmentConfirmationSubject,
-  appointmentRequestTemplate,
-  appointmentRequestSubject,
-  appointmentCancellationTemplate,
-  appointmentCancellationSubject,
-  appointmentReminderTemplate,
-  appointmentReminderSubject,
-  appointmentStatusTemplate,
-  appointmentStatusSubject,
-  // Business templates
-  contactNotificationTemplate,
-  contactNotificationSubject,
-  reviewNotificationTemplate,
-  reviewNotificationSubject,
-  verificationStatusTemplate,
-  verificationStatusSubject,
-  teamInvitationTemplate,
-  teamInvitationSubject,
-  weeklyDigestTemplate,
-  weeklyDigestSubject,
-  WeeklyDigestStats,
-  // Account templates
-  accountSecurityTemplate,
-  accountSecuritySubject,
-  SecurityEventType,
+    accountSecuritySubject,
+    // Account templates
+    accountSecurityTemplate,
+    appointmentCancellationSubject,
+    appointmentCancellationTemplate,
+    appointmentConfirmationSubject,
+    // Appointment templates
+    appointmentConfirmationTemplate,
+    appointmentReminderSubject,
+    appointmentReminderTemplate,
+    appointmentRequestSubject,
+    appointmentRequestTemplate,
+    appointmentStatusSubject,
+    appointmentStatusTemplate,
+    contactNotificationSubject,
+    // Business templates
+    contactNotificationTemplate,
+    magicLinkEmailSubject,
+    magicLinkEmailTemplate,
+    passwordResetEmailSubject,
+    passwordResetEmailTemplate,
+    reviewNotificationSubject,
+    reviewNotificationTemplate,
+    SecurityEventType,
+    teamInvitationSubject,
+    teamInvitationTemplate,
+    verificationEmailSubject,
+    verificationEmailTemplate,
+    verificationStatusSubject,
+    verificationStatusTemplate,
+    WeeklyDigestStats,
+    weeklyDigestSubject,
+    weeklyDigestTemplate,
+    welcomeEmailSubject,
+    // Auth templates
+    welcomeEmailTemplate,
 } from './templates';
 
 interface EmailOptions {
