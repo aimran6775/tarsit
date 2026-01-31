@@ -730,12 +730,13 @@ export class AuthService {
 
     // Send magic link email
     try {
-      await this.mailService.sendMagicLinkEmail(
+      const emailSent = await this.mailService.sendMagicLinkEmail(
         user.email,
         user.firstName,
         magicLinkToken,
         dto.redirectUrl
       );
+      console.log(`Magic link email ${emailSent ? 'sent' : 'FAILED'} to: ${user.email}`);
     } catch (error) {
       console.error('Failed to send magic link email:', error);
       // Don't throw error to prevent email enumeration
