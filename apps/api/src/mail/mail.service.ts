@@ -6,6 +6,7 @@ import { Resend } from 'resend';
 
 // Import all email templates
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailCategory, EmailPreferencesService } from './email-preferences.service';
 import {
     accountSecuritySubject,
     // Account templates
@@ -54,6 +55,8 @@ interface EmailOptions {
   subject: string;
   html: string;
   text?: string;
+  category?: EmailCategory;
+  headers?: Record<string, string>;
 }
 
 type EmailProvider = 'resend' | 'nodemailer';
@@ -70,6 +73,7 @@ export class MailService {
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
+    private emailPreferences: EmailPreferencesService,
   ) {
     const resendApiKey = this.configService.get<string>('RESEND_API_KEY');
     const mailUser = this.configService.get<string>('MAIL_USER');
@@ -105,6 +109,43 @@ export class MailService {
     let success = false;
     let errorMessage: string | undefined;
 
+    // Check email preferences if category is specified
+    if (options.category) {
+      const canSend = await this.emailPreferences.canSendEmail(options.to, options.category);
+      if (!canSend) {
+        this.logger.log(`Email blocked by preferences: ${options.category} to ${options.to}`);
+        // Log as skipped, not failed
+        try {
+          await this.prisma.emailLog.create({
+            data: {
+              to: options.to,
+              subject: options.subject,
+              template: options.template || 'unknown',
+              status: 'PENDING', // Using PENDING to indicate skipped
+              error: 'Blocked by user preferences',
+              userId: options.userId,
+            },
+          });
+        } catch (e) { /* ignore */ }
+        return false;
+      }
+    }
+
+    // Generate unsubscribe URL for non-transactional emails
+    let unsubscribeUrl: string | undefined;
+    if (options.category && options.category !== 'transactional' && options.category !== 'security') {
+      unsubscribeUrl = await this.emailPreferences.getUnsubscribeUrl(options.to, options.category);
+    }
+
+    // Prepare headers with List-Unsubscribe for marketing emails
+    const headers: Record<string, string> = {
+      ...options.headers,
+    };
+    if (unsubscribeUrl) {
+      headers['List-Unsubscribe'] = `<${unsubscribeUrl}>`;
+      headers['List-Unsubscribe-Post'] = 'List-Unsubscribe=One-Click';
+    }
+
     try {
       if (this.provider === 'resend' && this.resend) {
         const { error } = await this.resend.emails.send({
@@ -113,6 +154,7 @@ export class MailService {
           subject: options.subject,
           html: options.html,
           text: options.text,
+          headers: Object.keys(headers).length > 0 ? headers : undefined,
         });
 
         if (error) {
@@ -305,6 +347,8 @@ export class MailService {
         businessAddress,
         appointmentUrl: `${this.frontendUrl}/appointments`,
       }),
+      template: 'appointment-reminder',
+      category: 'appointment-reminder',
     });
   }
 
@@ -327,6 +371,8 @@ export class MailService {
         status,
         reviewUrl: status === 'COMPLETED' ? `${this.frontendUrl}/businesses` : undefined,
       }),
+      template: 'appointment-status',
+      category: 'appointment-update',
     });
   }
 
@@ -353,6 +399,8 @@ export class MailService {
         reviewText,
         reviewUrl: `${this.frontendUrl}/dashboard/reviews`,
       }),
+      template: 'review-notification',
+      category: 'review-notification',
     });
   }
 
@@ -461,6 +509,8 @@ export class MailService {
         topReview,
         dashboardUrl: `${this.frontendUrl}/dashboard/analytics`,
       }),
+      template: 'weekly-digest',
+      category: 'weekly-digest',
     });
   }
 
@@ -490,6 +540,7 @@ export class MailService {
         securityUrl: `${this.frontendUrl}/settings/security`,
       }),
       template: 'account-security',
+      category: 'security', // Always sent, never blocked
     });
   }
 
@@ -514,7 +565,8 @@ export class MailService {
       expiresAt?: Date;
     },
   ): Promise<boolean> {
-    const unsubscribeUrl = `${this.frontendUrl}/unsubscribe?email=${encodeURIComponent(email)}&business=${encodeURIComponent(businessName)}`;
+    // Get proper unsubscribe URL from preferences service
+    const unsubscribeUrl = await this.emailPreferences.getUnsubscribeUrl(email, 'promotional');
     
     return this.sendMail({
       to: email,
@@ -535,6 +587,7 @@ export class MailService {
         unsubscribeUrl,
       }),
       template: 'promotional',
+      category: 'promotional',
     });
   }
 
