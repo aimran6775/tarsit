@@ -14,7 +14,7 @@
  * ═══════════════════════════════════════════════════════════════════════════════
  */
 
-import { borderRadius, colors, gradients, icons, shadows, spacing, typography } from './design-system';
+import { borderRadius, colors, icons, spacing, typography } from './design-system';
 
 export interface BaseTemplateProps {
   previewText?: string;
