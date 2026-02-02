@@ -168,7 +168,7 @@ export const promotionalEmailTemplate = ({
     ${divider()}
     
     <p style="margin: 0; text-align: center; color: ${colors.textMuted}; font-size: ${typography.sizeXs}; font-family: ${typography.fontFamily};">
-      This email was sent by <strong>${businessName}</strong> via Tarsit.<br />
+      This email was sent by <strong>${businessName}</strong> via tarsit.<br />
       <a href="${unsubscribeUrl}" style="color: ${colors.accent}; text-decoration: none;">Unsubscribe</a> from emails by this business.
     </p>
   `;

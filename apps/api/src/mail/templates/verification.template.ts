@@ -41,7 +41,7 @@ export const verificationEmailTemplate = ({
     
     ${text(`Hi ${firstName || 'there'},`)}
     
-    ${text("Thanks for signing up for Tarsit! Please verify your email address to complete your account setup and unlock all features.")}
+    ${text("Thanks for signing up for tarsit! Please verify your email address to complete your account setup and unlock all features.")}
     
     ${button('Verify Email Address', verificationUrl, true)}
     
@@ -115,7 +115,7 @@ export const verificationEmailTemplate = ({
     </table>
     
     ${infoBox(
-      "If you didn't create a Tarsit account, you can safely ignore this email.",
+      "If you didn't create a tarsit account, you can safely ignore this email.",
       'info'
     )}
     
@@ -132,11 +132,11 @@ export const verificationEmailTemplate = ({
   `;
 
   return baseTemplate({
-    previewText: `Verify your email to complete your Tarsit account setup`,
+    previewText: `Verify your email to complete your tarsit account setup`,
     content,
-    footerText: 'You received this email because you signed up for a Tarsit account.',
+    footerText: 'You received this email because you signed up for a tarsit account.',
     showSocialLinks: false,
   });
 };
 
-export const verificationEmailSubject = 'Verify Your Tarsit Email';
+export const verificationEmailSubject = 'Verify Your tarsit Email';

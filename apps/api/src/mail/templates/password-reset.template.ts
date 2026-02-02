@@ -54,7 +54,7 @@ export const passwordResetEmailTemplate = ({
     
     ${text(`Hi ${firstName || 'there'},`)}
     
-    ${text("We received a request to reset your password for your Tarsit account. Click the button below to create a new password.")}
+    ${text("We received a request to reset your password for your tarsit account. Click the button below to create a new password.")}
     
     ${button('Reset Password', resetUrl, true)}
     
@@ -165,11 +165,11 @@ export const passwordResetEmailTemplate = ({
   `;
 
   return baseTemplate({
-    previewText: `Reset your Tarsit password - expires in ${expiresInMinutes} minutes`,
+    previewText: `Reset your tarsit password - expires in ${expiresInMinutes} minutes`,
     content,
-    footerText: 'You received this email because a password reset was requested for your Tarsit account.',
+    footerText: 'You received this email because a password reset was requested for your tarsit account.',
     showSocialLinks: false,
   });
 };
 
-export const passwordResetEmailSubject = 'Reset Your Tarsit Password';
+export const passwordResetEmailSubject = 'Reset Your tarsit Password';

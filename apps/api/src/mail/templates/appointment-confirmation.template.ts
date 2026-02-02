@@ -139,7 +139,7 @@ export const appointmentConfirmationTemplate = ({
     
     ${divider()}
     
-    ${infoBox('Need to reschedule or cancel? You can manage your appointments from your Tarsit dashboard.', 'info')}
+    ${infoBox('Need to reschedule or cancel? You can manage your appointments from your tarsit dashboard.', 'info')}
     
     ${button('View Appointment', 'https://tarsit.com/appointments', true)}
   `;

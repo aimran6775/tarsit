@@ -12,68 +12,67 @@
 
 export const emailDesignSystem = {
   // ═══════════════════════════════════════════════════════════════════════════════
-  // COLORS
+  // COLORS - Light mode friendly for email clients
   // ═══════════════════════════════════════════════════════════════════════════════
   colors: {
-    // Background colors
-    bgPrimary: '#0a0a0a',      // Main background - near black
-    bgSecondary: '#171717',    // Card background
-    bgTertiary: '#262626',     // Nested elements
-    bgElevated: '#1a1a1a',     // Elevated surfaces
+    // Background colors - Light theme for email compatibility
+    bgPrimary: '#f8fafc',      // Main background - light slate
+    bgSecondary: '#ffffff',    // Card background - white
+    bgTertiary: '#f1f5f9',     // Nested elements - light gray
+    bgElevated: '#ffffff',     // Elevated surfaces
     
-    // Glass effect backgrounds
-    glassBg: 'rgba(255, 255, 255, 0.05)',
-    glassBgHover: 'rgba(255, 255, 255, 0.08)',
-    glassBorder: 'rgba(255, 255, 255, 0.1)',
+    // Glass effect backgrounds - solid colors for email
+    glassBg: '#f1f5f9',
+    glassBgHover: '#e2e8f0',
+    glassBorder: '#e2e8f0',
     
-    // Text colors
-    textPrimary: '#ffffff',
-    textSecondary: 'rgba(255, 255, 255, 0.7)',
-    textMuted: 'rgba(255, 255, 255, 0.5)',
-    textSubtle: 'rgba(255, 255, 255, 0.3)',
+    // Text colors - dark for light background
+    textPrimary: '#0f172a',
+    textSecondary: '#475569',
+    textMuted: '#64748b',
+    textSubtle: '#94a3b8',
     
-    // Accent colors - Purple/Violet
-    accentPrimary: '#a855f7',   // Purple 500
-    accentLight: '#c084fc',     // Purple 400
-    accentDark: '#9333ea',      // Purple 600
-    accentGlow: 'rgba(168, 85, 247, 0.3)',
+    // Accent colors - Purple/Violet (solid for email)
+    accentPrimary: '#7c3aed',   // Violet 600 - darker for better contrast
+    accentLight: '#8b5cf6',     // Violet 500
+    accentDark: '#6d28d9',      // Violet 700
+    accentGlow: '#ede9fe',      // Violet 100 - solid glow effect
     
     // Primary brand - Indigo
     brandPrimary: '#4f46e5',    // Indigo 600
     brandLight: '#6366f1',      // Indigo 500
     brandDark: '#4338ca',       // Indigo 700
     
-    // Semantic colors
-    success: '#10b981',
-    successMuted: 'rgba(16, 185, 129, 0.2)',
-    successBg: '#065f46',
-    warning: '#f59e0b',
-    warningMuted: 'rgba(245, 158, 11, 0.2)',
-    warningBg: '#92400e',
-    error: '#ef4444',
-    errorMuted: 'rgba(239, 68, 68, 0.2)',
-    errorBg: '#991b1b',
-    info: '#3b82f6',
-    infoMuted: 'rgba(59, 130, 246, 0.2)',
-    infoBg: '#1e40af',
+    // Semantic colors - solid backgrounds for email
+    success: '#059669',
+    successMuted: '#d1fae5',
+    successBg: '#ecfdf5',
+    warning: '#d97706',
+    warningMuted: '#fef3c7',
+    warningBg: '#fffbeb',
+    error: '#dc2626',
+    errorMuted: '#fee2e2',
+    errorBg: '#fef2f2',
+    info: '#2563eb',
+    infoMuted: '#dbeafe',
+    infoBg: '#eff6ff',
     
-    // Light mode fallbacks (for email clients that force light mode)
-    lightBgPrimary: '#f8fafc',
-    lightBgSecondary: '#ffffff',
-    lightTextPrimary: '#0f172a',
-    lightTextSecondary: '#475569',
+    // Button colors (solid for email)
+    buttonBg: '#7c3aed',
+    buttonText: '#ffffff',
+    buttonBorder: '#7c3aed',
   },
 
   // ═══════════════════════════════════════════════════════════════════════════════
-  // GRADIENTS
+  // GRADIENTS - Solid colors for email client compatibility
   // ═══════════════════════════════════════════════════════════════════════════════
   gradients: {
-    accent: 'linear-gradient(135deg, #a855f7 0%, #6366f1 100%)',
-    accentHover: 'linear-gradient(135deg, #c084fc 0%, #818cf8 100%)',
-    brand: 'linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)',
-    dark: 'linear-gradient(180deg, #0a0a0a 0%, #171717 100%)',
-    glass: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-    hero: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)',
+    accent: '#7c3aed',          // Solid violet for buttons
+    accentHover: '#6d28d9',     // Darker on hover
+    brand: '#4f46e5',           // Solid indigo
+    dark: '#1e293b',            // Slate 800
+    glass: '#f1f5f9',           // Light gray
+    hero: '#f8fafc',            // Light background
   },
 
   // ═══════════════════════════════════════════════════════════════════════════════

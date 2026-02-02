@@ -128,7 +128,7 @@ export const appointmentStatusTemplate = ({
   return baseTemplate({
     previewText: `Your appointment with ${businessName} has been ${statusText.toLowerCase()}`,
     content,
-    footerText: !isConfirmed ? 'Thank you for choosing Tarsit!' : undefined,
+    footerText: !isConfirmed ? 'Thank you for choosing tarsit!' : undefined,
   });
 };
 

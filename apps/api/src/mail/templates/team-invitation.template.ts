@@ -46,7 +46,7 @@ export const teamInvitationTemplate = ({
     
     ${text(`Hi ${inviteeName || 'there'},`)}
     
-    ${text(`<strong>${inviterName}</strong> has invited you to join the team at <strong>${businessName}</strong> on Tarsit.`)}
+    ${text(`<strong>${inviterName}</strong> has invited you to join the team at <strong>${businessName}</strong> on tarsit.`)}
     
     <!-- Role and permissions card -->
     ${glassCard(`
@@ -94,4 +94,4 @@ export const teamInvitationTemplate = ({
 };
 
 export const teamInvitationSubject = (businessName: string) =>
-  `You're Invited to Join ${businessName} on Tarsit`;
+  `You're Invited to Join ${businessName} on tarsit`;

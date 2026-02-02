@@ -24,18 +24,18 @@ export interface BaseTemplateProps {
 }
 
 /**
- * Tarsit Logo as inline SVG (works in all email clients)
+ * tarsit Logo as inline SVG (works in all email clients)
  */
 const tarsitLogo = `
   <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
     <tr>
       <td style="vertical-align: middle; padding-right: 12px;">
-        <div style="width: 48px; height: 48px; background: ${gradients.accent}; border-radius: 14px; display: inline-block; text-align: center; line-height: 48px; box-shadow: ${shadows.glow};">
-          <span style="color: #ffffff; font-size: 24px; font-weight: 700; font-family: ${typography.fontFamily};">T</span>
+        <div style="width: 48px; height: 48px; background: ${colors.accentPrimary}; border-radius: 14px; display: inline-block; text-align: center; line-height: 48px;">
+          <span style="color: #ffffff; font-size: 24px; font-weight: 700; font-family: ${typography.fontFamily};">t</span>
         </div>
       </td>
       <td style="vertical-align: middle;">
-        <span style="font-size: 28px; font-weight: 700; color: ${colors.textPrimary}; font-family: ${typography.fontFamily}; letter-spacing: -0.5px;">Tarsit</span>
+        <span style="font-size: 28px; font-weight: 700; color: ${colors.textPrimary}; font-family: ${typography.fontFamily}; letter-spacing: -0.5px;">tarsit</span>
       </td>
     </tr>
   </table>
@@ -79,9 +79,9 @@ export const baseTemplate = ({
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="x-apple-disable-message-reformatting">
-  <meta name="color-scheme" content="dark light">
-  <meta name="supported-color-schemes" content="dark light">
-  <title>Tarsit</title>
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>tarsit</title>
   
   <!--[if mso]>
   <noscript>
@@ -124,17 +124,10 @@ export const baseTemplate = ({
       background-color: ${colors.bgPrimary};
     }
     
-    /* Dark mode support */
+    /* Light mode default */
     :root {
-      color-scheme: dark light;
-      supported-color-schemes: dark light;
-    }
-    
-    @media (prefers-color-scheme: light) {
-      .dark-mode-bg { background-color: ${colors.lightBgPrimary} !important; }
-      .dark-mode-card { background-color: ${colors.lightBgSecondary} !important; }
-      .dark-mode-text { color: ${colors.lightTextPrimary} !important; }
-      .dark-mode-text-secondary { color: ${colors.lightTextSecondary} !important; }
+      color-scheme: light;
+      supported-color-schemes: light;
     }
     
     /* Responsive */
@@ -148,17 +141,16 @@ export const baseTemplate = ({
     
     /* Button hover states (for supported clients) */
     .button:hover {
-      transform: translateY(-1px);
-      box-shadow: ${shadows.glowStrong} !important;
+      background-color: ${colors.accentDark} !important;
     }
     
     /* Link styles */
     a {
-      color: ${colors.accentLight};
+      color: ${colors.accentPrimary};
       text-decoration: none;
     }
     a:hover {
-      color: ${colors.accentPrimary};
+      color: ${colors.accentDark};
     }
   </style>
 </head>
@@ -173,7 +165,7 @@ export const baseTemplate = ({
   ` : ''}
   
   <!-- Email wrapper -->
-  <table role="presentation" class="dark-mode-bg" cellpadding="0" cellspacing="0" style="width: 100%; background-color: ${colors.bgPrimary};">
+  <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: ${colors.bgPrimary};">
     <tr>
       <td align="center" style="padding: 48px 16px;">
         
@@ -190,11 +182,11 @@ export const baseTemplate = ({
           <!-- Main content card -->
           <tr>
             <td>
-              <table role="presentation" class="dark-mode-card" cellpadding="0" cellspacing="0" style="width: 100%; background: ${colors.bgSecondary}; border: 1px solid ${colors.glassBorder}; border-radius: ${borderRadius['2xl']}; overflow: hidden; box-shadow: ${shadows.lg};">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: ${colors.bgSecondary}; border: 1px solid ${colors.glassBorder}; border-radius: ${borderRadius['2xl']}; overflow: hidden;">
                 
                 <!-- Accent top border -->
                 <tr>
-                  <td style="height: 4px; background: ${gradients.accent};"></td>
+                  <td style="height: 4px; background-color: ${colors.accentPrimary};"></td>
                 </tr>
                 
                 <!-- Content -->
@@ -234,7 +226,7 @@ export const baseTemplate = ({
                 <tr>
                   <td align="center">
                     <p style="margin: 0 0 16px 0; font-size: ${typography.sizeXs}; color: ${colors.textSubtle};">
-                      © ${new Date().getFullYear()} Tarsit. All rights reserved.
+                      © ${new Date().getFullYear()} tarsit. All rights reserved.
                     </p>
                   </td>
                 </tr>
@@ -283,14 +275,20 @@ export const baseTemplate = ({
 export const emailComponents = {
   
   /**
-   * Primary CTA button with glow effect
+   * Primary CTA button with solid color (email-compatible)
    */
   button: (text: string, href: string, fullWidth = false): string => `
     <table role="presentation" cellpadding="0" cellspacing="0" style="width: ${fullWidth ? '100%' : 'auto'}; margin: 24px 0;">
       <tr>
         <td align="center">
-          <a href="${href}" class="button" style="display: inline-block; background: ${gradients.accent}; color: #ffffff; font-size: ${typography.sizeLg}; font-weight: ${typography.weightSemibold}; text-decoration: none; padding: 16px 40px; border-radius: ${borderRadius.xl}; box-shadow: ${shadows.button}; font-family: ${typography.fontFamily};">
-            ${text}
+          <a href="${href}" class="button" style="display: inline-block; background-color: ${colors.accentPrimary}; color: #ffffff; font-size: ${typography.sizeLg}; font-weight: ${typography.weightSemibold}; text-decoration: none; padding: 16px 40px; border-radius: ${borderRadius.xl}; font-family: ${typography.fontFamily}; mso-padding-alt: 0; text-align: center;">
+            <!--[if mso]>
+            <i style="letter-spacing: 40px; mso-font-width: -100%; mso-text-raise: 30pt;">&nbsp;</i>
+            <![endif]-->
+            <span style="mso-text-raise: 15pt;">${text}</span>
+            <!--[if mso]>
+            <i style="letter-spacing: 40px; mso-font-width: -100%;">&nbsp;</i>
+            <![endif]-->
           </a>
         </td>
       </tr>
@@ -304,7 +302,7 @@ export const emailComponents = {
     <table role="presentation" cellpadding="0" cellspacing="0" style="width: auto; margin: 16px 0;">
       <tr>
         <td align="center">
-          <a href="${href}" style="display: inline-block; background: ${colors.glassBg}; color: ${colors.textPrimary}; font-size: ${typography.sizeSm}; font-weight: ${typography.weightMedium}; text-decoration: none; padding: 12px 24px; border-radius: ${borderRadius.lg}; border: 1px solid ${colors.glassBorder}; font-family: ${typography.fontFamily};">
+          <a href="${href}" style="display: inline-block; background-color: ${colors.glassBg}; color: ${colors.textPrimary}; font-size: ${typography.sizeSm}; font-weight: ${typography.weightMedium}; text-decoration: none; padding: 12px 24px; border-radius: ${borderRadius.lg}; border: 1px solid ${colors.glassBorder}; font-family: ${typography.fontFamily};">
             ${text}
           </a>
         </td>

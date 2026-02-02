@@ -64,11 +64,11 @@ export const magicLinkEmailTemplate = ({
       </tr>
     </table>
     
-    ${heading('Sign in to Tarsit')}
+    ${heading('Sign in to tarsit')}
     
     ${text(`Hey ${firstName || 'there'},`)}
     
-    ${text('You requested a magic link to sign in to your Tarsit account. Click the button below to securely access your account — no password needed!')}
+    ${text('You requested a magic link to sign in to your tarsit account. Click the button below to securely access your account — no password needed!')}
     
     ${button('Sign In Now', magicLinkUrl, true)}
     
@@ -162,9 +162,9 @@ export const magicLinkEmailTemplate = ({
   `;
 
   return baseTemplate({
-    previewText: `Your Tarsit magic link - expires in ${expiresInMinutes} minutes`,
+    previewText: `Your tarsit magic link - expires in ${expiresInMinutes} minutes`,
     content,
-    footerText: 'You received this email because a magic link was requested for your Tarsit account.',
+    footerText: 'You received this email because a magic link was requested for your tarsit account.',
     showSocialLinks: false,
   });
 };

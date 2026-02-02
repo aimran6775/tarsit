@@ -35,11 +35,11 @@ export const welcomeEmailTemplate = ({
       </tr>
     </table>
     
-    ${heading('Welcome to Tarsit!')}
+    ${heading('Welcome to tarsit!')}
     
-    ${text(`Hey ${firstName},`)}
+    ${text(`Hi ${firstName},`)}
     
-    ${text("We're thrilled to have you join our community! Tarsit connects you with amazing local businesses — from cozy cafés to expert services, all in one place.")}
+    ${text("We're thrilled to have you join our community! tarsit connects you with amazing local businesses — from cozy cafés to expert services, all in one place.")}
     
     ${button('Start Exploring', appUrl, true)}
     
@@ -136,9 +136,9 @@ export const welcomeEmailTemplate = ({
   `;
 
   return baseTemplate({
-    previewText: `Welcome to Tarsit, ${firstName}! Start discovering amazing local businesses.`,
+    previewText: `Welcome to tarsit, ${firstName}! Start discovering amazing local businesses.`,
     content,
-    footerText: 'You received this email because you created a Tarsit account.',
+    footerText: 'You received this email because you created a tarsit account.',
   });
 };
 
@@ -173,4 +173,4 @@ function featureCard(icon: string, title: string, description: string): string {
   `;
 }
 
-export const welcomeEmailSubject = 'Welcome to Tarsit!';
+export const welcomeEmailSubject = 'Welcome to tarsit!';
